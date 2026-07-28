@@ -28,7 +28,15 @@ function Reveal({ delay = 0, style, ...props }: RevealProps) {
       return
     }
 
-    const reveal = () => el.setAttribute("data-reveal", "in")
+    const reveal = () => {
+      // Révélé pendant une transition de page : pas de fondu, le rideau suffit.
+      // Décidé ici et non au montage, pour que les blocs sous la ligne de
+      // flottaison gardent leur apparition au scroll.
+      if (document.documentElement.hasAttribute("data-curtain")) {
+        el.setAttribute("data-reveal-now", "")
+      }
+      el.setAttribute("data-reveal", "in")
+    }
 
     if (
       typeof IntersectionObserver === "undefined" ||

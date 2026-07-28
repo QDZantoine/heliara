@@ -537,6 +537,12 @@
   transform: translateY(14px);
 }
 
+/* Bloc révélé pendant une transition de page : il apparaît sans fondu, pour ne
+   pas empiler des dizaines de transitions au moment où le rideau se lève. */
+[data-reveal-now] {
+  transition: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

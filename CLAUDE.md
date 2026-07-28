@@ -81,22 +81,27 @@ Le geste : **trois traits en lentille** balaient l'écran en diagonale (−22°)
 
 Deux nappes superposées : la nappe **orange** est décalée d'un demi-trait et part 60 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
 
-### Fluidité : quatre points, tous nécessaires
+### Fluidité : cinq points, tous nécessaires
 
-1. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le rideau. C'est la cause de jank la plus visible, et Next l'annonce en clair dans le log de dev.
-2. **Easing symétrique dans les deux sens** (`--hel-ease-inout`). Le réglage le plus contre-intuitif : une courbe « out » fait _claquer_ une forme qui apparaît et _arrache_ une forme qui disparaît. L'expo-out — 30 % du trajet dans les 6 % du temps — est à réserver aux micro-transitions.
-3. **Décalage court devant une course longue** : 50 ms contre 700 ms. Les traits se chevauchent alors largement dans le temps et le geste est continu ; un décalage proche de la course donne trois évènements successifs.
-4. **Couches de composition promues avant le clic.** L'état `armed` est posé au `pointerdown` et n'applique que `will-change: transform` ; un `translate3d` figure dans chaque étape des keyframes pour maintenir la promotion. Promouvoir au premier frame de l'animation produit un à-coup.
+1. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le rideau. Next l'annonce en clair dans le log de dev.
+2. **Un répit avant le retrait** (`SETTLE_MS`, 180 ms). Le retrait ne doit pas démarrer au moment où React commite la page entrante : sa mise en page, sa peinture et son hydratation tombent alors sur les premières images de l'animation. Ce répit se passe écran couvert, donc invisible. C'était la cause principale de la sécheresse du retrait.
+3. **Le contenu entrant n'anime pas par-dessus le rideau.** `PageCurtain` pose `data-curtain` sur `<html>` pendant la transition ; `Reveal` le lit **au moment où il révèle** (pas au montage, sinon les blocs sous la ligne de flottaison perdraient leur apparition au scroll) et pose `data-reveal-now`, qui coupe le fondu. Le rideau est la transition ; empiler trente fondus de 600 ms par-dessus est ce qui donne l'impression de saccade.
+4. **Easing symétrique dans les deux sens** (`--hel-ease-inout`). Une courbe « out » fait _claquer_ une forme qui apparaît et _arrache_ une forme qui disparaît. L'expo-out — 30 % du trajet dans les 6 % du temps — est à réserver aux micro-transitions.
+5. **Couches de composition promues avant le clic.** L'état `armed` est posé au `pointerdown` et n'applique que `will-change: transform` ; un `translate3d` figure dans chaque étape des keyframes pour maintenir la promotion. Promouvoir au premier frame de l'animation produit un à-coup.
 
-Réglage secondaire : **l'ampleur du `scaleY`** (1,3). Trop d'ampleur et les interstices se referment avant d'être vus — l'écran redevient un aplat qui monte.
+Réglages du geste : **décalage court devant une course longue** (50 ms contre 700 ms) pour que les traits se chevauchent, et **ampleur du `scaleY`** à 1,3 — trop d'ampleur et les interstices se referment avant d'être vus, l'écran redevient un aplat qui monte.
 
 La transition dure ~860 ms à la couverture et ~880 ms au retrait, donc bien au-delà de la fourchette 100–360 ms de la DA. C'est assumé : cette fourchette vise les micro-transitions, pas un changement de page.
 
 ### Mesurer la fluidité, ne pas la juger à l'œil
 
-Des captures ne disent rien du nombre d'images perdues. Installer un enregistreur `requestAnimationFrame` qui note, à chaque frame, l'horodatage **et** la valeur de `data-phase`, déclencher la navigation, puis agréger les écarts par phase. L'agrégation par phase est ce qui compte : une pause de 150 ms pendant que l'écran est couvert est invisible, la même pause pendant le retrait est un défaut. Référence actuelle, en dev comme en production : médiane 8,3 ms, maximum 9,4 ms, **aucune frame au-delà de 24 ms** sur `cover` comme sur `reveal`.
+Des captures ne disent rien du nombre d'images perdues. Installer un enregistreur `requestAnimationFrame` qui note à chaque frame l'horodatage **et** la valeur de `data-phase`, déclencher la navigation, puis agréger les écarts par phase. L'agrégation par phase est ce qui compte : une pause de 150 ms pendant que l'écran est couvert est invisible, la même pause pendant le retrait est un défaut. Référence en production : médiane 8,3 ms, maximum 9,4 ms, **aucune frame au-delà de 24 ms** sur `cover` comme sur `reveal`.
 
-Pas de `framer-motion` : l'animation porte sur `transform`, déjà compositée par le GPU. La bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
+Trois pièges de méthode, tous rencontrés :
+
+- **Simuler le clic avec `element.click()` ne déclenche pas `pointerdown`**, donc ni le pré-armement ni rien qui en dépende. Émettre la séquence complète `pointerdown` → `pointerup` → `click`.
+- **Chrome headless annonce `prefers-reduced-motion: reduce` par défaut**, ce qui désactive tout le rideau. Forcer `no-preference` via `Emulation.setEmulatedMedia`, sinon on mesure une page sans animation.
+- **Un `next start` resté en vie sert un build périmé.** Les chunks répondent alors en 500, l'hydratation échoue, le rideau ne tourne pas — et la mesure affiche une fluidité parfaite qui ne mesure rien. Toujours vérifier qu'un chunk référencé par le HTML répond en 200, et surveiller `Network.responseReceived` pour les statuts ≥ 400.
 
 ## Vérification visuelle
 

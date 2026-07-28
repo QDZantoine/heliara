@@ -13,6 +13,13 @@ const REVEAL_MS = 880
 const STROKES = [0, 1, 2]
 /** Au-delà, on considère que le pointerdown n'a pas mené à une navigation. */
 const DISARM_MS = 600
+/**
+ * Répit accordé au navigateur entre l'affichage de la nouvelle page et le début
+ * du retrait. Sans lui, le retrait démarre pile au premier rendu de la page
+ * entrante — mise en page, peinture, hydratation, observateurs de scroll — et
+ * ses premières images sautent. Ce répit se passe écran couvert : invisible.
+ */
+const SETTLE_MS = 180
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
 const STUCK_MS = 2500
 
@@ -69,6 +76,11 @@ function PageCurtain() {
 
   const setPhase = React.useCallback((phase: Phase) => {
     rootRef.current?.setAttribute("data-phase", phase)
+    // Drapeau lu par `Reveal` : pendant le rideau, un bloc qui entre dans le
+    // champ apparaît sans fondu. Le rideau est la transition ; superposer
+    // trente fondus de 600 ms par-dessus est ce qui donne l'impression de saccade.
+    const active = phase === "cover" || phase === "reveal"
+    document.documentElement.toggleAttribute("data-curtain", active)
   }, [])
 
   const phaseIs = React.useCallback(
@@ -147,16 +159,35 @@ function PageCurtain() {
     }
   }, [after, phaseIs, router, setPhase])
 
-  // Nouvelle page affichée : on ouvre le rideau. Une navigation qui ne vient
-  // pas d’un clic intercepté (retour arrière, lien externe) n’anime rien.
+  // Nouvelle page affichée : on ouvre le rideau, après avoir laissé le
+  // navigateur la peindre. Une navigation qui ne vient pas d’un clic intercepté
+  // (retour arrière, lien externe) n’anime rien.
   React.useEffect(() => {
     if (!coveringRef.current) {
       return
     }
     coveringRef.current = false
-    setPhase("reveal")
-    const timer = setTimeout(() => setPhase("idle"), REVEAL_MS)
-    return () => clearTimeout(timer)
+
+    let frame = 0
+    let done: ReturnType<typeof setTimeout> | undefined
+    // Deux frames puis le répit : la première laisse React commiter, la seconde
+    // laisse le navigateur peindre, et le délai absorbe l'hydratation.
+    const settle = setTimeout(() => {
+      frame = requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          setPhase("reveal")
+          done = setTimeout(() => setPhase("idle"), REVEAL_MS)
+        })
+      )
+    }, SETTLE_MS)
+
+    return () => {
+      clearTimeout(settle)
+      clearTimeout(done)
+      if (frame) {
+        cancelAnimationFrame(frame)
+      }
+    }
   }, [pathname, setPhase])
 
   return (
