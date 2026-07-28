@@ -5,19 +5,24 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { Logo } from "@/components/layout/logo"
 
-/** Durées miroir de celles déclarées dans globals.css (animation + décalage). */
-const COVER_MS = 550
-const REVEAL_MS = 630
+/** Durées miroir de celles déclarées dans globals.css : 320 ms d'animation,
+    plus 40 ms de décalage entre nappes et 90 ms entre traits. */
+const COVER_MS = 640
+const REVEAL_MS = 660
+/** Nombre de traits par nappe. */
+const STROKES = [0, 1, 2, 3]
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
 const STUCK_MS = 2500
 
 type Phase = "idle" | "cover" | "reveal"
 
 /**
- * Transition de page « wipe vague » : un voile encre monte du bas pour couvrir
- * l’écran, précédé d’un trait orange (la couche orange part 70 ms avant, et
- * l’écart entre les deux crêtes dessine le trait). La navigation a lieu écran
- * couvert, puis le voile sort par le haut, le trait orange fermant la marche.
+ * Transition de page en traits de crayon : quatre traits en lentille balaient
+ * l’écran en diagonale et grossissent jusqu’à se rejoindre. La nappe orange est
+ * décalée d’une demi-bande et part la première, si bien que l’orange n’apparaît
+ * que dans les interstices que l’encre n’a pas encore refermés. La navigation a
+ * lieu écran couvert, puis l’encre se retire et les traits orange ferment la
+ * marche.
  *
  * Le rideau est piloté par un attribut sur le nœud plutôt que par un état
  * React : aucun rendu pendant l’animation, et la règle
@@ -123,8 +128,27 @@ function PageCurtain() {
   return (
     <div ref={rootRef} data-phase="idle" aria-hidden="true">
       <div className="hel-curtain">
-        <div className="hel-curtain-layer hel-curtain-stroke" />
-        <div className="hel-curtain-layer hel-curtain-veil">
+        {(["trace", "ink"] as const).map((nappe) => (
+          <div
+            key={nappe}
+            className={`hel-curtain-field hel-curtain-field--${nappe}`}
+          >
+            {STROKES.map((index) => (
+              <div
+                key={index}
+                className="hel-curtain-stroke"
+                style={
+                  {
+                    top: `${index * 25}%`,
+                    // Ordre inversé : le geste part du bas vers le haut.
+                    "--stroke": STROKES.length - 1 - index,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
+        ))}
+        <div className="hel-curtain-mark">
           <Logo tone="inverse" alt="" className="h-8" />
         </div>
       </div>

@@ -77,9 +77,13 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 `PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un « wipe vague », navigue écran couvert, puis rouvre.
 
-Le geste : un voile **encre** monte du bas, précédé d'un **trait orange**. Les deux couches sont identiques et pleine page ; c'est le décalage de 70 ms entre elles qui laisse voir une bande orange devant la crête de l'encre — épaisse au départ, effilée à l'arrivée par l'expo-out. À la sortie l'ordre s'inverse : l'encre part la première, le trait orange ferme la marche sous le voile. L'orange reste donc un trait, jamais un aplat. Le mot-symbole est centré dans le voile.
+Le geste : **quatre traits en lentille** balaient l'écran en diagonale (−22°) et grossissent jusqu'à se rejoindre. Un trait est une ellipse très aplatie (`border-radius: 50%` sur une boîte large et basse) animée en `scaleY` de 0 à 1,35 : les pointes sont franches, et les interstices entre deux traits voisins produisent les éclats effilés du geste.
 
-Chaque couche porte deux crêtes en pseudo-éléments : `::before` (bord d'attaque à la montée) et `::after` (bord de fuite à la sortie). La position de repos est `calc(100% + 12vw)` et non `100%` : sur un écran large, `12vw` dépasse `100vh` et la crête orange apparaîtrait en bas de chaque page.
+Deux nappes superposées : la nappe **orange** est décalée d'une demi-bande et part 40 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
+
+Deux réglages portent tout le rendu : le décalage entre traits (90 ms — c'est lui qui donne le geste, pas la vitesse) et l'ampleur du `scaleY`. Trop d'ampleur et les interstices se referment avant d'être vus ; l'écran devient un aplat qui monte.
+
+La nappe fait 160 % du viewport et est décalée de −30 % : la rotation ne doit jamais découvrir un coin.
 
 - **L'interception doit être en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le rideau ne se déclenche jamais.
 - La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).

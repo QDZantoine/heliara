@@ -302,34 +302,58 @@
 }
 
 /* ==========================================================================
-   Rideau de transition de page — « wipe vague »
+   Rideau de transition de page — traits de crayon
 
-   Un voile encre monte du bas pour couvrir l'écran, précédé d'un trait orange :
-   la couche orange part 70 ms avant la couche encre, et l'écart entre les deux
-   crêtes dessine le trait. Épais au départ, effilé à l'arrivée par l'expo-out.
-   À la sortie l'ordre s'inverse : l'encre part la première, le trait orange
-   ferme la marche en bas du voile.
+   Quatre traits en lentille (une ellipse très aplatie : pointue aux deux bouts)
+   balaient l'écran en diagonale et grossissent jusqu'à se rejoindre. Les
+   interstices entre deux traits voisins forment les éclats effilés
+   caractéristiques du geste.
 
-   Un seul geste orange par écran, et c'est un trait, jamais un aplat.
+   Les traits s'ouvrent du bas vers le haut, décalés de 90 ms : c'est ce décalage
+   qui donne le geste, pas la vitesse. Deux nappes superposées : la nappe orange
+   est décalée d'une demi-bande et part 40 ms avant, si bien que l'orange
+   n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'orange reste donc un trait, jamais un
+   aplat, et l'écran couvert est encre.
+
+   À la sortie l'ordre s'inverse : l'encre se retire la première, les traits
+   orange sont la dernière chose vue — le crayon quitte la page.
    ========================================================================== */
 
-/* Le repos doit dégager la crête (12vw) en plus de la hauteur du voile, sinon
-   l'arc orange dépasserait en bas de chaque page sur les écrans larges. */
-@keyframes hel-curtain-in {
+@keyframes hel-stroke-in {
   from {
-    transform: translate3d(0, calc(100% + 12vw), 0);
+    transform: scaleY(0);
   }
   to {
-    transform: translate3d(0, 0, 0);
+    transform: scaleY(1.35);
   }
 }
 
-@keyframes hel-curtain-out {
+@keyframes hel-stroke-out {
   from {
-    transform: translate3d(0, 0, 0);
+    transform: scaleY(1.35);
   }
   to {
-    transform: translate3d(0, calc(-100% - 12vw), 0);
+    transform: scaleY(0);
+  }
+}
+
+@keyframes hel-mark-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hel-mark-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -342,66 +366,81 @@
   pointer-events: none;
 }
 
-.hel-curtain-layer {
+/* Nappe surdimensionnée : la rotation ne doit jamais découvrir un coin. */
+.hel-curtain-field {
   position: absolute;
-  inset: 0;
-  transform: translate3d(0, calc(100% + 12vw), 0);
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  transform: rotate(-22deg);
 }
 
-/* Crête haute : bord d'attaque à la montée. */
-.hel-curtain-layer::before,
-/* Crête basse : bord de fuite à la sortie. */
-.hel-curtain-layer::after {
-  content: "";
-  position: absolute;
-  left: -6%;
-  width: 112%;
-  height: 12vw;
-  background: inherit;
-}
-
-.hel-curtain-layer::before {
-  bottom: 100%;
-  border-radius: 50% 50% 0 0;
-}
-
-.hel-curtain-layer::after {
-  top: 100%;
-  border-radius: 0 0 50% 50%;
+/* La nappe orange est décalée d'une demi-bande pour tomber dans les interstices. */
+.hel-curtain-field--trace {
+  transform: rotate(-22deg) translateY(-12.5%);
 }
 
 .hel-curtain-stroke {
+  position: absolute;
+  left: -12%;
+  width: 124%;
+  height: 25%;
+  /* Ellipse très aplatie : les pointes deviennent franches. */
+  border-radius: 50%;
+  transform: scaleY(0);
+}
+
+.hel-curtain-field--trace .hel-curtain-stroke {
   background: var(--hel-brand);
 }
 
-.hel-curtain-veil {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.hel-curtain-field--ink .hel-curtain-stroke {
   background: var(--hel-inverse);
 }
 
-[data-phase="cover"] .hel-curtain-layer,
-[data-phase="reveal"] .hel-curtain-layer {
+.hel-curtain-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+[data-phase="cover"] .hel-curtain-stroke,
+[data-phase="reveal"] .hel-curtain-stroke {
   will-change: transform;
 }
 
-/* Montée : le trait orange ouvre la voie, l'encre suit. */
-[data-phase="cover"] .hel-curtain-stroke {
-  animation: hel-curtain-in 480ms var(--hel-ease-expo) forwards;
+/* Montée : les traits orange ouvrent la voie, l'encre les referme. */
+[data-phase="cover"] .hel-curtain-field--trace .hel-curtain-stroke {
+  animation: hel-stroke-in 320ms var(--hel-ease-expo) calc(var(--stroke) * 90ms)
+    forwards;
 }
 
-[data-phase="cover"] .hel-curtain-veil {
-  animation: hel-curtain-in 480ms var(--hel-ease-expo) 70ms forwards;
+[data-phase="cover"] .hel-curtain-field--ink .hel-curtain-stroke {
+  animation: hel-stroke-in 320ms var(--hel-ease-expo)
+    calc(40ms + var(--stroke) * 90ms) forwards;
 }
 
-/* Sortie : l'encre part la première, le trait orange ferme la marche. */
-[data-phase="reveal"] .hel-curtain-veil {
-  animation: hel-curtain-out 560ms var(--hel-ease-expo) forwards;
+[data-phase="cover"] .hel-curtain-mark {
+  animation: hel-mark-in 200ms var(--hel-ease-expo) 420ms forwards;
 }
 
-[data-phase="reveal"] .hel-curtain-stroke {
-  animation: hel-curtain-out 560ms var(--hel-ease-expo) 70ms forwards;
+/* Sortie : l'encre se retire, les traits orange ferment la marche. */
+[data-phase="reveal"] .hel-curtain-field--ink .hel-curtain-stroke {
+  animation: hel-stroke-out 320ms var(--hel-ease-expo)
+    calc(var(--stroke) * 90ms) forwards;
+}
+
+[data-phase="reveal"] .hel-curtain-field--trace .hel-curtain-stroke {
+  animation: hel-stroke-out 320ms var(--hel-ease-expo)
+    calc(40ms + var(--stroke) * 90ms) forwards;
+}
+
+[data-phase="reveal"] .hel-curtain-mark {
+  animation: hel-mark-out 140ms linear forwards;
 }
 
 @keyframes hel-fade-up {
