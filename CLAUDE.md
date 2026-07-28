@@ -81,7 +81,13 @@ Le geste : **quatre traits en lentille** balaient l'écran en diagonale (−22°
 
 Deux nappes superposées : la nappe **orange** est décalée d'une demi-bande et part 40 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
 
-Deux réglages portent tout le rendu : le décalage entre traits (90 ms — c'est lui qui donne le geste, pas la vitesse) et l'ampleur du `scaleY`. Trop d'ampleur et les interstices se referment avant d'être vus ; l'écran devient un aplat qui monte.
+Trois réglages portent tout le rendu :
+
+- **la course d'un trait** (640 ms à la couverture, 760 ms au retrait) et **le décalage entre traits** (70 puis 85 ms). Le décalage doit rester très inférieur à la course : les traits se chevauchent alors largement dans le temps et le geste est continu. Un décalage proche de la course donne une succession saccadée.
+- **l'easing, différent dans chaque sens.** C'est le réglage le plus contre-intuitif : une courbe « out » appliquée à une **disparition** démarre violemment, l'élément s'arrache. La couverture utilise donc `--hel-ease-soft` (arrivée douce) et le retrait `--hel-ease-exit`, symétrique, qui part lentement et accélère. Ni l'un ni l'autre n'est l'expo-out : sur une surface de cette taille, ses 30 % de trajet dans les 6 % du temps se lisent comme un à-coup. L'expo-out reste la signature des micro-transitions.
+- **l'ampleur du `scaleY`** (1,35). Trop d'ampleur et les interstices se referment avant d'être vus : l'écran redevient un aplat qui monte.
+
+La transition dure ~910 ms à la couverture et ~1080 ms au retrait, donc bien au-delà de la fourchette 100–360 ms de la DA. C'est assumé : cette fourchette vise les micro-transitions (survol, entrée de bloc), pas un changement de page.
 
 La nappe fait 160 % du viewport et est décalée de −30 % : la rotation ne doit jamais découvrir un coin.
 

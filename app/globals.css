@@ -102,6 +102,14 @@
   /* --- Mouvement : signature expo-out ----------------------------------- */
   --hel-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --hel-ease-io: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Même esprit que l'expo-out — départ vif, arrivée douce — mais sans son
+     démarrage brutal (30 % du trajet dans les 6 % du temps). Réservé aux
+     mouvements de grande surface, où l'expo-out se lit comme un à-coup. */
+  --hel-ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  /* Pour les sorties. Une courbe « out » appliquée à une disparition démarre
+     violemment : l'élément s'arrache. Celle-ci part lentement et accélère,
+     symétriquement, ce qui donne un retrait continu. */
+  --hel-ease-exit: cubic-bezier(0.45, 0, 0.55, 1);
 
   /* Compat shadcn : rayon de référence */
   --radius: 18px;
@@ -267,6 +275,8 @@
 
   /* --- Mouvement -------------------------------------------------------- */
   --ease-expo: var(--hel-ease-expo);
+  --ease-soft: var(--hel-ease-soft);
+  --ease-exit: var(--hel-ease-exit);
 
   /* --- Conteneurs & grille --------------------------------------------- */
   --container-page: 1240px;
@@ -309,14 +319,18 @@
    interstices entre deux traits voisins forment les éclats effilés
    caractéristiques du geste.
 
-   Les traits s'ouvrent du bas vers le haut, décalés de 90 ms : c'est ce décalage
-   qui donne le geste, pas la vitesse. Deux nappes superposées : la nappe orange
+   Les traits s'ouvrent du bas vers le haut, décalés de 70 ms sur une course de
+   640 ms : ils se chevauchent largement dans le temps, ce qui donne un geste
+   continu plutôt qu'une succession. L'easing est `--hel-ease-soft` et non
+   l'expo-out : sur une telle surface, l'expo-out se lit comme un à-coup. Deux nappes superposées : la nappe orange
    est décalée d'une demi-bande et part 40 ms avant, si bien que l'orange
    n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'orange reste donc un trait, jamais un
    aplat, et l'écran couvert est encre.
 
    À la sortie l'ordre s'inverse : l'encre se retire la première, les traits
-   orange sont la dernière chose vue — le crayon quitte la page.
+   orange sont la dernière chose vue — le crayon quitte la page. Le retrait est
+   plus long que la couverture et utilise `--hel-ease-exit` : une courbe « out »
+   appliquée à une disparition démarrerait violemment.
    ========================================================================== */
 
 @keyframes hel-stroke-in {
@@ -415,32 +429,32 @@
 
 /* Montée : les traits orange ouvrent la voie, l'encre les referme. */
 [data-phase="cover"] .hel-curtain-field--trace .hel-curtain-stroke {
-  animation: hel-stroke-in 320ms var(--hel-ease-expo) calc(var(--stroke) * 90ms)
+  animation: hel-stroke-in 640ms var(--hel-ease-soft) calc(var(--stroke) * 70ms)
     forwards;
 }
 
 [data-phase="cover"] .hel-curtain-field--ink .hel-curtain-stroke {
-  animation: hel-stroke-in 320ms var(--hel-ease-expo)
-    calc(40ms + var(--stroke) * 90ms) forwards;
+  animation: hel-stroke-in 640ms var(--hel-ease-soft)
+    calc(60ms + var(--stroke) * 70ms) forwards;
 }
 
 [data-phase="cover"] .hel-curtain-mark {
-  animation: hel-mark-in 200ms var(--hel-ease-expo) 420ms forwards;
+  animation: hel-mark-in 300ms var(--hel-ease-soft) 620ms forwards;
 }
 
 /* Sortie : l'encre se retire, les traits orange ferment la marche. */
 [data-phase="reveal"] .hel-curtain-field--ink .hel-curtain-stroke {
-  animation: hel-stroke-out 320ms var(--hel-ease-expo)
-    calc(var(--stroke) * 90ms) forwards;
+  animation: hel-stroke-out 760ms var(--hel-ease-exit)
+    calc(var(--stroke) * 85ms) forwards;
 }
 
 [data-phase="reveal"] .hel-curtain-field--trace .hel-curtain-stroke {
-  animation: hel-stroke-out 320ms var(--hel-ease-expo)
-    calc(40ms + var(--stroke) * 90ms) forwards;
+  animation: hel-stroke-out 760ms var(--hel-ease-exit)
+    calc(60ms + var(--stroke) * 85ms) forwards;
 }
 
 [data-phase="reveal"] .hel-curtain-mark {
-  animation: hel-mark-out 140ms linear forwards;
+  animation: hel-mark-out 260ms var(--hel-ease-exit) forwards;
 }
 
 @keyframes hel-fade-up {

@@ -5,10 +5,11 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { Logo } from "@/components/layout/logo"
 
-/** Durées miroir de celles déclarées dans globals.css : 320 ms d'animation,
-    plus 40 ms de décalage entre nappes et 90 ms entre traits. */
-const COVER_MS = 640
-const REVEAL_MS = 660
+/** Durées miroir de celles déclarées dans globals.css : 640 ms de course par
+    trait, plus 60 ms de décalage entre nappes et 70 ms entre traits. */
+const COVER_MS = 910
+/** Le retrait est plus long et plus étalé que la couverture. */
+const REVEAL_MS = 1080
 /** Nombre de traits par nappe. */
 const STROKES = [0, 1, 2, 3]
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
