@@ -75,11 +75,11 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 ## Transition de page
 
-`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un « wipe vague », navigue écran couvert, puis rouvre.
+`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un geste en traits de crayon, navigue écran couvert, puis rouvre.
 
 Le geste : **quatre traits en lentille** balaient l'écran en diagonale (−22°) et grossissent jusqu'à se rejoindre. Un trait est une ellipse très aplatie (`border-radius: 50%` sur une boîte large et basse) animée en `scaleY` de 0 à 1,35 : les pointes sont franches, et les interstices entre deux traits voisins produisent les éclats effilés du geste.
 
-Deux nappes superposées : la nappe **orange** est décalée d'une demi-bande et part 40 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
+Deux nappes superposées : la nappe **orange** est décalée d'une demi-bande et part 60 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
 
 Trois réglages portent tout le rendu :
 
