@@ -65,7 +65,7 @@ function CaseList() {
                         {study.title}
                       </h3>
                       <p className="max-w-[25rem] text-[0.9rem] leading-relaxed text-body">
-                        {study.summary}
+                        {study.teaser}
                       </p>
                       <p className="mt-auto flex items-baseline gap-2.5 border-t border-line pt-3.5">
                         <span className="font-display text-[1.875rem] font-extrabold tracking-[-0.02em] text-brand-text">

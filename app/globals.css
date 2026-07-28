@@ -301,6 +301,76 @@
   }
 }
 
+/* Rideau de transition de page : deux arcs miroir qui balaient de bas en haut.
+   Le gris ouvre, l'orange recouvre ; à la sortie l'orange part le premier et le
+   gris ferme la marche. */
+@keyframes hel-curtain-in {
+  from {
+    transform: translate3d(0, 106%, 0);
+  }
+  to {
+    transform: translate3d(0, -48%, 0);
+  }
+}
+
+@keyframes hel-curtain-out {
+  from {
+    transform: translate3d(0, -48%, 0);
+  }
+  to {
+    transform: translate3d(0, -195%, 0);
+  }
+}
+
+.hel-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hel-curtain-layer {
+  position: absolute;
+  top: 0;
+  left: -40vw;
+  width: 180vw;
+  height: 190vh;
+  transform: translate3d(0, 106%, 0);
+}
+
+/* Arcs miroir : deux courbes asymétriques qui se croisent en balayant. */
+.hel-curtain-back {
+  border-radius: 62% 38% 0 0 / 34% 22% 0 0;
+  background: var(--hel-line-strong);
+}
+
+.hel-curtain-front {
+  border-radius: 38% 62% 0 0 / 22% 34% 0 0;
+  background: var(--hel-brand);
+}
+
+[data-phase="cover"] .hel-curtain-layer,
+[data-phase="reveal"] .hel-curtain-layer {
+  will-change: transform;
+}
+
+[data-phase="cover"] .hel-curtain-back {
+  animation: hel-curtain-in 480ms var(--hel-ease-expo) forwards;
+}
+
+[data-phase="cover"] .hel-curtain-front {
+  animation: hel-curtain-in 480ms var(--hel-ease-expo) 80ms forwards;
+}
+
+[data-phase="reveal"] .hel-curtain-front {
+  animation: hel-curtain-out 520ms var(--hel-ease-expo) forwards;
+}
+
+[data-phase="reveal"] .hel-curtain-back {
+  animation: hel-curtain-out 520ms var(--hel-ease-expo) 90ms forwards;
+}
+
 @keyframes hel-fade-up {
   from {
     opacity: 0;

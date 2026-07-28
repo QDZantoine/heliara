@@ -6,6 +6,7 @@ import {
 } from "next/font/google"
 
 import "./globals.css"
+import { PageCurtain } from "@/components/layout/page-curtain"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SkipLink } from "@/components/layout/skip-link"
@@ -63,6 +64,7 @@ export default function RootLayout({
           }}
         />
         <ThemeProvider>
+          <PageCurtain />
           <SkipLink />
           <SiteHeader />
           <main id="contenu">{children}</main>
