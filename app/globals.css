@@ -102,14 +102,10 @@
   /* --- Mouvement : signature expo-out ----------------------------------- */
   --hel-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --hel-ease-io: cubic-bezier(0.4, 0, 0.2, 1);
-  /* Même esprit que l'expo-out — départ vif, arrivée douce — mais sans son
-     démarrage brutal (30 % du trajet dans les 6 % du temps). Réservé aux
-     mouvements de grande surface, où l'expo-out se lit comme un à-coup. */
-  --hel-ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
-  /* Pour les sorties. Une courbe « out » appliquée à une disparition démarre
-     violemment : l'élément s'arrache. Celle-ci part lentement et accélère,
-     symétriquement, ce qui donne un retrait continu. */
-  --hel-ease-exit: cubic-bezier(0.45, 0, 0.55, 1);
+  /* Grandes surfaces, dans les deux sens. Symétrique : départ lent, accélération,
+     arrivée lente. Une courbe « out » y est à éviter — appliquée à une
+     apparition elle fait claquer la forme, à une disparition elle l'arrache. */
+  --hel-ease-inout: cubic-bezier(0.45, 0, 0.55, 1);
 
   /* Compat shadcn : rayon de référence */
   --radius: 18px;
@@ -275,8 +271,7 @@
 
   /* --- Mouvement -------------------------------------------------------- */
   --ease-expo: var(--hel-ease-expo);
-  --ease-soft: var(--hel-ease-soft);
-  --ease-exit: var(--hel-ease-exit);
+  --ease-inout: var(--hel-ease-inout);
 
   /* --- Conteneurs & grille --------------------------------------------- */
   --container-page: 1240px;
@@ -314,40 +309,44 @@
 /* ==========================================================================
    Rideau de transition de page — traits de crayon
 
-   Quatre traits en lentille (une ellipse très aplatie : pointue aux deux bouts)
+   Trois traits en lentille (une ellipse très aplatie : pointue aux deux bouts)
    balaient l'écran en diagonale et grossissent jusqu'à se rejoindre. Les
    interstices entre deux traits voisins forment les éclats effilés
    caractéristiques du geste.
 
-   Les traits s'ouvrent du bas vers le haut, décalés de 70 ms sur une course de
-   640 ms : ils se chevauchent largement dans le temps, ce qui donne un geste
-   continu plutôt qu'une succession. L'easing est `--hel-ease-soft` et non
-   l'expo-out : sur une telle surface, l'expo-out se lit comme un à-coup. Deux nappes superposées : la nappe orange
-   est décalée d'une demi-bande et part 40 ms avant, si bien que l'orange
-   n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'orange reste donc un trait, jamais un
-   aplat, et l'écran couvert est encre.
+   Deux nappes superposées : la nappe orange est décalée d'un demi-trait et part
+   60 ms avant la nappe encre, si bien que l'orange n'apparaît que dans les
+   interstices que l'encre n'a pas encore refermés. L'orange reste donc un trait,
+   jamais un aplat, et l'écran couvert est encre. À la sortie l'ordre s'inverse :
+   l'encre se retire la première, les traits orange ferment la marche.
 
-   À la sortie l'ordre s'inverse : l'encre se retire la première, les traits
-   orange sont la dernière chose vue — le crayon quitte la page. Le retrait est
-   plus long que la couverture et utilise `--hel-ease-exit` : une courbe « out »
-   appliquée à une disparition démarrerait violemment.
+   Fluidité — trois points, tous nécessaires :
+   · easing symétrique dans les deux sens. Une courbe « out » ferait claquer
+     chaque trait à l'ouverture et l'arracherait à la fermeture ;
+   · décalage court (50 ms) devant une course longue (700 ms), pour que les
+     traits se chevauchent et donnent un geste continu, pas trois évènements ;
+   · couches de composition promues avant le clic (état `armed`, posé au
+     pointerdown) et maintenues par un translate3d présent dans chaque étape des
+     keyframes. Promouvoir au premier frame de l'animation produit un à-coup.
    ========================================================================== */
 
+/* translate3d dans chaque étape : force la couche de composition, si bien que
+   l'animation ne repasse jamais par le thread principal. */
 @keyframes hel-stroke-in {
   from {
-    transform: scaleY(0);
+    transform: translate3d(0, 0, 0) scaleY(0);
   }
   to {
-    transform: scaleY(1.35);
+    transform: translate3d(0, 0, 0) scaleY(1.3);
   }
 }
 
 @keyframes hel-stroke-out {
   from {
-    transform: scaleY(1.35);
+    transform: translate3d(0, 0, 0) scaleY(1.3);
   }
   to {
-    transform: scaleY(0);
+    transform: translate3d(0, 0, 0) scaleY(0);
   }
 }
 
@@ -383,26 +382,27 @@
 /* Nappe surdimensionnée : la rotation ne doit jamais découvrir un coin. */
 .hel-curtain-field {
   position: absolute;
-  top: -30%;
-  left: -30%;
-  width: 160%;
-  height: 160%;
+  top: -25%;
+  left: -25%;
+  width: 150%;
+  height: 150%;
   transform: rotate(-22deg);
 }
 
 /* La nappe orange est décalée d'une demi-bande pour tomber dans les interstices. */
 .hel-curtain-field--trace {
-  transform: rotate(-22deg) translateY(-12.5%);
+  transform: rotate(-22deg) translateY(-16.5%);
 }
 
 .hel-curtain-stroke {
   position: absolute;
-  left: -12%;
-  width: 124%;
-  height: 25%;
+  left: -5%;
+  width: 110%;
+  height: 34%;
   /* Ellipse très aplatie : les pointes deviennent franches. */
   border-radius: 50%;
-  transform: scaleY(0);
+  transform: translate3d(0, 0, 0) scaleY(0);
+  backface-visibility: hidden;
 }
 
 .hel-curtain-field--trace .hel-curtain-stroke {
@@ -422,6 +422,9 @@
   opacity: 0;
 }
 
+/* `armed` est posé au pointerdown : la promotion des couches a lieu avant le
+   clic, et non au premier frame de l'animation, où elle produit un à-coup. */
+[data-phase="armed"] .hel-curtain-stroke,
 [data-phase="cover"] .hel-curtain-stroke,
 [data-phase="reveal"] .hel-curtain-stroke {
   will-change: transform;
@@ -429,32 +432,32 @@
 
 /* Montée : les traits orange ouvrent la voie, l'encre les referme. */
 [data-phase="cover"] .hel-curtain-field--trace .hel-curtain-stroke {
-  animation: hel-stroke-in 640ms var(--hel-ease-soft) calc(var(--stroke) * 70ms)
-    forwards;
+  animation: hel-stroke-in 700ms var(--hel-ease-inout)
+    calc(var(--stroke) * 50ms) forwards;
 }
 
 [data-phase="cover"] .hel-curtain-field--ink .hel-curtain-stroke {
-  animation: hel-stroke-in 640ms var(--hel-ease-soft)
-    calc(60ms + var(--stroke) * 70ms) forwards;
+  animation: hel-stroke-in 700ms var(--hel-ease-inout)
+    calc(60ms + var(--stroke) * 50ms) forwards;
 }
 
 [data-phase="cover"] .hel-curtain-mark {
-  animation: hel-mark-in 300ms var(--hel-ease-soft) 620ms forwards;
+  animation: hel-mark-in 320ms var(--hel-ease-inout) 600ms forwards;
 }
 
 /* Sortie : l'encre se retire, les traits orange ferment la marche. */
 [data-phase="reveal"] .hel-curtain-field--ink .hel-curtain-stroke {
-  animation: hel-stroke-out 760ms var(--hel-ease-exit)
-    calc(var(--stroke) * 85ms) forwards;
+  animation: hel-stroke-out 700ms var(--hel-ease-inout)
+    calc(var(--stroke) * 50ms) forwards;
 }
 
 [data-phase="reveal"] .hel-curtain-field--trace .hel-curtain-stroke {
-  animation: hel-stroke-out 760ms var(--hel-ease-exit)
-    calc(60ms + var(--stroke) * 85ms) forwards;
+  animation: hel-stroke-out 700ms var(--hel-ease-inout)
+    calc(60ms + var(--stroke) * 50ms) forwards;
 }
 
 [data-phase="reveal"] .hel-curtain-mark {
-  animation: hel-mark-out 260ms var(--hel-ease-exit) forwards;
+  animation: hel-mark-out 240ms var(--hel-ease-inout) forwards;
 }
 
 @keyframes hel-fade-up {

@@ -77,24 +77,26 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 `PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un geste en traits de crayon, navigue écran couvert, puis rouvre.
 
-Le geste : **quatre traits en lentille** balaient l'écran en diagonale (−22°) et grossissent jusqu'à se rejoindre. Un trait est une ellipse très aplatie (`border-radius: 50%` sur une boîte large et basse) animée en `scaleY` de 0 à 1,35 : les pointes sont franches, et les interstices entre deux traits voisins produisent les éclats effilés du geste.
+Le geste : **trois traits en lentille** balaient l'écran en diagonale (−22°) et grossissent jusqu'à se rejoindre. Un trait est une ellipse très aplatie (`border-radius: 50%` sur une boîte large et basse) animée en `scaleY` de 0 à 1,3 : les pointes sont franches, et les interstices entre deux traits voisins produisent les éclats effilés du geste.
 
-Deux nappes superposées : la nappe **orange** est décalée d'une demi-bande et part 60 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
+Deux nappes superposées : la nappe **orange** est décalée d'un demi-trait et part 60 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
 
-Trois réglages portent tout le rendu :
+### Fluidité : quatre points, tous nécessaires
 
-- **la course d'un trait** (640 ms à la couverture, 760 ms au retrait) et **le décalage entre traits** (70 puis 85 ms). Le décalage doit rester très inférieur à la course : les traits se chevauchent alors largement dans le temps et le geste est continu. Un décalage proche de la course donne une succession saccadée.
-- **l'easing, différent dans chaque sens.** C'est le réglage le plus contre-intuitif : une courbe « out » appliquée à une **disparition** démarre violemment, l'élément s'arrache. La couverture utilise donc `--hel-ease-soft` (arrivée douce) et le retrait `--hel-ease-exit`, symétrique, qui part lentement et accélère. Ni l'un ni l'autre n'est l'expo-out : sur une surface de cette taille, ses 30 % de trajet dans les 6 % du temps se lisent comme un à-coup. L'expo-out reste la signature des micro-transitions.
-- **l'ampleur du `scaleY`** (1,35). Trop d'ampleur et les interstices se referment avant d'être vus : l'écran redevient un aplat qui monte.
+1. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le rideau. C'est la cause de jank la plus visible, et Next l'annonce en clair dans le log de dev.
+2. **Easing symétrique dans les deux sens** (`--hel-ease-inout`). Le réglage le plus contre-intuitif : une courbe « out » fait _claquer_ une forme qui apparaît et _arrache_ une forme qui disparaît. L'expo-out — 30 % du trajet dans les 6 % du temps — est à réserver aux micro-transitions.
+3. **Décalage court devant une course longue** : 50 ms contre 700 ms. Les traits se chevauchent alors largement dans le temps et le geste est continu ; un décalage proche de la course donne trois évènements successifs.
+4. **Couches de composition promues avant le clic.** L'état `armed` est posé au `pointerdown` et n'applique que `will-change: transform` ; un `translate3d` figure dans chaque étape des keyframes pour maintenir la promotion. Promouvoir au premier frame de l'animation produit un à-coup.
 
-La transition dure ~910 ms à la couverture et ~1080 ms au retrait, donc bien au-delà de la fourchette 100–360 ms de la DA. C'est assumé : cette fourchette vise les micro-transitions (survol, entrée de bloc), pas un changement de page.
+Réglage secondaire : **l'ampleur du `scaleY`** (1,3). Trop d'ampleur et les interstices se referment avant d'être vus — l'écran redevient un aplat qui monte.
 
-La nappe fait 160 % du viewport et est décalée de −30 % : la rotation ne doit jamais découvrir un coin.
+La transition dure ~860 ms à la couverture et ~880 ms au retrait, donc bien au-delà de la fourchette 100–360 ms de la DA. C'est assumé : cette fourchette vise les micro-transitions, pas un changement de page.
 
-- **L'interception doit être en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le rideau ne se déclenche jamais.
-- La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).
-- Les durées de `page-curtain.tsx` doivent rester le miroir des animations de `globals.css` (durée + décalage). Un filet de sécurité rouvre le rideau si la navigation n'aboutit pas.
-- Neutralisé par `prefers-reduced-motion` et inopérant sans JavaScript : dans les deux cas les liens naviguent normalement.
+### Mesurer la fluidité, ne pas la juger à l'œil
+
+Des captures ne disent rien du nombre d'images perdues. Installer un enregistreur `requestAnimationFrame` qui note, à chaque frame, l'horodatage **et** la valeur de `data-phase`, déclencher la navigation, puis agréger les écarts par phase. L'agrégation par phase est ce qui compte : une pause de 150 ms pendant que l'écran est couvert est invisible, la même pause pendant le retrait est un défaut. Référence actuelle, en dev comme en production : médiane 8,3 ms, maximum 9,4 ms, **aucune frame au-delà de 24 ms** sur `cover` comme sur `reveal`.
+
+Pas de `framer-motion` : l'animation porte sur `transform`, déjà compositée par le GPU. La bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
 
 ## Vérification visuelle
 

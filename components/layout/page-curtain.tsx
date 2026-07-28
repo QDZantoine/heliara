@@ -5,22 +5,49 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { Logo } from "@/components/layout/logo"
 
-/** Durées miroir de celles déclarées dans globals.css : 640 ms de course par
-    trait, plus 60 ms de décalage entre nappes et 70 ms entre traits. */
-const COVER_MS = 910
-/** Le retrait est plus long et plus étalé que la couverture. */
-const REVEAL_MS = 1080
-/** Nombre de traits par nappe. */
-const STROKES = [0, 1, 2, 3]
+/** Durées miroir de celles déclarées dans globals.css : 700 ms de course par
+    trait, plus 60 ms de décalage entre nappes et 50 ms entre traits. */
+const COVER_MS = 860
+const REVEAL_MS = 880
+/** Nombre de traits par nappe. Trois suffisent et coûtent moins de texture. */
+const STROKES = [0, 1, 2]
+/** Au-delà, on considère que le pointerdown n'a pas mené à une navigation. */
+const DISARM_MS = 600
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
 const STUCK_MS = 2500
 
-type Phase = "idle" | "cover" | "reveal"
+type Phase = "idle" | "armed" | "cover" | "reveal"
+
+/** Le lien est-il une navigation interne que nous devons animer ? */
+function internalTarget(event: MouseEvent | PointerEvent) {
+  const anchor = (event.target as Element | null)?.closest("a")
+  const href = anchor?.getAttribute("href")
+  if (
+    !anchor ||
+    !href ||
+    anchor.target === "_blank" ||
+    anchor.hasAttribute("download") ||
+    anchor.getAttribute("rel")?.includes("external")
+  ) {
+    return null
+  }
+
+  const url = new URL(href, window.location.href)
+  // Liens externes, ancres et navigations vers la page courante : on laisse faire.
+  if (
+    url.origin !== window.location.origin ||
+    url.pathname === window.location.pathname
+  ) {
+    return null
+  }
+
+  return url
+}
 
 /**
- * Transition de page en traits de crayon : quatre traits en lentille balaient
+ * Transition de page en traits de crayon : trois traits en lentille balaient
  * l’écran en diagonale et grossissent jusqu’à se rejoindre. La nappe orange est
- * décalée d’une demi-bande et part la première, si bien que l’orange n’apparaît
+ * décalée d’un demi-trait et part la première, si bien que l’orange n’apparaît
  * que dans les interstices que l’encre n’a pas encore refermés. La navigation a
  * lieu écran couvert, puis l’encre se retire et les traits orange ferment la
  * marche.
@@ -44,6 +71,11 @@ function PageCurtain() {
     rootRef.current?.setAttribute("data-phase", phase)
   }, [])
 
+  const phaseIs = React.useCallback(
+    (phase: Phase) => rootRef.current?.getAttribute("data-phase") === phase,
+    []
+  )
+
   const after = React.useCallback((ms: number, fn: () => void) => {
     timersRef.current.push(setTimeout(fn, ms))
   }, [])
@@ -53,10 +85,23 @@ function PageCurtain() {
     []
   )
 
-  // Interception des clics sur les liens internes : couvrir, puis naviguer.
   React.useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return
+    }
+
+    // Pré-armement : la promotion des couches de composition a lieu ici, avant
+    // le clic, et non au premier frame de l'animation où elle se voit.
+    const onPointerDown = (event: PointerEvent) => {
+      if (!phaseIs("idle") || !internalTarget(event)) {
+        return
+      }
+      setPhase("armed")
+      after(DISARM_MS, () => {
+        if (phaseIs("armed")) {
+          setPhase("idle")
+        }
+      })
     }
 
     const onClick = (event: MouseEvent) => {
@@ -72,24 +117,8 @@ function PageCurtain() {
         return
       }
 
-      const anchor = (event.target as Element | null)?.closest("a")
-      const href = anchor?.getAttribute("href")
-      if (
-        !anchor ||
-        !href ||
-        anchor.target === "_blank" ||
-        anchor.hasAttribute("download") ||
-        anchor.getAttribute("rel")?.includes("external")
-      ) {
-        return
-      }
-
-      const url = new URL(href, window.location.href)
-      // Liens externes, ancres et navigations vers la page courante : on laisse faire.
-      if (
-        url.origin !== window.location.origin ||
-        url.pathname === window.location.pathname
-      ) {
+      const url = internalTarget(event)
+      if (!url) {
         return
       }
 
@@ -110,9 +139,13 @@ function PageCurtain() {
     // onClick et abandonne si l’évènement est déjà préempté. En bulle, il aurait
     // déjà navigué. Les `onClick` portés par les liens (fermeture du menu
     // mobile) continuent de s’exécuter, la propagation n’étant pas coupée.
+    document.addEventListener("pointerdown", onPointerDown, true)
     document.addEventListener("click", onClick, true)
-    return () => document.removeEventListener("click", onClick, true)
-  }, [after, router, setPhase])
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true)
+      document.removeEventListener("click", onClick, true)
+    }
+  }, [after, phaseIs, router, setPhase])
 
   // Nouvelle page affichée : on ouvre le rideau. Une navigation qui ne vient
   // pas d’un clic intercepté (retour arrière, lien externe) n’anime rien.
@@ -140,7 +173,7 @@ function PageCurtain() {
                 className="hel-curtain-stroke"
                 style={
                   {
-                    top: `${index * 25}%`,
+                    top: `${index * 33}%`,
                     // Ordre inversé : le geste part du bas vers le haut.
                     "--stroke": STROKES.length - 1 - index,
                   } as React.CSSProperties

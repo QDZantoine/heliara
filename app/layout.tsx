@@ -47,6 +47,10 @@ export default function RootLayout({
     <html
       lang="fr"
       suppressHydrationWarning
+      // Sans cet attribut, Next anime le retour en haut de page à chaque
+      // navigation : ce scroll animé entre en concurrence avec le rideau et
+      // hache la transition. Le scroll fluide reste actif pour les ancres.
+      data-scroll-behavior="smooth"
       className={cn(
         fontDisplay.variable,
         fontSans.variable,
