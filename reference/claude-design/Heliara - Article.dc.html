@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="responsive.css">
+<script src="reveal.js"></script>
+<style>.rev{opacity:0;transform:translateY(16px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}.rev.in{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;transition:none}}</style>
+</helmet>
+<div style="font-family:var(--font-sans);color:var(--text-secondary);background:var(--bg-page);min-height:100vh;overflow-x:clip">
+  <dc-import name="SiteHeader" current="Ressources" hint-size="100%,68px" style="position:sticky;top:0;z-index:200"></dc-import>
+
+  <!-- En-tête article -->
+  <section data-screen-label="En-tête article" style="max-width:760px;margin:0 auto;padding:72px 40px 0;box-sizing:border-box">
+    <div class="rev" style="display:flex;gap:8px;font-size:13px;color:var(--text-tertiary);margin-bottom:28px"><a href="Heliara — Ressources.dc.html" style="color:var(--text-secondary)">Ressources</a><span style="color:var(--border-strong)">/</span><span style="color:var(--text-primary);font-weight:500">Guide</span></div>
+    <div class="rev" style="display:flex;gap:10px;align-items:center;margin-bottom:20px">
+      <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text);background:var(--accent-subtle);border-radius:6px;padding:4px 9px">Guide</span>
+      <span style="font-size:12.5px;color:var(--text-tertiary)">18 min de lecture · 12 juillet 2026</span>
+    </div>
+    <h1 class="rev" style="font-family:var(--font-display);font-weight:800;font-size:clamp(36px,4vw,50px);line-height:1.06;letter-spacing:-0.03em;color:var(--text-primary);margin:0 0 20px">Faut-il un logiciel du marché ou une plateforme sur mesure ? La grille de décision honnête.</h1>
+    <p class="rev" style="margin:0 0 28px;font-size:18px;line-height:1.6;color:var(--text-secondary)">Sur mesure n'est pas toujours la bonne réponse — et nous vivons pourtant du sur-mesure. Voici les sept questions qui tranchent, avec les cas où nous recommandons d'acheter.</p>
+    <div class="rev" style="display:flex;align-items:center;gap:12px;padding-bottom:32px;border-bottom:1px solid var(--border-default)">
+      <span style="width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">LR</span>
+      <span><span style="display:block;font-size:14.5px;font-weight:600;color:var(--text-primary)">Léa Roussel</span><span style="font-size:13px;color:var(--text-tertiary)">Associée, direction produit — Heliara</span></span>
+    </div>
+  </section>
+
+  <!-- Corps -->
+  <article data-screen-label="Corps de l'article" style="max-width:760px;margin:0 auto;padding:40px 40px 72px;box-sizing:border-box;font-size:16.5px;line-height:1.75;color:var(--text-secondary)">
+    <p class="rev" style="margin:0 0 24px">Chaque mois, un dirigeant nous décrit son besoin et attend que nous lui vendions du développement. Une fois sur trois, nous lui répondons d'acheter un logiciel existant. Cet article explique pourquoi — et surtout comment prendre cette décision sans dépendre de l'avis d'un vendeur, quel qu'il soit.</p>
+    <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:-0.02em;color:var(--text-primary);margin:44px 0 16px">La question n'est pas le coût. C'est la différence.</h2>
+    <p class="rev" style="margin:0 0 24px">Un logiciel du marché encode les pratiques moyennes d'un secteur. Si votre processus est standard — paie, comptabilité, notes de frais — cette moyenne est exactement ce qu'il vous faut, au meilleur prix. Le sur-mesure ne se justifie que là où votre façon de faire constitue un avantage : ce que vos clients achètent chez vous et pas ailleurs.</p>
+    <div class="rev" style="border:1px solid var(--border-default);border-left:3px solid var(--accent);border-radius:var(--radius-md);background:var(--bg-surface);padding:22px 24px;margin:0 0 24px;font-size:15px;line-height:1.7">
+      <strong style="color:var(--text-primary);font-weight:600">La règle que nous appliquons :</strong> achetez pour vos processus standards, construisez pour votre différence. Une entreprise qui fait l'inverse paie deux fois — un sur-mesure banal, et un outil générique qui bride ce qu'elle a d'unique.
+    </div>
+    <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:-0.02em;color:var(--text-primary);margin:44px 0 16px">Les sept questions</h2>
+    <div class="rev" style="display:grid;gap:10px;margin:0 0 24px">
+      <sc-for list="{{ questions }}" as="q" hint-placeholder-count="7">
+        <div style="display:grid;grid-template-columns:40px 1fr;gap:14px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-surface);padding:16px 18px;font-size:15px;line-height:1.6">
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-text);padding-top:2px">{{ q.num }}</span>
+          <span><strong style="color:var(--text-primary);font-weight:600">{{ q.q }}</strong> — {{ q.detail }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <p class="rev" style="margin:0 0 24px">Quatre réponses ou plus du côté « différence » : le sur-mesure se défend, et l'étude de cas <a href="Heliara — Étude de cas.dc.html">Voltéis Industrie</a> montre à quoi ressemble ce chemin. Trois ou moins : achetez, configurez, et gardez votre budget pour ce qui vous distingue.</p>
+    <p class="rev" style="margin:0">La suite de ce guide — grille téléchargeable et méthode d'évaluation des éditeurs — est un placeholder : contenu complet à rédiger avec vos équipes.</p>
+  </article>
+
+  <!-- Liés + CTA doux -->
+  <section data-screen-label="Articles liés" style="border-top:1px solid var(--border-default);background:var(--bg-surface)">
+    <div style="max-width:1240px;margin:0 auto;padding:64px 40px;box-sizing:border-box">
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:48px;align-items:start">
+        <div>
+          <div class="rev" style="font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:18px">À lire ensuite</div>
+          <div style="display:grid;gap:0">
+            <sc-for list="{{ lies }}" as="l" hint-placeholder-count="2">
+              <a href="Heliara — Article.dc.html" class="rev" style="display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:16px 0;border-top:1px solid var(--border-default);color:inherit">
+                <span style="font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--text-primary);letter-spacing:-0.01em">{{ l.titre }}</span>
+                <span style="font-size:12.5px;color:var(--text-tertiary);white-space:nowrap">{{ l.duree }}</span>
+              </a>
+            </sc-for>
+          </div>
+        </div>
+        <div class="rev" style="border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-page);padding:26px">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--text-primary);margin-bottom:8px;letter-spacing:-0.01em">Ce sujet vous concerne directement ?</div>
+          <p style="margin:0 0 18px;font-size:13.5px;line-height:1.6">Un échange de trente minutes vaut mieux qu'un guide. Pré-cadrage honnête, y compris si la réponse est « achetez ».</p>
+          <a href="Heliara — Contact.dc.html" style="height:42px;padding:0 20px;display:inline-flex;align-items:center;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-size:14px;font-weight:500;transition:background-color 100ms,box-shadow 160ms" style-hover="background:var(--accent-hover);box-shadow:var(--shadow-glow)">Parlons-en</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      questions: [
+        { num: '01', q: 'Ce processus est-il ce que vos clients achètent chez vous ?', detail: 'si oui, il mérite un outil qui l\u2019épouse exactement.' },
+        { num: '02', q: 'Existe-t-il trois logiciels du marché qui le couvrent à 80 % ?', detail: 'si oui, le sur-mesure devra justifier chaque point des 20 % restants.' },
+        { num: '03', q: 'Les 20 % manquants sont-ils contournables sans re-saisie ?', detail: 'la re-saisie quotidienne est le vrai coût caché de l\u2019outil générique.' },
+        { num: '04', q: 'Votre processus va-t-il changer dans les 24 mois ?', detail: 'un outil du marché suit son éditeur ; le vôtre vous suit, vous.' },
+        { num: '05', q: 'Combien d\u2019outils ce système devra-t-il connecter ?', detail: 'au-delà de trois intégrations profondes, le sur-mesure devient souvent plus simple.' },
+        { num: '06', q: 'Qui portera l\u2019outil en interne dans cinq ans ?', detail: 'sans propriétaire interne, ni l\u2019achat ni le sur-mesure ne survivent.' },
+        { num: '07', q: 'Le budget couvre-t-il la vie du produit, pas seulement sa naissance ?', detail: 'comptez la maintenance : un sur-mesure sans budget d\u2019évolution meurt en trois ans.' },
+      ],
+      lies: [
+        { titre: 'La dette technique n\u2019est pas une fatalité : la mesurer, la négocier, la rembourser', duree: '10 min' },
+        { titre: 'L\u2019IA dans les outils métiers : ce qui marche déjà, ce qui reste du théâtre', duree: '11 min' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

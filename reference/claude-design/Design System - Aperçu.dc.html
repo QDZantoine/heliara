@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+</helmet>
+<div style="font-family:var(--font-sans);background:var(--bg-page);min-height:100vh;padding:48px 40px 80px;box-sizing:border-box">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border-default);padding-bottom:20px;margin-bottom:48px">
+      <div style="font-weight:600;font-size:14px;letter-spacing:.22em;text-transform:uppercase">Heliara</div>
+      <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-tertiary)">Design System — Aperçu complet</div>
+    </div>
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+      <h2 style="font-family:var(--font-serif);font-weight:300;font-size:32px;color:var(--text-primary);margin:56px 0 8px">{{ g.title }}</h2>
+      <p style="margin:0 0 24px;font-size:14px;color:var(--text-secondary);max-width:720px">{{ g.desc }}</p>
+      <div style="display:grid;grid-template-columns:1fr;gap:20px">
+        <sc-for list="{{ g.cards }}" as="c" hint-placeholder-count="4">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-tertiary)">{{ c.name }}</span>
+              <span style="font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono)">{{ c.path }}</span>
+            </div>
+            <iframe src="{{ c.path }}" title="{{ c.name }}" style="{{ c.style }}" loading="lazy"></iframe>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="border-top:1px solid var(--border-default);margin-top:64px;padding-top:16px;display:flex;justify-content:space-between;font-size:11px;color:var(--text-tertiary)">
+      <span>Composants React : dossier components/ (42 composants avec contrats de props et documentation)</span>
+      <span>Heliara, une marque du groupe Hexceos</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const frame = (h) => `width:100%;height:${h}px;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-page);display:block`;
+    const G = (title, desc, cards) => ({ title, desc, cards: cards.map(([path, name, h]) => ({ path, name, style: frame(h) })) });
+    return { groups: [
+      G('Couleurs', 'Blanc lumineux, orange vital en accent unique, touches de bleu profond, halos subtils, dark mode encre chaude.', [
+        ['guidelines/colors-neutrals.html', 'Neutres', 150],
+        ['guidelines/colors-accent.html', 'Accents — orange vital & bleu', 300],
+        ['guidelines/colors-semantic.html', 'Sémantiques', 150],
+        ['guidelines/halos.html', 'Halos & dégradés', 200],
+        ['guidelines/colors-dark.html', 'Dark mode', 190],
+      ]),
+      G('Typographie', 'Schibsted Grotesk en titrage (présence maximale), Instrument Sans en texte, Spline Sans Mono (données).', [
+        ['guidelines/type-editorial.html', 'Titrage display', 190],
+        ['guidelines/type-interface.html', "Texte d'interface", 190],
+        ['guidelines/type-scale.html', 'Échelle', 240],
+        ['guidelines/type-labels.html', 'Étiquettes & données', 150],
+      ]),
+      G('Espace, forme & mouvement', 'Base 4px, rayons généreux 6–24px, cartes flottantes à ombres douces, mouvement expo-out.', [
+        ['guidelines/spacing-scale.html', 'Espacements', 230],
+        ['guidelines/radius-borders.html', 'Rayons & filets', 170],
+        ['guidelines/shadows.html', 'Élévation', 190],
+        ['guidelines/motion.html', 'Mouvement', 190],
+        ['guidelines/grid.html', 'Grille & breakpoints', 170],
+      ]),
+      G('Marque', 'Iconographie monoline, endossement Hexceos réglementaire, ton de voix.', [
+        ['guidelines/iconography.html', 'Iconographie', 160],
+        ['guidelines/brand-endorsement.html', 'Endossement', 170],
+        ['guidelines/voice.html', 'Ton de voix', 180],
+      ]),
+      G('Composants', 'Aperçu des états clés de chaque famille. Les composants React complets vivent dans components/.', [
+        ['components/actions/actions.card.html', 'Actions', 210],
+        ['components/forms/forms.card.html', 'Formulaires', 360],
+        ['components/overlays/overlays.card.html', 'Surfaces flottantes', 340],
+        ['components/feedback/feedback.card.html', 'Retours & statuts', 330],
+        ['components/navigation/navigation.card.html', 'Navigation', 380],
+        ['components/data/data.card.html', 'Données', 330],
+        ['components/marketing/marketing.card.html', 'Marketing', 400],
+      ]),
+    ] };
+  }
+}
+</script>
+</body>
+</html>

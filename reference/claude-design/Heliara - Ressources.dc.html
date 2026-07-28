@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="responsive.css">
+<script src="reveal.js"></script>
+<style>.rev{opacity:0;transform:translateY(16px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}.rev.in{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;transition:none}}</style>
+</helmet>
+<div style="font-family:var(--font-sans);color:var(--text-secondary);background:var(--bg-page);min-height:100vh;overflow-x:clip">
+  <dc-import name="SiteHeader" current="Ressources" hint-size="100%,68px" style="position:sticky;top:0;z-index:200"></dc-import>
+
+  <!-- En-tête média -->
+  <section data-screen-label="En-tête Ressources" style="border-bottom:1px solid var(--border-default)">
+    <div style="max-width:1240px;margin:0 auto;padding:72px 40px 40px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap">
+      <div>
+        <div class="rev" style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text);margin-bottom:14px">Ressources</div>
+        <h1 class="rev" style="font-family:var(--font-display);font-weight:800;font-size:clamp(40px,4.4vw,58px);line-height:1.0;letter-spacing:-0.035em;color:var(--text-primary);margin:0">Ce que nous apprenons en construisant<span style="color:var(--accent)">.</span></h1>
+      </div>
+      <div class="rev" style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{ categories }}" as="c" hint-placeholder-count="5">
+          <button onClick="{{ c.onClick }}" style="height:34px;padding:0 15px;border-radius:999px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all 100ms">{{ c.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- À la une -->
+  <section data-screen-label="À la une" style="max-width:1240px;margin:0 auto;padding:48px 40px 24px;box-sizing:border-box">
+    <a href="Heliara — Article.dc.html" class="rev" style="display:grid;grid-template-columns:1.2fr 1fr;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-xl);overflow:hidden;color:inherit;transition:transform 160ms var(--ease-out),box-shadow 160ms var(--ease-out)" style-hover="transform:translateY(-3px);box-shadow:var(--shadow-3)">
+      <div style="padding:44px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text);background:var(--accent-subtle);border-radius:6px;padding:4px 9px">Guide</span>
+          <span style="font-size:12.5px;color:var(--text-tertiary)">18 min de lecture</span>
+        </div>
+        <div style="font-family:var(--font-display);font-weight:700;font-size:32px;line-height:1.12;letter-spacing:-0.02em;color:var(--text-primary)">Faut-il un logiciel du marché ou une plateforme sur mesure ? La grille de décision honnête.</div>
+        <p style="margin:0;font-size:15px;line-height:1.65;max-width:460px;flex:1">Sur mesure n'est pas toujours la bonne réponse — et nous vivons pourtant du sur-mesure. Les sept questions qui tranchent, avec les cas où nous recommandons d'acheter.</p>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:32px;height:32px;border-radius:50%;background:var(--bg-inset);border:1px solid var(--border-default);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text-secondary)">LR</span>
+          <span style="font-size:13px"><strong style="color:var(--text-primary);font-weight:600">Léa Roussel</strong> · Direction produit · 12 juillet 2026</span>
+        </div>
+      </div>
+      <div style="position:relative;min-height:300px;background:var(--bg-inset);overflow:hidden" aria-hidden="true">
+        <div style="position:absolute;inset:0;background:var(--halo-warm)"></div>
+        <div style="position:absolute;left:36px;top:44px;right:-24px;bottom:-24px;background:var(--bg-raised);border:1px solid var(--border-default);border-radius:14px 0 0 0;box-shadow:var(--shadow-3);padding:22px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="border:1px solid var(--border-default);border-radius:10px;padding:14px"><div style="font-size:11px;font-weight:600;color:var(--text-primary)">Acheter</div><div style="display:grid;gap:5px;margin-top:8px"><span style="height:8px;width:80%;border-radius:3px;background:var(--bg-inset)"></span><span style="height:8px;width:60%;border-radius:3px;background:var(--bg-inset)"></span></div></div>
+            <div style="border:1px solid var(--accent);border-radius:10px;padding:14px;background:var(--accent-subtle)"><div style="font-size:11px;font-weight:600;color:var(--accent-text)">Construire</div><div style="display:grid;gap:5px;margin-top:8px"><span style="height:8px;width:72%;border-radius:3px;background:var(--bg-raised)"></span><span style="height:8px;width:84%;border-radius:3px;background:var(--bg-raised)"></span></div></div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </section>
+
+  <!-- Flux -->
+  <section data-screen-label="Flux d'articles" style="max-width:1240px;margin:0 auto;padding:24px 40px 80px;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ articlesVisibles }}" as="a" hint-placeholder-count="6">
+        <a href="Heliara — Article.dc.html" class="rev" style="display:flex;flex-direction:column;gap:12px;border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);padding:24px;color:inherit;transition:transform 160ms var(--ease-out),box-shadow 160ms var(--ease-out)" style-hover="transform:translateY(-3px);box-shadow:var(--shadow-2)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:{{ a.catColor }};background:{{ a.catBg }};border-radius:6px;padding:4px 9px">{{ a.cat }}</span>
+            <span style="font-size:12px;color:var(--text-tertiary)">{{ a.duree }}</span>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:18.5px;line-height:1.25;letter-spacing:-0.015em;color:var(--text-primary);flex:1">{{ a.titre }}</div>
+          <div style="font-size:12.5px;color:var(--text-tertiary)">{{ a.auteur }} · {{ a.date }}</div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Capture douce -->
+  <section data-screen-label="Abonnement" style="border-top:1px solid var(--border-default);background:var(--bg-surface)">
+    <div style="max-width:1240px;margin:0 auto;padding:72px 40px;box-sizing:border-box;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+      <div>
+        <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:32px;letter-spacing:-0.03em;color:var(--text-primary);margin:0 0 8px">Un e-mail par mois. Pas un de plus.</h2>
+        <p class="rev" style="margin:0;font-size:14.5px">Nos guides et retours d'expérience, sans prospection. Désabonnement en un clic.</p>
+      </div>
+      <form class="rev" style="display:flex;gap:10px" onSubmit="{{ noop }}">
+        <input type="email" placeholder="votre@email.fr" aria-label="Adresse e-mail" style="flex:1;height:48px;padding:0 16px;font-family:inherit;font-size:15px;color:var(--text-primary);background:var(--bg-page);border:1px solid var(--border-strong);border-radius:var(--radius-sm);box-sizing:border-box" />
+        <button type="submit" style="height:48px;padding:0 22px;border:0;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:background-color 100ms,box-shadow 160ms" style-hover="background:var(--accent-hover);box-shadow:var(--shadow-glow)">S'abonner</button>
+      </form>
+    </div>
+  </section>
+
+  <dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { cat: 'Tout' };
+  renderVals() {
+    const cats = { 'Guide': ['var(--accent-text)', 'var(--accent-subtle)'], 'Analyse': ['var(--info-text)', 'var(--info-subtle)'], 'Retour d\u2019expérience': ['var(--success-text)', 'var(--success-bg)'], 'Veille': ['var(--text-secondary)', 'var(--bg-inset)'] };
+    const arts = [
+      { cat: 'Analyse', titre: 'L\u2019IA dans les outils métiers : ce qui marche déjà, ce qui reste du théâtre', auteur: 'Marc Bianchi', date: '3 juil. 2026', duree: '11 min' },
+      { cat: 'Retour d\u2019expérience', titre: 'Tester une interface avec des gants de manutention : ce que l\u2019atelier nous a appris', auteur: 'Chloé Marchand', date: '19 juin 2026', duree: '8 min' },
+      { cat: 'Guide', titre: 'RGAA en pratique : rendre un back-office accessible sans le ralentir', auteur: 'Sarah Kaddour', date: '5 juin 2026', duree: '14 min' },
+      { cat: 'Analyse', titre: 'La dette technique n\u2019est pas une fatalité : la mesurer, la négocier, la rembourser', auteur: 'Julien Texier', date: '22 mai 2026', duree: '10 min' },
+      { cat: 'Veille', titre: 'Souveraineté numérique : ce que les nouvelles obligations changent pour vos plateformes', auteur: 'Marc Bianchi', date: '7 mai 2026', duree: '6 min' },
+      { cat: 'Retour d\u2019expérience', titre: 'Faire adopter un outil à une équipe de nuit qu\u2019on n\u2019a jamais rencontrée', auteur: 'Paul Delcourt', date: '18 avr. 2026', duree: '7 min' },
+    ];
+    const cat = this.state.cat;
+    const noms = ['Tout', 'Guide', 'Analyse', 'Retour d\u2019expérience', 'Veille'];
+    return {
+      noop: (e) => e.preventDefault(),
+      categories: noms.map((n) => ({
+        label: n, onClick: () => this.setState({ cat: n }),
+        bg: n === cat ? 'var(--text-primary)' : 'var(--bg-surface)',
+        color: n === cat ? 'var(--bg-page)' : 'var(--text-secondary)',
+        border: n === cat ? 'var(--text-primary)' : 'var(--border-default)',
+      })),
+      articlesVisibles: arts.filter((a) => cat === 'Tout' || a.cat === cat).map((a) => ({ ...a, catColor: cats[a.cat][0], catBg: cats[a.cat][1] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -74,6 +74,19 @@
     rgb(233 89 31 / 0.13),
     transparent 70%
   );
+  /* Éclairage du hero : deux lobes, une seule couche — la règle « un halo par
+     écran » reste tenue au sens strict. */
+  --hel-halo-hero:
+    radial-gradient(
+      ellipse 68% 55% at 78% 6%,
+      rgb(233 89 31 / 0.08),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 48% at 8% 26%,
+      rgb(47 82 199 / 0.06),
+      transparent 70%
+    );
 
   /* --- Élévation : quatre niveaux, douce et stratifiée ------------------- */
   --hel-shadow-1:
@@ -149,6 +162,17 @@
     rgb(240 130 75 / 0.14),
     transparent 70%
   );
+  --hel-halo-hero:
+    radial-gradient(
+      ellipse 68% 55% at 78% 6%,
+      rgb(240 130 75 / 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 48% at 8% 26%,
+      rgb(126 155 242 / 0.08),
+      transparent 70%
+    );
 
   --hel-shadow-1: 0 1px 2px -1px rgb(0 0 0 / 0.5), 0 1px 3px 0 rgb(0 0 0 / 0.4);
   --hel-shadow-2:
@@ -254,6 +278,8 @@
   /* --- Animations ------------------------------------------------------- */
   --animate-marquee: hel-marquee 36s linear infinite;
   --animate-float: hel-float 7s var(--hel-ease-io) infinite;
+  --animate-float-mid: hel-float 8s var(--hel-ease-io) infinite;
+  --animate-float-slow: hel-float 9s var(--hel-ease-io) infinite reverse;
 }
 
 @keyframes hel-marquee {
@@ -330,7 +356,9 @@
     color: #fff;
   }
 
-  /* Chiffres alignés partout où l'on compare des valeurs */
+  /* Chiffres alignés, à réserver aux colonnes que l'on compare : les chiffres
+     tabulaires de Schibsted Grotesk élargissent aussi la virgule décimale, ce
+     qui abîme un « 99,98 % » isolé. */
   [data-numeric] {
     font-variant-numeric: tabular-nums;
   }

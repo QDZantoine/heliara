@@ -4,6 +4,8 @@
  * SiteHeader et SiteFooter.
  */
 
+import { expertiseFamilies, expertiseHref } from "@/lib/content/expertises"
+
 export const site = {
   name: "Heliara",
   baseline: "Votre métier, traduit en produit.",
@@ -13,12 +15,12 @@ export const site = {
   email: "contact@heliara.fr",
   // À remplacer par le numéro réel.
   phone: "+33 (0)0 00 00 00 00",
-  responseCommitment: "Réponse d'un associé sous 48 heures.",
+  responseCommitment: "Réponse d’un associé sous 48 heures.",
 } as const
 
 export const group = {
   name: "Hexceos",
-  /** Formulation d'endossement : footer, /le-groupe, une ligne sur /a-propos. */
+  /** Formulation d’endossement : footer, /le-groupe, une ligne sur /a-propos. */
   endorsement: "Heliara, une marque du groupe Hexceos",
   href: "/le-groupe",
 } as const
@@ -33,7 +35,7 @@ export const mainNav = [
   { label: "Carrières", href: "/carrieres" },
 ] as const
 
-/** Trois niveaux d'engagement, jamais plus. */
+/** Trois niveaux d’engagement, jamais plus. */
 export const cta = {
   primary: {
     label: "Parlons de votre projet",
@@ -51,17 +53,16 @@ export const cta = {
 } as const
 
 /** Sous-liens Expertises repris dans le menu mobile et le footer. */
-export const expertiseFamilies = [
-  { label: "Plateformes & SaaS", href: "/expertises/plateformes-saas" },
-  { label: "Sites & e-commerce", href: "/expertises/sites-e-commerce" },
-  { label: "IA & API", href: "/expertises/ia-api" },
-] as const
+export const expertiseNav = expertiseFamilies.map((family) => ({
+  label: family.label,
+  href: expertiseHref(family.slug),
+}))
 
 export const footerNav = [
   {
     title: "Expertises",
     links: [
-      ...expertiseFamilies,
+      ...expertiseNav,
       {
         label: "Maintenance évolutive",
         href: "/expertises/maintenance-evolutive",

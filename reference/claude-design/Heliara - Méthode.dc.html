@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="responsive.css">
+<script src="reveal.js"></script>
+<style>.rev{opacity:0;transform:translateY(16px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}.rev.in{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;transition:none}}
+@media (max-width:900px){
+.m-rail{display:none}
+.m-dot{position:static !important;transform:none !important;margin-bottom:10px}
+.m-step{grid-template-columns:1fr !important;gap:16px !important}
+.m-step > div{order:0 !important;text-align:left !important}
+}</style>
+</helmet>
+<div style="font-family:var(--font-sans);color:var(--text-secondary);background:var(--bg-page);min-height:100vh;overflow-x:clip">
+  <dc-import name="SiteHeader" current="Méthode" hint-size="100%,68px" style="position:sticky;top:0;z-index:200"></dc-import>
+
+  <!-- Hero manifeste -->
+  <section data-screen-label="Hero Méthode" style="position:relative;overflow:hidden;border-bottom:1px solid var(--border-default)">
+    <div style="position:absolute;inset:0;background:var(--halo-cool);pointer-events:none"></div>
+    <div style="position:relative;max-width:960px;margin:0 auto;padding:110px 40px 90px;box-sizing:border-box;text-align:center">
+      <div class="rev" style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text);margin-bottom:20px">Méthode</div>
+      <h1 class="rev" style="font-family:var(--font-display);font-weight:800;font-size:clamp(46px,5.2vw,70px);line-height:1.0;letter-spacing:-0.035em;color:var(--text-primary);margin:0 0 24px">Le risque projet n'est pas une fatalité. C'est un défaut de méthode<span style="color:var(--accent)">.</span></h1>
+      <p class="rev" style="margin:0 auto;font-size:17px;line-height:1.65;max-width:520px">Huit temps, des livrables nommés, des jalons courts. Voici exactement ce qui se passe quand vous travaillez avec nous — et ce que vous voyez à chaque étape.</p>
+    </div>
+  </section>
+
+  <!-- Frise immersive : 8 temps en zigzag sur rail -->
+  <section data-screen-label="Les huit temps" style="position:relative;max-width:1100px;margin:0 auto;padding:88px 40px;box-sizing:border-box">
+    <div class="m-rail" style="position:absolute;left:50%;top:96px;bottom:96px;width:1px;background:linear-gradient(180deg,transparent,var(--border-strong) 6%,var(--border-strong) 94%,transparent)"></div>
+    <div style="display:grid;gap:44px">
+      <sc-for list="{{ temps }}" as="t" hint-placeholder-count="8">
+        <div class="rev m-step" style="position:relative;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center">
+          <span class="m-dot" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:var(--bg-page);border:1.5px solid var(--accent);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--accent-text);z-index:1">{{ t.num }}</span>
+          <div style="order:{{ t.ordreTexte }};text-align:{{ t.alignTexte }}">
+            <h2 style="font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:-0.02em;color:var(--text-primary);margin:0 0 10px">{{ t.titre }}</h2>
+            <p style="margin:0 0 12px;font-size:14.5px;line-height:1.65">{{ t.texte }}</p>
+            <div style="font-size:12.5px;color:var(--text-tertiary)"><strong style="color:var(--text-secondary);font-weight:600">Vous voyez :</strong> {{ t.livrable }}</div>
+          </div>
+          <div style="order:{{ t.ordreVisuel }};background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-1);transition:transform 160ms var(--ease-out),box-shadow 160ms var(--ease-out)" style-hover="transform:translateY(-3px);box-shadow:var(--shadow-3)" aria-hidden="true">
+            <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);font-weight:600;margin-bottom:12px">{{ t.visuelTitre }}</div>
+            <div style="display:grid;gap:7px">
+              <sc-for list="{{ t.visuel }}" as="v">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="width:{{ v.w }}%;height:{{ v.h }}px;border-radius:5px;background:{{ v.bg }}"></span>
+                  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-tertiary);white-space:nowrap">{{ v.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Engagements -->
+  <section data-screen-label="Engagements" style="border-top:1px solid var(--border-default);background:var(--bg-surface)">
+    <div style="max-width:1240px;margin:0 auto;padding:88px 40px;box-sizing:border-box">
+      <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:38px;letter-spacing:-0.03em;color:var(--text-primary);margin:0 0 36px;max-width:560px">Ce sur quoi nous nous engageons par écrit</h2>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+        <sc-for list="{{ engagements }}" as="e" hint-placeholder-count="4">
+          <div class="rev" style="border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-page);padding:24px">
+            <div style="width:32px;height:2px;background:var(--accent);margin-bottom:16px"></div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--text-primary);margin-bottom:8px;letter-spacing:-0.01em">{{ e.titre }}</div>
+            <p style="margin:0;font-size:13.5px;line-height:1.6">{{ e.texte }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section data-screen-label="CTA" style="position:relative;background:var(--bg-inverse);overflow:hidden">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 55% 60% at 50% 100%, rgba(233,89,31,0.12), transparent 70%);pointer-events:none"></div>
+    <div style="position:relative;max-width:1240px;margin:0 auto;padding:96px 40px;box-sizing:border-box;text-align:center">
+      <h2 class="rev" style="font-family:var(--font-display);font-weight:800;font-size:clamp(40px,4.4vw,56px);letter-spacing:-0.035em;color:#F2F2F0;margin:0 0 16px">Voyons ce que ça donne sur votre projet<span style="color:#F0824B">.</span></h2>
+      <p class="rev" style="max-width:420px;margin:0 auto 32px;font-size:16px;color:#A3A39D">Un premier échange suffit pour poser un pré-cadrage honnête : périmètre, risques, ordre de grandeur.</p>
+      <a href="Heliara — Contact.dc.html" class="rev" style="height:50px;padding:0 28px;display:inline-flex;align-items:center;border-radius:var(--radius-sm);background:#E9591F;color:#fff;font-size:15.5px;font-weight:500;transition:background-color 100ms,box-shadow 160ms" style-hover="background:#F0824B;box-shadow:0 4px 24px -2px rgba(240,130,75,0.4)">Parlons de votre projet</a>
+    </div>
+  </section>
+
+  <dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const A = 'var(--accent-subtle)', B = 'var(--info-subtle)', G = 'var(--bg-inset)';
+    const step = (num, titre, texte, livrable, visuelTitre, visuel, i) => ({
+      num, titre, texte, livrable, visuelTitre, visuel,
+      ordreTexte: i % 2 === 0 ? '0' : '1', ordreVisuel: i % 2 === 0 ? '1' : '0', alignTexte: i % 2 === 0 ? 'right' : 'left',
+    });
+    return {
+      temps: [
+        step('01', 'Découverte', 'Immersion dans votre métier : entretiens, observation des équipes, cartographie de l\u2019existant. Nous cherchons le problème réel, pas le problème déclaré.', 'une synthèse de découverte et la cartographie de vos flux.', 'Entretiens menés', [ { w: 62, h: 12, bg: G, label: 'direction' }, { w: 84, h: 12, bg: A, label: 'équipes terrain' }, { w: 46, h: 12, bg: G, label: 'IT / DSI' } ], 0),
+        step('02', 'Cadrage', 'Périmètre minimal viable, risques nommés, jalons datés, budget ferme sur la première phase. Tout est écrit avant de commencer.', 'la note de cadrage — l\u2019unique document contractuel de référence.', 'Périmètre', [ { w: 90, h: 12, bg: A, label: 'flux critique' }, { w: 54, h: 12, bg: G, label: 'phase 2' }, { w: 32, h: 12, bg: G, label: 'plus tard' } ], 1),
+        step('03', 'UX', 'Parcours, arborescences, prototype cliquable testé avec vos vrais utilisateurs — dans leurs conditions réelles de travail.', 'un prototype navigable et les comptes rendus de tests.', 'Hypothèses testées', [ { w: 76, h: 12, bg: B, label: 'validées · 9' }, { w: 28, h: 12, bg: A, label: 'invalidées · 2' } ], 2),
+        step('04', 'UI', 'Design system produit et maquettes haute fidélité de tous les écrans. Accessibilité AA vérifiée maquette par maquette.', 'les maquettes finales et le design system documenté.', 'Écrans conçus', [ { w: 88, h: 12, bg: B, label: '34 écrans' }, { w: 64, h: 12, bg: G, label: '61 composants' } ], 3),
+        step('05', 'Développement', 'Itérations de deux semaines, chacune conclue par une démonstration. Vous suivez l\u2019avancement sur un tableau partagé, pas dans des comptes rendus.', 'une version démontrable toutes les deux semaines.', 'Vélocité', [ { w: 40, h: 12, bg: A, label: 'sprint 1' }, { w: 58, h: 12, bg: A, label: 'sprint 2' }, { w: 74, h: 12, bg: A, label: 'sprint 3' } ], 4),
+        step('06', 'QA', 'Tests automatisés, revue d\u2019accessibilité RGAA, tests de charge, audit de sécurité. La qualité se mesure, elle ne se déclare pas.', 'le rapport de recette : couverture, performances, conformité.', 'Couverture', [ { w: 92, h: 12, bg: B, label: 'tests · 92 %' }, { w: 86, h: 12, bg: B, label: 'RGAA · AA' }, { w: 96, h: 12, bg: B, label: 'charge · OK' } ], 5),
+        step('07', 'Déploiement', 'Mise en production progressive, réversible à chaque étape. Formation des équipes et période d\u2019accompagnement rapproché.', 'un plan de bascule, et un produit en ligne.', 'Bascule', [ { w: 30, h: 12, bg: A, label: 'pilote · 10 %' }, { w: 62, h: 12, bg: A, label: 'vague 2 · 50 %' }, { w: 96, h: 12, bg: A, label: 'complet' } ], 6),
+        step('08', 'Maintenance', 'Supervision, corrections, évolutions continues. Le produit vit, la dette reste maîtrisée, et vous gardez le même interlocuteur.', 'un rapport mensuel : disponibilité, évolutions livrées, backlog.', 'Disponibilité', [ { w: 97, h: 12, bg: B, label: '99,9 %' }, { w: 70, h: 12, bg: G, label: 'évolutions · 14/an' } ], 7),
+      ],
+      engagements: [
+        { titre: 'Le code vous appartient', texte: 'Dépôt à votre nom dès le premier jour. Aucune brique propriétaire cachée, réversibilité contractuelle.' },
+        { titre: 'Des jalons tenus', texte: 'Chaque jalon est daté au cadrage. Un glissement se signale au sprint où il apparaît — jamais à la fin.' },
+        { titre: 'Un interlocuteur unique', texte: 'Le chef de projet qui cadre est celui qui livre. Pas de passage de relais commercial → production.' },
+        { titre: 'Aucune surprise budgétaire', texte: 'Budget ferme par phase. Tout arbitrage de périmètre se décide avec vous, chiffres en main.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

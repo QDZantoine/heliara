@@ -9,7 +9,7 @@ import { Menu, X } from "lucide-react"
 import { Logo } from "@/components/layout/logo"
 import { Halo } from "@/components/primitives/halo"
 import { buttonVariants } from "@/components/ui/button"
-import { cta, expertiseFamilies, group, legalNav, mainNav } from "@/lib/site"
+import { cta, expertiseNav, group, legalNav, mainNav } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
 const iconButton =
@@ -74,7 +74,7 @@ function MobileMenu() {
             })}
 
             <div className="mt-6 grid grid-cols-1 gap-x-5 sm:grid-cols-2">
-              {expertiseFamilies.map((family) => (
+              {expertiseNav.map((family) => (
                 <Link
                   key={family.href}
                   href={family.href}

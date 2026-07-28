@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<footer style="background:var(--bg-inverse);border-top:1px solid #26262A">
+  <div style="max-width:1240px;margin:0 auto;padding:64px 40px 32px;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px">
+      <div>
+        <div style="font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:-0.02em;color:#F2F2F0">heliara<span style="color:#F0824B">.</span></div>
+        <p style="margin:12px 0 0;font-size:14px;color:#73736D;max-width:240px;line-height:1.6">Votre métier, traduit en produit.</p>
+      </div>
+      <sc-for list="{{ cols }}" as="f" hint-placeholder-count="3">
+        <div>
+          <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#73736D;font-weight:600;margin-bottom:14px">{{ f.titre }}</div>
+          <div style="display:grid;gap:10px">
+            <sc-for list="{{ f.liens }}" as="l"><a href="{{ l.href }}" style="font-size:14px;color:#A3A39D;transition:color 100ms" style-hover="color:#F2F2F0">{{ l.label }}</a></sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="border-top:1px solid #26262A;margin-top:48px;padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:#73736D">
+      <span>© 2026 Heliara. Tous droits réservés. · <a href="#" style="color:#73736D">Mentions légales</a> · <a href="#" style="color:#73736D">Confidentialité</a></span>
+      <a href="Heliara — Le Groupe.dc.html" style="color:#73736D" style-hover="color:#A3A39D">Heliara, une marque du groupe Hexceos</a>
+    </div>
+  </div>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1240, &quot;height&quot;: 420 } }">
+class Component extends DCLogic {
+  renderVals() {
+    return { cols: [
+      { titre: 'Expertises', liens: [
+        { label: 'Plateformes & SaaS', href: 'Heliara — Expertise SaaS.dc.html' },
+        { label: 'Sites & e-commerce', href: 'Heliara — Expertises.dc.html' },
+        { label: 'IA & API', href: 'Heliara — Expertises.dc.html' },
+        { label: 'Maintenance évolutive', href: 'Heliara — Expertises.dc.html' },
+      ] },
+      { titre: 'Studio', liens: [
+        { label: 'Méthode', href: 'Heliara — Méthode.dc.html' },
+        { label: 'À propos', href: 'Heliara — À propos.dc.html' },
+        { label: 'Carrières', href: 'Heliara — Carrières.dc.html' },
+        { label: 'Ressources', href: 'Heliara — Ressources.dc.html' },
+      ] },
+      { titre: 'Contact', liens: [
+        { label: 'Parlons de votre projet', href: 'Heliara — Contact.dc.html' },
+        { label: 'contact@heliara.fr', href: 'mailto:contact@heliara.fr' },
+        { label: 'Le groupe Hexceos', href: 'Heliara — Le Groupe.dc.html' },
+      ] },
+    ] };
+  }
+}
+</script>
+</body>
+</html>

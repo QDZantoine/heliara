@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="responsive.css">
+<script src="reveal.js"></script>
+<style>.rev{opacity:0;transform:translateY(16px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}.rev.in{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;transition:none}}</style>
+</helmet>
+<div style="font-family:var(--font-sans);color:var(--text-secondary);background:var(--bg-page);min-height:100vh;overflow-x:clip">
+  <dc-import name="SiteHeader" current="Carrières" hint-size="100%,68px" style="position:sticky;top:0;z-index:200"></dc-import>
+
+  <!-- Hero -->
+  <section data-screen-label="Hero Carrières" style="position:relative;overflow:hidden;border-bottom:1px solid var(--border-default)">
+    <div style="position:absolute;inset:0;background:var(--halo-warm);pointer-events:none"></div>
+    <div style="position:relative;max-width:1240px;margin:0 auto;padding:96px 40px 72px;box-sizing:border-box;display:grid;grid-template-columns:1.2fr 1fr;gap:64px;align-items:end">
+      <div>
+        <div class="rev" style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text);margin-bottom:18px">Carrières</div>
+        <h1 class="rev" style="font-family:var(--font-display);font-weight:800;font-size:clamp(44px,5vw,68px);line-height:0.98;letter-spacing:-0.035em;color:var(--text-primary);margin:0">Faire peu de projets. Les faire remarquablement bien<span style="color:var(--accent)">.</span></h1>
+      </div>
+      <p class="rev" style="margin:0 0 8px;font-size:16.5px;line-height:1.65;max-width:380px">Nous recrutons des gens qui préfèrent la qualité au volume — et nous organisons tout le studio pour que ce soit possible.</p>
+    </div>
+  </section>
+
+  <!-- Garanties -->
+  <section data-screen-label="Ce qu'on garantit" style="max-width:1240px;margin:0 auto;padding:88px 40px;box-sizing:border-box">
+    <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:36px;letter-spacing:-0.03em;color:var(--text-primary);margin:0 0 36px">Ce que nous garantissons — vraiment</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ garanties }}" as="g" hint-placeholder-count="6">
+        <div class="rev" style="border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);padding:26px">
+          <div style="width:32px;height:2px;background:var(--accent);margin-bottom:16px"></div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--text-primary);margin-bottom:8px;letter-spacing:-0.01em">{{ g.titre }}</div>
+          <p style="margin:0;font-size:14px;line-height:1.65">{{ g.texte }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- Offres -->
+  <section data-screen-label="Offres" style="border-top:1px solid var(--border-default);background:var(--bg-surface)">
+    <div style="max-width:1240px;margin:0 auto;padding:88px 40px;box-sizing:border-box">
+      <div class="rev" style="display:flex;justify-content:space-between;align-items:baseline;gap:24px;margin-bottom:28px">
+        <h2 style="font-family:var(--font-display);font-weight:700;font-size:36px;letter-spacing:-0.03em;color:var(--text-primary);margin:0">Postes ouverts</h2>
+        <span style="font-size:13px;color:var(--text-tertiary)">Paris & remote partiel</span>
+      </div>
+      <div>
+        <sc-for list="{{ offres }}" as="o" hint-placeholder-count="3">
+          <a href="Heliara — Contact.dc.html" class="rev" style="display:grid;grid-template-columns:1fr 200px 140px auto;gap:24px;align-items:center;padding:24px 18px;border-top:1px solid var(--border-default);color:inherit;border-radius:var(--radius-md);transition:background-color 160ms,transform 160ms" style-hover="background:var(--bg-page);transform:translateX(6px)">
+            <span style="font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:-0.015em;color:var(--text-primary)">{{ o.titre }}</span>
+            <span style="font-size:13.5px;color:var(--text-secondary)">{{ o.equipe }}</span>
+            <span style="font-size:13.5px;color:var(--text-tertiary)">{{ o.type }}</span>
+            <span style="font-size:18px;color:var(--accent-text)">→</span>
+          </a>
+        </sc-for>
+      </div>
+      <div class="rev" style="margin-top:28px;border:1px dashed var(--border-hairline);border-radius:var(--radius-lg);padding:26px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:600;font-size:15.5px;color:var(--text-primary)">Aucun poste ne correspond ?</div>
+          <div style="font-size:13.5px;color:var(--text-secondary)">Les candidatures spontanées sérieuses sont toutes lues — et reçoivent toutes une réponse.</div>
+        </div>
+        <a href="mailto:candidatures@heliara.fr" style="height:44px;padding:0 22px;display:inline-flex;align-items:center;border-radius:var(--radius-sm);border:1px solid var(--border-strong);background:var(--bg-page);color:var(--text-primary);font-size:14.5px;font-weight:500" style-hover="border-color:var(--text-primary)">candidatures@heliara.fr</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section data-screen-label="Process de recrutement" style="max-width:1240px;margin:0 auto;padding:88px 40px;box-sizing:border-box">
+    <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:36px;letter-spacing:-0.03em;color:var(--text-primary);margin:0 0 36px">Quatre étapes, trois semaines, zéro test surprise</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <sc-for list="{{ process }}" as="p" hint-placeholder-count="4">
+        <div class="rev" style="border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--gradient-surface);padding:24px">
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent-text);margin-bottom:12px">{{ p.num }}</div>
+          <div style="font-weight:600;font-size:15.5px;color:var(--text-primary);margin-bottom:6px">{{ p.titre }}</div>
+          <p style="margin:0;font-size:13.5px;line-height:1.6">{{ p.texte }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      garanties: [
+        { titre: 'Quatre projets actifs maximum', texte: 'Pour tout le studio. Personne ne jongle entre six clients : la disponibilité mentale est organisée, pas espérée.' },
+        { titre: 'Du temps pour bien faire', texte: 'La revue croisée, les tests, la documentation sont dans les plannings — pas dans vos soirées.' },
+        { titre: 'Des projets qui durent', texte: 'Vous suivez vos produits en production sur des années. On récolte ce qu\u2019on a semé, littéralement.' },
+        { titre: 'Séniorité respectée', texte: 'Pas de micro-management : des problèmes entiers, des décisions à prendre, des comptes à rendre sur le résultat.' },
+        { titre: 'Rythme soutenable', texte: 'Remote partiel, horaires humains, pas d\u2019astreinte héroïque. L\u2019exigence porte sur le travail, pas sur l\u2019endurance.' },
+        { titre: 'Progression outillée', texte: 'Budget formation individuel, conférences, et le droit d\u2019apprendre sur le temps de travail — via LessonSharing notamment.' },
+      ],
+      offres: [
+        { titre: 'Ingénieur·e produit senior', equipe: 'Équipe technique', type: 'CDI · Paris' },
+        { titre: 'Designer produit', equipe: 'Équipe design', type: 'CDI · Paris' },
+        { titre: 'Chef·fe de projet technique', equipe: 'Delivery', type: 'CDI · Paris' },
+      ],
+      process: [
+        { num: '01', titre: 'Échange initial', texte: '45 minutes en visio avec un associé. Vous posez autant de questions que nous.' },
+        { num: '02', titre: 'Étude de cas réelle', texte: 'Un problème tiré d\u2019un vrai projet, préparé chez vous, discuté ensemble. Jamais de travail gratuit exploitable.' },
+        { num: '03', titre: 'Rencontre de l\u2019équipe', texte: 'Une demi-journée au studio avec ceux avec qui vous travaillerez — pas seulement les fondateurs.' },
+        { num: '04', titre: 'Proposition', texte: 'Réponse sous une semaine, argumentée dans les deux sens. Salaire annoncé dès l\u2019offre publiée sur demande.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -14,8 +14,12 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-200 border-b border-line bg-[color-mix(in_srgb,var(--hel-page)_82%,transparent)] backdrop-blur-[14px]">
       <div className="mx-auto flex h-17 max-w-page items-center justify-between gap-4 pr-5 pl-5 md:pl-6">
-        <Link href="/" aria-label="Heliara, retour à l'accueil">
-          <Logo />
+        <Link
+          href="/"
+          aria-label="Heliara, retour à l’accueil"
+          className="flex items-center"
+        >
+          <Logo alt="" />
         </Link>
 
         <nav

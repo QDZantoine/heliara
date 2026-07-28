@@ -1,12 +1,13 @@
 import { cn } from "@/lib/utils"
 
 type HaloProps = {
-  /** `warm` orange, `cool` bleu, `inverse` sur fond encre. */
-  variant?: "warm" | "cool" | "inverse"
+  /** `hero` combine les deux lobes en une seule couche. */
+  variant?: "hero" | "warm" | "cool" | "inverse"
   className?: string
 }
 
 const variants = {
+  hero: "bg-[image:var(--hel-halo-hero)]",
   warm: "bg-[image:var(--hel-halo-warm)]",
   cool: "bg-[image:var(--hel-halo-cool)]",
   inverse: "bg-[image:var(--hel-halo-inverse)]",

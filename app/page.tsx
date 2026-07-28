@@ -1,19 +1,31 @@
-import { Button } from "@/components/ui/button"
+import { CaseList } from "@/components/home/case-list"
+import { ExpertiseGrid } from "@/components/home/expertise-grid"
+import { Hero } from "@/components/home/hero"
+import { KpiBand } from "@/components/home/kpi-band"
+import { MethodPreview } from "@/components/home/method-preview"
+import { SocialProof } from "@/components/home/social-proof"
+import { Testimonials } from "@/components/home/testimonials"
+import { FinalCta } from "@/components/sections/final-cta"
 
-export default function Page() {
+/**
+ * Accueil — une conversation en dix temps (Architecture UX, 05).
+ *
+ * Arc : affirmation (hero) → caution (preuve sociale) → quoi (expertises) →
+ * comment (méthode) → preuve (réalisations, chiffres) → pairs (témoignages) →
+ * demande (CTA final). Le rythme alterne section dense et section respirante,
+ * et la demande n'arrive qu'après les trois objections levées.
+ */
+export default function HomePage() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+    <>
+      <Hero />
+      <SocialProof />
+      <ExpertiseGrid />
+      <MethodPreview />
+      <CaseList />
+      <KpiBand />
+      <Testimonials />
+      <FinalCta />
+    </>
   )
 }

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+</helmet>
+<div style="font-family:var(--font-sans);color:var(--text-secondary);background:var(--bg-page);min-height:100vh">
+  <div style="max-width:1140px;margin:0 auto;padding:48px 40px 96px;box-sizing:border-box">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--border-default);padding-bottom:18px;margin-bottom:56px">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:17px;letter-spacing:-0.02em;color:var(--text-primary)">heliara<span style="color:var(--accent)">.</span></div>
+      <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-tertiary)">Responsive Guidelines — document d'intégration</div>
+    </div>
+    <h1 style="font-family:var(--font-display);font-weight:800;font-size:54px;line-height:1.0;letter-spacing:-0.035em;color:var(--text-primary);margin:0 0 20px;max-width:760px">Le mobile n'est pas une réduction. C'est une réécriture<span style="color:var(--accent)">.</span></h1>
+    <p style="max-width:620px;margin:0 0 56px;font-size:16.5px;line-height:1.65">Règles de transformation Desktop → tablette → mobile pour l'intégration Next.js (App Router, TypeScript, Tailwind, Server Components par défaut). Chaque règle conserve l'intention UX validée : clarté, preuve, progression vers le contact.</p>
+
+    <!-- Breakpoints -->
+    <sc-for list="{{ sections }}" as="s" hint-placeholder-count="8">
+      <section id="{{ s.id }}" data-screen-label="{{ s.titre }}" style="margin-bottom:64px">
+        <div style="display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--border-default);padding-bottom:12px;margin-bottom:24px">
+          <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-text)">{{ s.num }}</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:29px;letter-spacing:-0.02em;color:var(--text-primary);margin:0">{{ s.titre }}</h2>
+        </div>
+        <sc-if value="{{ s.intro }}" hint-placeholder-val="{{ false }}"><p style="margin:0 0 20px;font-size:15px;line-height:1.65;max-width:680px">{{ s.introTexte }}</p></sc-if>
+        <div style="display:grid;gap:0">
+          <sc-for list="{{ s.regles }}" as="r">
+            <div style="display:grid;grid-template-columns:230px 1fr;gap:24px;padding:14px 0;border-bottom:1px solid var(--hel-neutral-100);font-size:14px;line-height:1.6">
+              <span style="font-weight:600;color:var(--text-primary)">{{ r.k }}</span>
+              <span>{{ r.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <!-- Transformations par composant : desktop / tablette / mobile -->
+    <section id="transformations" data-screen-label="Transformations" style="margin-bottom:64px">
+      <div style="display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--border-default);padding-bottom:12px;margin-bottom:24px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-text)">09</span>
+        <h2 style="font-family:var(--font-display);font-weight:700;font-size:29px;letter-spacing:-0.02em;color:var(--text-primary);margin:0">Transformations par composant</h2>
+      </div>
+      <div style="display:grid;gap:18px">
+        <sc-for list="{{ compos }}" as="c" hint-placeholder-count="8">
+          <div style="border:1px solid var(--border-default);border-radius:var(--radius-lg);background:var(--bg-surface);overflow:hidden">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 22px;border-bottom:1px solid var(--border-default)">
+              <span style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--text-primary);letter-spacing:-0.01em">{{ c.nom }}</span>
+              <span style="font-size:12px;color:var(--danger-text)">À éviter : {{ c.erreur }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
+              <div style="padding:18px 22px;border-right:1px solid var(--border-default)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:26px;height:17px;border:1.5px solid var(--text-tertiary);border-radius:3px"></span><span style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);font-weight:600">Desktop ≥1440</span></div>
+                <div style="font-size:13px;line-height:1.6">{{ c.desktop }}</div>
+              </div>
+              <div style="padding:18px 22px;border-right:1px solid var(--border-default)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:19px;height:24px;border:1.5px solid var(--text-tertiary);border-radius:3px"></span><span style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);font-weight:600">Tablette 768–1024</span></div>
+                <div style="font-size:13px;line-height:1.6">{{ c.tablette }}</div>
+              </div>
+              <div style="padding:18px 22px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:12px;height:22px;border:1.5px solid var(--accent);border-radius:3px"></span><span style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-text);font-weight:600">Mobile 320–767</span></div>
+                <div style="font-size:13px;line-height:1.6">{{ c.mobile }}</div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <!-- Cas limites -->
+    <section id="cas-limites" data-screen-label="Cas limites" style="margin-bottom:48px">
+      <div style="display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--border-default);padding-bottom:12px;margin-bottom:24px">
+        <span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-text)">10</span>
+        <h2 style="font-family:var(--font-display);font-weight:700;font-size:29px;letter-spacing:-0.02em;color:var(--text-primary);margin:0">Cas limites à anticiper</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;font-size:14px;line-height:1.65">
+        <sc-for list="{{ limites }}" as="l" hint-placeholder-count="6">
+          <div style="display:flex;gap:10px"><span style="color:var(--accent);flex:none">—</span><span>{{ l }}</span></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <div style="border-top:1px solid var(--border-default);padding-top:16px;display:flex;justify-content:space-between;font-size:12px;color:var(--text-tertiary)">
+      <span>Implémentation de référence : responsive.css + SiteHeader (menu mobile) dans ce projet</span>
+      <span>Heliara, une marque du groupe Hexceos</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const S = (num, id, titre, regles, introTexte) => ({ num, id, titre, regles: regles.map(([k, v]) => ({ k, v })), intro: !!introTexte, introTexte });
+    return {
+      sections: [
+        S('01', 'breakpoints', 'Breakpoints & conteneurs', [
+          ['Plages', 'Mobile 320–767 · Tablette 768–1024 · Desktop 1025–1439 · Desktop large ≥1440. Points de bascule intermédiaires : 640 (grilles 2→1), 900 (splits éditoriaux), 1100 (héros composés).'],
+          ['Conteneurs', 'max-width 1240px (sections), 760px (lecture). Marges latérales : 40px desktop · 32px tablette · 20px mobile.'],
+          ['Grille', '12 colonnes desktop · 8 tablette · 4 mobile. Gouttières 20/16/14px.'],
+          ['Tailwind', 'screens: { sm:640, md:768, lg:1024, xl:1280, 2xl:1440 } — déjà dans tokens/tailwind.preset.js.'],
+        ], 'Mobile-first à l\u2019intégration : les styles de base sont mobiles, les media queries élargissent.'),
+        S('02', 'typo', 'Typographie fluide', [
+          ['H1', 'clamp(34px, 9.5vw, 88px) · interligne 0.98–1.05 · tracking −3,5 % · jamais plus de 3 lignes sur mobile.'],
+          ['H2', 'clamp(25px, 7vw, 52px) · interligne 1.12.'],
+          ['H3 / titres de carte', 'clamp(17px, 4.5vw, 21px) · 600–700.'],
+          ['Paragraphe', '15–16.5px · interligne 1.6–1.75 · mesure max 70 caractères (max-width 680px).'],
+          ['Citations', 'clamp(18px, 5vw, 26px) · Schibsted 600.'],
+          ['Boutons / nav', '14–16px · 500 · jamais sous 13px.'],
+          ['Légendes / méta', '12–13px · jamais sous 12px · contraste ≥ 4.5:1 vérifié.'],
+        ]),
+        S('03', 'espacements', 'Espacements responsive', [
+          ['Entre sections', '96–130px desktop → 64–80px tablette → 56–64px mobile. La respiration diminue de ~40 %, jamais plus.'],
+          ['Interne des cartes', '26–40px desktop → 20–24px mobile.'],
+          ['Titre → contenu', '28–40px desktop → 20px mobile.'],
+          ['Zones sûres', 'env(safe-area-inset-*) sur le menu plein écran, les barres fixes et le footer (encoches iOS/Android).'],
+          ['Footer mobile', '4 colonnes → 2 (tablette) → 1 (mobile), CTA e-mail en premier, endossement Hexceos en dernière ligne.'],
+        ]),
+        S('04', 'navigation', 'Navigation', [
+          ['Desktop', 'Nav horizontale 6 entrées + CTA permanent. Sticky, fond translucide flouté.'],
+          ['Mobile (≤900)', 'Logo + CTA raccourci « Contact » + bouton menu 44×44. Menu plein écran : liens Schibsted 29px numérotés, sous-liens Expertises, CTA pleine largeur 52px, zone secondaire (groupe, mentions).'],
+          ['Clavier & ARIA', 'role=dialog, focus envoyé sur Fermer à l\u2019ouverture, Échap ferme, aria-expanded sur le déclencheur, scroll du fond verrouillé.'],
+          ['Interdits', 'Pas de hamburger sans étiquette ARIA, pas de menu déroulant au survol sur tactile.'],
+        ]),
+        S('05', 'touch', 'Zones tactiles & états', [
+          ['Cibles', '≥44×44px partout (nav, filtres, accordéons, liens de pied de page). 8px minimum entre deux actions.'],
+          ['Hover', 'Aucune information exclusive au survol. Les élévations hover deviennent des états :active (opacité 0.8, fond pressé).'],
+          ['États requis', 'default · active/pressé · focus-visible (anneau 2px bleu) · disabled (opacité 0.45) · loading (spinner dans le bouton).'],
+          ['CTA', 'Un seul bouton primaire par zone visible. Boutons empilés pleine largeur sous 640px.'],
+        ]),
+        S('06', 'motion', 'Motion responsive', [
+          ['Conservé', 'Apparitions fondu + translation 10–16px (600ms expo-out), transitions de menu, retours tactiles.'],
+          ['Réduit sur mobile', 'Parallaxe du hero désactivée · cartes flottantes animées masquées · défilement de logos ralenti (55s) · pas de blur animé.'],
+          ['Toujours', 'prefers-reduced-motion neutralise tout ; le contenu est complet et lisible sans aucune animation.'],
+        ]),
+        S('07', 'images', 'Images & interfaces produit', [
+          ['Principe', 'Jamais une capture desktop entière réduite dans une carte mobile. Choisir : recadrage sur un détail, composant isolé, mockup vertical, ou séquence d\u2019écrans en scroll horizontal natif (scroll-snap).'],
+          ['Sources', 'next/image avec sizes par plage ; art direction via <picture> quand le cadrage change. AVIF/WebP, lazy par défaut, priority réservé au hero.'],
+          ['Mockups CSS', 'Les maquettes d\u2019interface décoratives (aria-hidden) conservent leurs grilles internes — elles sont exclues des règles d\u2019empilement.'],
+        ]),
+        S('08', 'perf-a11y', 'Performance & accessibilité', [
+          ['Server Components', 'Par défaut. Client uniquement : menu mobile, filtres, formulaire, palette de commandes. Aucune librairie pour ce qu\u2019un scroll natif fait.'],
+          ['Core Web Vitals', 'LCP : hero texte d\u2019abord (le visuel produit est en dessous du pli mobile) · CLS : dimensions réservées pour toute image/mockup · INP : handlers légers, pas de re-render global au scroll.'],
+          ['WCAG 2.2 AA', 'Contrastes vérifiés (encre/blanc 16:1, orange 600 sur blanc 4.6:1), ordre du DOM = ordre visuel, un h1 par page, labels visibles sur tous les champs, erreurs textuelles explicites, alternatives textuelles aux visualisations.'],
+          ['Formulaires', 'Champs pleine largeur, labels au-dessus, inputmode/type adaptés (email, tel), validation au submit avec messages précis, état de chargement puis confirmation, utilisable à une main (CTA en bas).'],
+        ]),
+      ],
+      compos: [
+        { nom: 'Hero', erreur: 'empiler tous les éléments flottants sous le titre', desktop: 'Composition éditoriale 2 colonnes : titre 88px + scène produit (dashboard + 3 cartes flottantes animées, halo, parallaxe légère).', tablette: 'Pile verticale : texte puis scène produit réduite (460px), cartes flottantes conservées, parallaxe supprimée.', mobile: 'Titre clamp ≤44px en ≤3 lignes, double CTA pleine largeur, scène ramenée à la seule fenêtre produit (340px), cartes flottantes masquées, halo conservé. Preuve sociale visible dès le premier scroll.' },
+        { nom: 'Preuve sociale', erreur: 'logos réduits jusqu\u2019à l\u2019illisible', desktop: 'Ticker horizontal lent avec fondu latéral, 8 logos.', tablette: 'Identique, vitesse ralentie.', mobile: 'Ticker ralenti (55s) et pausable, ou grille compacte 2×3 de 6 logos si le client préfère le statique. Hauteur de logo ≥20px.' },
+        { nom: 'Cartes Expertises', erreur: 'catalogue de 9 cartes identiques interminable', desktop: '3 familles côte à côte avec illustration UI et hover lift.', tablette: 'Pile 1 colonne, illustrations conservées.', mobile: 'Cartes empilées, illustration réduite en bandeau, lien direct vers la page expertise ; sur le hub, lignes d\u2019index compactées (numéro + titre + description) sans flèche.' },
+        { nom: 'Frise Méthode', erreur: 'réduire la frise horizontale jusqu\u2019à l\u2019illisible', desktop: 'Zigzag sur rail central, 8 temps alternés texte/visualisation.', tablette: 'Zigzag conservé, gouttière réduite.', mobile: 'Rail masqué, déroulé vertical : numéro en pastille, titre, objectif, « vous voyez », visualisation en dessous. Lisible sans animation.' },
+        { nom: 'Études de cas (hub)', erreur: 'mosaïque avec vignettes minuscules', desktop: 'Grille 2 colonnes à tailles variées, cartes larges pour les cas phares.', tablette: 'Grille 2 colonnes uniformes.', mobile: 'Pile 1 colonne : visuel lisible, secteur, titre court, un résultat chiffré. Filtres en rangée horizontale scrollable (scroll-snap), cible 44px.' },
+        { nom: 'Étude de cas (détail)', erreur: 'blocs de texte interminables sans repères', desktop: 'Méta sticky à gauche + récit 8 chapitres à droite.', tablette: 'Méta repliée en carte au-dessus du récit (position static).', mobile: 'Chapô court, carte méta compacte, chapitres avec numéros comme sommaire visuel, chiffres clés en grille 2×2, citation en rupture, navigation « cas suivant » en fin.' },
+        { nom: 'Chiffres clés', erreur: 'graphiques ou compteurs dépendant du survol', desktop: 'Bande 4 colonnes, filets accent.', tablette: '2×2.', mobile: '2×2 conservé (un chiffre principal par zone, libellé court, unité visible). Aucune animation nécessaire à la lecture.' },
+        { nom: 'Témoignages', erreur: 'carrousel auto-rotatif rapide', desktop: 'Grille statique de 3 citations.', tablette: 'Pile ou 2 colonnes.', mobile: 'Une citation par écran en scroll vertical naturel (pas de carrousel) ; si carrousel demandé : scroll-snap natif, pagination visible, balayage facultatif, jamais d\u2019auto-rotation.' },
+        { nom: 'Formulaire Contact', erreur: 'formulaire à droite perdu sous la réassurance', desktop: 'Split : réassurance à gauche, carte formulaire flottante sticky à droite.', tablette: 'Pile : titre + engagement, puis formulaire, puis réassurance détaillée.', mobile: 'Formulaire immédiatement après le titre ; champs pleine largeur 44px+, labels visibles, clavier email/tel adapté, budget en liste simple, bouton final pleine largeur « Envoyer — réponse sous 48 h », confirmation en remplacement du formulaire.' },
+        { nom: 'Footer', erreur: '4 colonnes écrasées', desktop: '4 colonnes + ligne légale.', tablette: '2×2.', mobile: '1 colonne : marque + baseline, Contact d\u2019abord, puis Expertises et Studio, ligne légale et endossement Hexceos en dernier, safe-area respectée.' },
+      ],
+      limites: [
+        'Très petits écrans (320px) : titres clamp à 34px, boutons pleine largeur, aucune grille à 2 colonnes.',
+        'Paysage mobile : le menu plein écran devient scrollable ; le hero plafonne à 100svh.',
+        'Écrans à encoche : safe-area-inset sur menu, barres fixes et footer.',
+        'Textes longs saisis par le CMS : titres tronqués à 3 lignes (line-clamp) plutôt que débordement.',
+        'Zoom utilisateur 200 % : aucune perte de contenu, pas de scroll horizontal (WCAG 1.4.10).',
+        'Connexion lente : le hero est lisible avant toute image ; les mockups CSS ne pèsent rien ; polices en swap.',
+        'Pointeur + tactile simultanés (tablettes avec clavier) : hover et active coexistent sans conflit.',
+        'JavaScript désactivé ou en échec : contenu complet visible (filet de sécurité d\u2019opacité 1,2s), navigation et formulaires natifs fonctionnels.',
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

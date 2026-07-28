@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="responsive.css">
+<script src="reveal.js"></script>
+<style>.rev{opacity:0;transform:translateY(16px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}.rev.in{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.rev{opacity:1;transform:none;transition:none}}</style>
+</helmet>
+<div style="font-family:var(--font-sans);color:var(--text-secondary);background:var(--bg-page);min-height:100vh;overflow-x:clip">
+  <dc-import name="SiteHeader" current="Réalisations" hint-size="100%,68px" style="position:sticky;top:0;z-index:200"></dc-import>
+
+  <!-- Hero centré, variation -->
+  <section data-screen-label="Hero Réalisations" style="position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background:var(--halo-warm);pointer-events:none"></div>
+    <div style="position:relative;max-width:820px;margin:0 auto;padding:96px 40px 56px;box-sizing:border-box;text-align:center">
+      <div class="rev" style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text);margin-bottom:18px">Réalisations</div>
+      <h1 class="rev" style="font-family:var(--font-display);font-weight:800;font-size:clamp(48px,5.4vw,72px);line-height:0.98;letter-spacing:-0.035em;color:var(--text-primary);margin:0 0 20px">Des produits en production, pas un portfolio<span style="color:var(--accent)">.</span></h1>
+      <p class="rev" style="margin:0 auto;font-size:17px;line-height:1.65;max-width:480px">Chaque étude de cas raconte un problème réel, des décisions, et des résultats mesurés. Filtrez par ce qui vous ressemble.</p>
+    </div>
+  </section>
+
+  <!-- Filtres -->
+  <div data-screen-label="Filtres" style="max-width:1240px;margin:0 auto;padding:8px 40px 36px;box-sizing:border-box;display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+    <sc-for list="{{ filtres }}" as="f" hint-placeholder-count="6">
+      <button onClick="{{ f.onClick }}" style="height:36px;padding:0 16px;border-radius:999px;border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;transition:all 100ms var(--ease-out)">{{ f.label }}</button>
+    </sc-for>
+  </div>
+
+  <!-- Grille de cas -->
+  <section data-screen-label="Grille des cas" style="max-width:1240px;margin:0 auto;padding:0 40px 96px;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <sc-for list="{{ casVisibles }}" as="c" hint-placeholder-count="6">
+        <a href="Heliara — Étude de cas.dc.html" class="rev" style="grid-column:span {{ c.span }};display:flex;flex-direction:column;background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);overflow:hidden;color:inherit;transition:transform 160ms var(--ease-out),box-shadow 160ms var(--ease-out)" style-hover="transform:translateY(-4px);box-shadow:var(--shadow-3)">
+          <div style="position:relative;height:{{ c.hVisuel }}px;background:var(--bg-inset);overflow:hidden" aria-hidden="true">
+            <div style="position:absolute;inset:0;background:{{ c.halo }}"></div>
+            <div style="position:absolute;left:28px;right:28px;top:28px;bottom:-16px;background:var(--bg-raised);border:1px solid var(--border-default);border-radius:12px 12px 0 0;box-shadow:var(--shadow-2);padding:16px">
+              <div style="display:grid;gap:7px">
+                <span style="height:11px;width:34%;border-radius:4px;background:var(--bg-inset)"></span>
+                <span style="height:22px;width:56%;border-radius:6px;background:var(--bg-inset)"></span>
+                <div style="display:flex;gap:7px;margin-top:4px"><span style="flex:1;height:46px;border-radius:8px;background:var(--bg-inset)"></span><span style="flex:1;height:46px;border-radius:8px;background:{{ c.bloc }}"></span><span style="flex:1;height:46px;border-radius:8px;background:var(--bg-inset)"></span></div>
+                <span style="height:11px;width:72%;border-radius:4px;background:var(--bg-inset)"></span>
+              </div>
+            </div>
+          </div>
+          <div style="padding:24px 26px;display:flex;flex-direction:column;gap:10px;flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+              <span style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--info-text);background:var(--info-subtle);border-radius:6px;padding:4px 9px">{{ c.secteur }}</span>
+              <span style="font-size:12px;color:var(--text-tertiary);font-family:var(--font-mono)">{{ c.annee }}</span>
+            </div>
+            <span style="font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-0.015em;color:var(--text-primary)">{{ c.titre }}</span>
+            <p style="margin:0;font-size:13.5px;line-height:1.6;flex:1">{{ c.texte }}</p>
+            <div style="display:flex;align-items:baseline;gap:8px;padding-top:10px;border-top:1px solid var(--border-default)">
+              <span style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--accent-text);font-variant-numeric:tabular-nums">{{ c.chiffre }}</span>
+              <span style="font-size:12.5px;color:var(--text-tertiary)">{{ c.mesure }}</span>
+            </div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- CTA bandeau -->
+  <section data-screen-label="CTA" style="border-top:1px solid var(--border-default);background:var(--bg-surface)">
+    <div style="max-width:1240px;margin:0 auto;padding:72px 40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap">
+      <h2 class="rev" style="font-family:var(--font-display);font-weight:700;font-size:32px;letter-spacing:-0.03em;color:var(--text-primary);margin:0;max-width:560px">Le prochain cas pourrait être le vôtre.</h2>
+      <a href="Heliara — Contact.dc.html" class="rev" style="height:48px;padding:0 26px;display:inline-flex;align-items:center;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-size:15.5px;font-weight:500;transition:background-color 100ms,box-shadow 160ms" style-hover="background:var(--accent-hover);box-shadow:var(--shadow-glow)">Parlons de votre projet</a>
+    </div>
+  </section>
+
+  <dc-import name="SiteFooter" hint-size="100%,420px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { filtre: 'Tous' };
+  renderVals() {
+    const halos = {
+      o: 'radial-gradient(ellipse 80% 70% at 70% 10%, rgba(233,89,31,0.09), transparent 70%)',
+      b: 'radial-gradient(ellipse 80% 70% at 30% 10%, rgba(47,82,199,0.08), transparent 70%)',
+    };
+    const tous = [
+      { secteur: 'Industrie', annee: '2026', titre: 'Pilotage de production Voltéis', texte: 'Un ERP métier sur mesure qui remplace quatre outils déconnectés — ordres de fabrication, qualité, expéditions.', chiffre: '−38 %', mesure: 'de temps administratif', span: 2, hVisuel: 240, halo: halos.o, bloc: 'var(--accent-subtle)' },
+      { secteur: 'Santé', annee: '2025', titre: 'Portail patients CHU Rhône-Nord', texte: 'Rendez-vous, documents et échanges sécurisés — accessible RGAA, adopté sans formation.', chiffre: '92 %', mesure: 'd\u2019adoption en 3 mois', span: 1, hVisuel: 180, halo: halos.b, bloc: 'var(--info-subtle)' },
+      { secteur: 'Services B2B', annee: '2025', titre: 'SaaS d\u2019interventions Fieldsy', texte: 'De l\u2019outil interne au produit commercialisé : multi-tenant, facturation, API publique.', chiffre: '×3', mesure: 'de revenus récurrents', span: 1, hVisuel: 180, halo: halos.o, bloc: 'var(--accent-subtle)' },
+      { secteur: 'Collectivités', annee: '2024', titre: 'Guichet unique Métropole d\u2019Auréa', texte: 'Démarches des usagers unifiées : état civil, urbanisme, famille — un seul compte, zéro re-saisie.', chiffre: '−54 %', mesure: 'd\u2019appels au standard', span: 1, hVisuel: 180, halo: halos.b, bloc: 'var(--info-subtle)' },
+      { secteur: 'E-commerce', annee: '2024', titre: 'Boutique B2B Kerlon', texte: 'Catalogue technique de 40 000 références, tarifs négociés par client, commande en 3 clics.', chiffre: '+31 %', mesure: 'de panier moyen', span: 1, hVisuel: 180, halo: halos.o, bloc: 'var(--accent-subtle)' },
+      { secteur: 'Startup', annee: '2026', titre: 'Copilote IA Nexa Santé', texte: 'Pré-remplissage documentaire par IA pour les équipes de soin — validé par les praticiens, tracé, auditable.', chiffre: '11 min', mesure: 'gagnées par dossier', span: 2, hVisuel: 240, halo: halos.b, bloc: 'var(--info-subtle)' },
+    ];
+    const noms = ['Tous', 'Industrie', 'Santé', 'Services B2B', 'Collectivités', 'E-commerce', 'Startup'];
+    const filtre = this.state.filtre;
+    return {
+      filtres: noms.map((n) => ({
+        label: n,
+        onClick: () => this.setState({ filtre: n }),
+        bg: n === filtre ? 'var(--accent)' : 'var(--bg-surface)',
+        color: n === filtre ? '#fff' : 'var(--text-secondary)',
+        border: n === filtre ? 'var(--accent)' : 'var(--border-default)',
+      })),
+      casVisibles: (filtre === 'Tous' ? tous : tous.map((c) => ({ ...c, span: 1, hVisuel: 180 })).filter((c) => c.secteur === filtre)),
+    };
+  }
+}
+</script>
+</body>
+</html>
