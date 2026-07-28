@@ -301,24 +301,35 @@
   }
 }
 
-/* Rideau de transition de page : deux arcs miroir qui balaient de bas en haut.
-   Le gris ouvre, l'orange recouvre ; à la sortie l'orange part le premier et le
-   gris ferme la marche. */
+/* ==========================================================================
+   Rideau de transition de page — « wipe vague »
+
+   Un voile encre monte du bas pour couvrir l'écran, précédé d'un trait orange :
+   la couche orange part 70 ms avant la couche encre, et l'écart entre les deux
+   crêtes dessine le trait. Épais au départ, effilé à l'arrivée par l'expo-out.
+   À la sortie l'ordre s'inverse : l'encre part la première, le trait orange
+   ferme la marche en bas du voile.
+
+   Un seul geste orange par écran, et c'est un trait, jamais un aplat.
+   ========================================================================== */
+
+/* Le repos doit dégager la crête (12vw) en plus de la hauteur du voile, sinon
+   l'arc orange dépasserait en bas de chaque page sur les écrans larges. */
 @keyframes hel-curtain-in {
   from {
-    transform: translate3d(0, 106%, 0);
+    transform: translate3d(0, calc(100% + 12vw), 0);
   }
   to {
-    transform: translate3d(0, -48%, 0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes hel-curtain-out {
   from {
-    transform: translate3d(0, -48%, 0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(0, -195%, 0);
+    transform: translate3d(0, calc(-100% - 12vw), 0);
   }
 }
 
@@ -327,27 +338,47 @@
   inset: 0;
   z-index: 900;
   overflow: hidden;
+  /* Ne capte jamais le pointeur : un voile ne doit pas pouvoir piéger un clic. */
   pointer-events: none;
 }
 
 .hel-curtain-layer {
   position: absolute;
-  top: 0;
-  left: -40vw;
-  width: 180vw;
-  height: 190vh;
-  transform: translate3d(0, 106%, 0);
+  inset: 0;
+  transform: translate3d(0, calc(100% + 12vw), 0);
 }
 
-/* Arcs miroir : deux courbes asymétriques qui se croisent en balayant. */
-.hel-curtain-back {
-  border-radius: 62% 38% 0 0 / 34% 22% 0 0;
-  background: var(--hel-line-strong);
+/* Crête haute : bord d'attaque à la montée. */
+.hel-curtain-layer::before,
+/* Crête basse : bord de fuite à la sortie. */
+.hel-curtain-layer::after {
+  content: "";
+  position: absolute;
+  left: -6%;
+  width: 112%;
+  height: 12vw;
+  background: inherit;
 }
 
-.hel-curtain-front {
-  border-radius: 38% 62% 0 0 / 22% 34% 0 0;
+.hel-curtain-layer::before {
+  bottom: 100%;
+  border-radius: 50% 50% 0 0;
+}
+
+.hel-curtain-layer::after {
+  top: 100%;
+  border-radius: 0 0 50% 50%;
+}
+
+.hel-curtain-stroke {
   background: var(--hel-brand);
+}
+
+.hel-curtain-veil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hel-inverse);
 }
 
 [data-phase="cover"] .hel-curtain-layer,
@@ -355,20 +386,22 @@
   will-change: transform;
 }
 
-[data-phase="cover"] .hel-curtain-back {
+/* Montée : le trait orange ouvre la voie, l'encre suit. */
+[data-phase="cover"] .hel-curtain-stroke {
   animation: hel-curtain-in 480ms var(--hel-ease-expo) forwards;
 }
 
-[data-phase="cover"] .hel-curtain-front {
-  animation: hel-curtain-in 480ms var(--hel-ease-expo) 80ms forwards;
+[data-phase="cover"] .hel-curtain-veil {
+  animation: hel-curtain-in 480ms var(--hel-ease-expo) 70ms forwards;
 }
 
-[data-phase="reveal"] .hel-curtain-front {
-  animation: hel-curtain-out 520ms var(--hel-ease-expo) forwards;
+/* Sortie : l'encre part la première, le trait orange ferme la marche. */
+[data-phase="reveal"] .hel-curtain-veil {
+  animation: hel-curtain-out 560ms var(--hel-ease-expo) forwards;
 }
 
-[data-phase="reveal"] .hel-curtain-back {
-  animation: hel-curtain-out 520ms var(--hel-ease-expo) 90ms forwards;
+[data-phase="reveal"] .hel-curtain-stroke {
+  animation: hel-curtain-out 560ms var(--hel-ease-expo) 70ms forwards;
 }
 
 @keyframes hel-fade-up {

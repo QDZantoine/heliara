@@ -3,18 +3,21 @@
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
 
+import { Logo } from "@/components/layout/logo"
+
 /** Durées miroir de celles déclarées dans globals.css (animation + décalage). */
-const COVER_MS = 560
-const REVEAL_MS = 610
+const COVER_MS = 550
+const REVEAL_MS = 630
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
 const STUCK_MS = 2500
 
 type Phase = "idle" | "cover" | "reveal"
 
 /**
- * Transition de page en rideau : deux arcs balaient l’écran de bas en haut
- * (gris devant, orange derrière), la navigation a lieu écran couvert, puis les
- * arcs sortent par le haut sur la nouvelle page.
+ * Transition de page « wipe vague » : un voile encre monte du bas pour couvrir
+ * l’écran, précédé d’un trait orange (la couche orange part 70 ms avant, et
+ * l’écart entre les deux crêtes dessine le trait). La navigation a lieu écran
+ * couvert, puis le voile sort par le haut, le trait orange fermant la marche.
  *
  * Le rideau est piloté par un attribut sur le nœud plutôt que par un état
  * React : aucun rendu pendant l’animation, et la règle
@@ -52,6 +55,7 @@ function PageCurtain() {
 
     const onClick = (event: MouseEvent) => {
       if (
+        coveringRef.current ||
         event.defaultPrevented ||
         event.button !== 0 ||
         event.metaKey ||
@@ -97,9 +101,9 @@ function PageCurtain() {
     }
 
     // Phase de capture obligatoire : `next/link` navigue dans son propre
-    // onClick et abandonne si l'évènement est déjà préempté. En bulle, il aurait
+    // onClick et abandonne si l’évènement est déjà préempté. En bulle, il aurait
     // déjà navigué. Les `onClick` portés par les liens (fermeture du menu
-    // mobile) continuent de s'exécuter, la propagation n'étant pas coupée.
+    // mobile) continuent de s’exécuter, la propagation n’étant pas coupée.
     document.addEventListener("click", onClick, true)
     return () => document.removeEventListener("click", onClick, true)
   }, [after, router, setPhase])
@@ -119,8 +123,10 @@ function PageCurtain() {
   return (
     <div ref={rootRef} data-phase="idle" aria-hidden="true">
       <div className="hel-curtain">
-        <div className="hel-curtain-layer hel-curtain-back" />
-        <div className="hel-curtain-layer hel-curtain-front" />
+        <div className="hel-curtain-layer hel-curtain-stroke" />
+        <div className="hel-curtain-layer hel-curtain-veil">
+          <Logo tone="inverse" alt="" className="h-8" />
+        </div>
       </div>
     </div>
   )

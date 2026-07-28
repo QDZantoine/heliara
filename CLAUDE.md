@@ -75,7 +75,11 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 ## Transition de page
 
-`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un rideau en deux arcs, navigue écran couvert, puis rouvre.
+`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un « wipe vague », navigue écran couvert, puis rouvre.
+
+Le geste : un voile **encre** monte du bas, précédé d'un **trait orange**. Les deux couches sont identiques et pleine page ; c'est le décalage de 70 ms entre elles qui laisse voir une bande orange devant la crête de l'encre — épaisse au départ, effilée à l'arrivée par l'expo-out. À la sortie l'ordre s'inverse : l'encre part la première, le trait orange ferme la marche sous le voile. L'orange reste donc un trait, jamais un aplat. Le mot-symbole est centré dans le voile.
+
+Chaque couche porte deux crêtes en pseudo-éléments : `::before` (bord d'attaque à la montée) et `::after` (bord de fuite à la sortie). La position de repos est `calc(100% + 12vw)` et non `100%` : sur un écran large, `12vw` dépasse `100vh` et la crête orange apparaîtrait en bas de chaque page.
 
 - **L'interception doit être en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le rideau ne se déclenche jamais.
 - La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).
