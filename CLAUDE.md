@@ -73,6 +73,15 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 - Le focus visible est global (`:focus-visible` dans `globals.css`) : ne jamais ajouter d'anneau propre à un composant, on en cumulerait deux.
 - `Reveal` bascule l'attribut `data-reveal` directement sur le nœud DOM, sans état React. Ne pas y remettre de `setState` dans un effet : la règle ESLint `react-hooks/set-state-in-effect` est active et le refuse.
 
+## Transition de page
+
+`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un rideau en deux arcs, navigue écran couvert, puis rouvre.
+
+- **L'interception doit être en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le rideau ne se déclenche jamais.
+- La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).
+- Les durées de `page-curtain.tsx` doivent rester le miroir des animations de `globals.css` (durée + décalage). Un filet de sécurité rouvre le rideau si la navigation n'aboutit pas.
+- Neutralisé par `prefers-reduced-motion` et inopérant sans JavaScript : dans les deux cas les liens naviguent normalement.
+
 ## Vérification visuelle
 
 `pnpm build` ne dit rien de la mise en page. Pour contrôler une section, piloter Chrome en CDP (`--headless=new --remote-debugging-port`), émuler le viewport avec `Emulation.setDeviceMetricsOverride`, `prefers-color-scheme` avec `Emulation.setEmulatedMedia`, scroller en `behavior:"instant"` puis `Page.captureScreenshot`. Le mode `--headless --screenshot` de la CLI donne des captures fausses (blocs `Reveal` figés à l'état masqué, viewport non émulé) : ne pas s'y fier.
