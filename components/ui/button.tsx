@@ -1,49 +1,60 @@
+import Link from "next/link"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Le focus visible vient de la règle globale `:focus-visible` (anneau bleu 2 px) :
+ * pas d'anneau propre au bouton, pour ne jamais en cumuler deux.
+ * Échelle de tailles pensée tactile d'abord : `md` = 44 px (cible minimale).
+ */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-sm border border-transparent bg-clip-padding font-medium whitespace-nowrap transition-[background-color,border-color,box-shadow,transform,opacity] duration-[160ms] ease-expo select-none disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
-        outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+        /** Primaire : un seul par page en corps de page, plus la nav. */
+        brand:
+          "bg-brand-solid text-brand-on-solid hover:-translate-y-0.5 hover:bg-brand-solid-hover hover:shadow-glow active:translate-y-0 active:opacity-90",
+        /** Secondaire : oriente vers la preuve, jamais en concurrence visuelle. */
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
-        ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "border-line-strong bg-surface text-ink hover:border-ink active:bg-inset",
+        ghost: "text-ink hover:bg-inset active:bg-inset",
+        link: "text-brand-text underline-offset-4 hover:underline",
+        outline:
+          "border-line-strong bg-transparent text-ink hover:bg-inset active:bg-inset",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-danger-subtle text-danger-text hover:bg-danger hover:text-white",
+        /** Sur fond encre : orange éclairci, texte encre. */
+        inverse:
+          "bg-inverse-brand text-inverse-on-brand hover:-translate-y-0.5 hover:shadow-glow hover:brightness-105 active:translate-y-0 active:opacity-90",
+        "inverse-ghost":
+          "text-inverse-fg-muted hover:text-inverse-fg active:opacity-80",
       },
       size: {
-        default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-8",
-        "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-9",
+        /** Hors cible tactile : réservé aux zones denses (filtres inline, tags). */
+        sm: "h-9 px-3.5 text-sm",
+        md: "h-11 px-[1.125rem] text-sm",
+        lg: "h-12 px-[1.625rem] text-[0.97rem]",
+        xl: "h-13 px-[1.875rem] text-base",
+        /** Pleine largeur empilée sous 640 px (Responsive Guidelines 05). */
+        block: "h-13 w-full px-6 text-base",
+        icon: "size-11",
+        "icon-sm": "size-9",
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: "brand",
+      size: "md",
     },
   }
 )
 
 function Button({
   className,
-  variant = "default",
-  size = "default",
+  variant,
+  size,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   return (
@@ -55,4 +66,18 @@ function Button({
   )
 }
 
-export { Button, buttonVariants }
+type ButtonLinkProps = React.ComponentProps<typeof Link> &
+  VariantProps<typeof buttonVariants>
+
+/** Même habillage que Button, mais c'est un lien : navigation, pas action. */
+function ButtonLink({ className, variant, size, ...props }: ButtonLinkProps) {
+  return (
+    <Link
+      data-slot="button-link"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+
+export { Button, ButtonLink, buttonVariants }

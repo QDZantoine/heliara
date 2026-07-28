@@ -46,7 +46,9 @@ Tailwind v4 : aucun `tailwind.config`. Tout vit dans `app/globals.css`, en deux 
 1. `:root` / `.dark` déclarent les variables brutes `--hel-*` (hex, ombres, halos, easings).
 2. `@theme inline` les expose comme utilitaires Tailwind (`bg-surface`, `text-brand-text`, `shadow-3`, `ease-expo`, `max-w-page`…) **et** mappe la nomenclature shadcn dessus (`--color-background`, `--color-primary`, `--color-ring`…), pour que tout composant shadcn ajouté ensuite hérite de la DA sans retouche.
 
-Dark mode : classe `.dark` sur `<html>`, pilotée par `next-themes`.
+Dark mode : classe `.dark` sur `<html>`, pilotée par `next-themes`. Un composant peut donc lire l'état du thème en CSS (`dark:hidden`) plutôt qu'en React : c'est ce que fait `ThemeToggle`, ce qui évite la garde `mounted` et le rendu vide à l'hydratation.
+
+Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 900 px, qui est la bascule nav horizontale / menu plein écran (`hidden menu:flex`).
 
 ### Nommage des couleurs
 
@@ -62,6 +64,14 @@ Dark mode : classe `.dark` sur `<html>`, pilotée par `next-themes`.
 | `inverse-fg` `inverse-fg-muted` `inverse-brand` `inverse-on-brand` | jeu de couleurs sur fond encre                                         |
 
 **Piège accessibilité :** l'orange de marque `#E9591F` ne donne que 3,5:1 avec du blanc — insuffisant pour un libellé de bouton. Le fond des boutons primaires utilise donc `brand-solid` (`#C9481A`, 4,8:1) et s'**éclaircit** vers `#E9591F` au survol, ce qui reste cohérent avec la DA (la bande CTA encre fait déjà éclaircir l'orange au survol). En dark, `brand-solid` = `#F0824B` avec du texte encre. `faint` (`#8F8F89`) ne doit jamais porter de texte : utiliser `label`.
+
+## Composants
+
+- `components/primitives/` — `Container` (1240 / 760 px, marges 20/32/40), `Section` (`space` sm/md/lg pour le rythme binaire, `tone` page/surface/inverse), `Eyebrow`, `Halo`, `Reveal`.
+- `components/layout/` — `SiteHeader`, `MobileMenu` (Dialog de Base UI : focus trap, Échap, verrou de scroll fournis), `SiteFooter`, `NavLink` (lit le pathname pour `aria-current`), `ThemeToggle`, `SkipLink`, `Logo`.
+- `components/ui/button.tsx` — `Button` (action, primitive Base UI), `ButtonLink` (navigation, `next/link`), `buttonVariants` pour habiller un `Link` ad hoc. **Échelle de tailles tactile d'abord** : `md` = 44 px et c'est le défaut, `lg` = 48, `xl` = 52, `block` = pleine largeur ; `sm` = 36 px est réservé aux zones denses non tactiles. Variantes : `brand`, `secondary`, `ghost`, `link`, `outline`, `destructive`, plus `inverse` et `inverse-ghost` pour les fonds encre.
+- Le focus visible est global (`:focus-visible` dans `globals.css`) : ne jamais ajouter d'anneau propre à un composant, on en cumulerait deux.
+- `Reveal` bascule l'attribut `data-reveal` directement sur le nœud DOM, sans état React. Ne pas y remettre de `setState` dans un effet : la règle ESLint `react-hooks/set-state-in-effect` est active et le refuse.
 
 ## Règles non négociables
 

@@ -248,6 +248,8 @@
   --container-page: 1240px;
   --container-reading: 760px;
   --breakpoint-2xl: 1440px;
+  /* Bascule nav horizontale / menu plein écran (Responsive Guidelines 04) */
+  --breakpoint-menu: 900px;
 
   /* --- Animations ------------------------------------------------------- */
   --animate-marquee: hel-marquee 36s linear infinite;
@@ -316,11 +318,11 @@
     text-wrap: balance;
   }
 
-  /* Focus visible : anneau bleu 2 px, jamais supprimé */
+  /* Focus visible : anneau bleu 2 px, jamais supprimé.
+     Pas de border-radius ici : l'outline suit déjà celui de l'élément. */
   :focus-visible {
     outline: 2px solid var(--hel-info);
     outline-offset: 2px;
-    border-radius: 4px;
   }
 
   ::selection {
