@@ -3,30 +3,23 @@
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
 
-import { Logo } from "@/components/layout/logo"
-
-/** Durées miroir de celles déclarées dans globals.css : 700 ms de course par
-    trait, plus 60 ms de décalage entre nappes et 50 ms entre traits. */
-const COVER_MS = 860
-const REVEAL_MS = 880
-/** Nombre de traits par nappe. Trois suffisent et coûtent moins de texture. */
-const STROKES = [0, 1, 2]
-/** Au-delà, on considère que le pointerdown n'a pas mené à une navigation. */
-const DISARM_MS = 600
+/** Durées miroir de celles déclarées dans globals.css. */
+const COVER_MS = 300
+const REVEAL_MS = 360
 /**
- * Répit accordé au navigateur entre l'affichage de la nouvelle page et le début
- * du retrait. Sans lui, le retrait démarre pile au premier rendu de la page
- * entrante — mise en page, peinture, hydratation, observateurs de scroll — et
- * ses premières images sautent. Ce répit se passe écran couvert : invisible.
+ * Répit accordé au navigateur entre l'affichage de la nouvelle page et le lever
+ * du voile. Sans lui, le voile se lève pile pendant le premier rendu de la page
+ * entrante — mise en page, peinture, hydratation. Ce répit se passe écran
+ * couvert : invisible.
  */
-const SETTLE_MS = 180
+const SETTLE_MS = 140
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
 const STUCK_MS = 2500
 
-type Phase = "idle" | "armed" | "cover" | "reveal"
+type Phase = "idle" | "cover" | "reveal"
 
 /** Le lien est-il une navigation interne que nous devons animer ? */
-function internalTarget(event: MouseEvent | PointerEvent) {
+function internalTarget(event: MouseEvent) {
   const anchor = (event.target as Element | null)?.closest("a")
   const href = anchor?.getAttribute("href")
   if (
@@ -52,20 +45,20 @@ function internalTarget(event: MouseEvent | PointerEvent) {
 }
 
 /**
- * Transition de page en traits de crayon : trois traits en lentille balaient
- * l’écran en diagonale et grossissent jusqu’à se rejoindre. La nappe orange est
- * décalée d’un demi-trait et part la première, si bien que l’orange n’apparaît
- * que dans les interstices que l’encre n’a pas encore refermés. La navigation a
- * lieu écran couvert, puis l’encre se retire et les traits orange ferment la
- * marche.
+ * Transition de page : un voile encre apparaît en fondu, la navigation a lieu
+ * écran couvert, puis le voile disparaît sur la nouvelle page.
  *
- * Le rideau est piloté par un attribut sur le nœud plutôt que par un état
- * React : aucun rendu pendant l’animation, et la règle
+ * Volontairement minimale : un seul élément, une seule propriété animée
+ * (`opacity`), composée par le GPU. Rien à synchroniser, aucune mise en page ni
+ * peinture pendant l'animation — c'est ce qui la rend fluide par construction.
+ *
+ * Le voile est piloté par un attribut sur le nœud plutôt que par un état
+ * React : aucun rendu pendant l'animation, et la règle
  * `react-hooks/set-state-in-effect` reste satisfaite.
  *
  * Dégradations assumées : sans JavaScript, ou avec `prefers-reduced-motion`,
- * les liens naviguent normalement et le rideau ne se déclenche jamais. Le
- * rideau est `aria-hidden` et ne capte jamais le pointeur.
+ * les liens naviguent normalement et le voile ne se déclenche jamais. Le voile
+ * est `aria-hidden` et ne capte jamais le pointeur.
  */
 function PageCurtain() {
   const router = useRouter()
@@ -76,17 +69,11 @@ function PageCurtain() {
 
   const setPhase = React.useCallback((phase: Phase) => {
     rootRef.current?.setAttribute("data-phase", phase)
-    // Drapeau lu par `Reveal` : pendant le rideau, un bloc qui entre dans le
-    // champ apparaît sans fondu. Le rideau est la transition ; superposer
-    // trente fondus de 600 ms par-dessus est ce qui donne l'impression de saccade.
-    const active = phase === "cover" || phase === "reveal"
-    document.documentElement.toggleAttribute("data-curtain", active)
+    // Drapeau lu par `Reveal` : pendant la transition, un bloc qui entre dans le
+    // champ apparaît sans fondu. Le voile est la transition ; superposer trente
+    // fondus de 600 ms par-dessus rend l'arrivée confuse.
+    document.documentElement.toggleAttribute("data-curtain", phase !== "idle")
   }, [])
-
-  const phaseIs = React.useCallback(
-    (phase: Phase) => rootRef.current?.getAttribute("data-phase") === phase,
-    []
-  )
 
   const after = React.useCallback((ms: number, fn: () => void) => {
     timersRef.current.push(setTimeout(fn, ms))
@@ -100,20 +87,6 @@ function PageCurtain() {
   React.useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       return
-    }
-
-    // Pré-armement : la promotion des couches de composition a lieu ici, avant
-    // le clic, et non au premier frame de l'animation où elle se voit.
-    const onPointerDown = (event: PointerEvent) => {
-      if (!phaseIs("idle") || !internalTarget(event)) {
-        return
-      }
-      setPhase("armed")
-      after(DISARM_MS, () => {
-        if (phaseIs("armed")) {
-          setPhase("idle")
-        }
-      })
     }
 
     const onClick = (event: MouseEvent) => {
@@ -151,17 +124,13 @@ function PageCurtain() {
     // onClick et abandonne si l’évènement est déjà préempté. En bulle, il aurait
     // déjà navigué. Les `onClick` portés par les liens (fermeture du menu
     // mobile) continuent de s’exécuter, la propagation n’étant pas coupée.
-    document.addEventListener("pointerdown", onPointerDown, true)
     document.addEventListener("click", onClick, true)
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true)
-      document.removeEventListener("click", onClick, true)
-    }
-  }, [after, phaseIs, router, setPhase])
+    return () => document.removeEventListener("click", onClick, true)
+  }, [after, router, setPhase])
 
-  // Nouvelle page affichée : on ouvre le rideau, après avoir laissé le
-  // navigateur la peindre. Une navigation qui ne vient pas d’un clic intercepté
-  // (retour arrière, lien externe) n’anime rien.
+  // Nouvelle page affichée : on lève le voile, après avoir laissé le navigateur
+  // la peindre. Une navigation qui ne vient pas d’un clic intercepté (retour
+  // arrière, lien externe) n’anime rien.
   React.useEffect(() => {
     if (!coveringRef.current) {
       return
@@ -170,15 +139,11 @@ function PageCurtain() {
 
     let frame = 0
     let done: ReturnType<typeof setTimeout> | undefined
-    // Deux frames puis le répit : la première laisse React commiter, la seconde
-    // laisse le navigateur peindre, et le délai absorbe l'hydratation.
     const settle = setTimeout(() => {
-      frame = requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          setPhase("reveal")
-          done = setTimeout(() => setPhase("idle"), REVEAL_MS)
-        })
-      )
+      frame = requestAnimationFrame(() => {
+        setPhase("reveal")
+        done = setTimeout(() => setPhase("idle"), REVEAL_MS)
+      })
     }, SETTLE_MS)
 
     return () => {
@@ -192,31 +157,7 @@ function PageCurtain() {
 
   return (
     <div ref={rootRef} data-phase="idle" aria-hidden="true">
-      <div className="hel-curtain">
-        {(["trace", "ink"] as const).map((nappe) => (
-          <div
-            key={nappe}
-            className={`hel-curtain-field hel-curtain-field--${nappe}`}
-          >
-            {STROKES.map((index) => (
-              <div
-                key={index}
-                className="hel-curtain-stroke"
-                style={
-                  {
-                    top: `${index * 33}%`,
-                    // Ordre inversé : le geste part du bas vers le haut.
-                    "--stroke": STROKES.length - 1 - index,
-                  } as React.CSSProperties
-                }
-              />
-            ))}
-          </div>
-        ))}
-        <div className="hel-curtain-mark">
-          <Logo tone="inverse" alt="" className="h-8" />
-        </div>
-      </div>
+      <div className="hel-curtain" />
     </div>
   )
 }

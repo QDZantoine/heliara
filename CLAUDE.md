@@ -75,33 +75,30 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 ## Transition de page
 
-`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, joue un geste en traits de crayon, navigue écran couvert, puis rouvre.
+`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, fait apparaître un voile encre en fondu, navigue écran couvert, puis fait disparaître le voile sur la nouvelle page. 300 ms à la couverture, 360 ms au lever.
 
-Le geste : **trois traits en lentille** balaient l'écran en diagonale (−22°) et grossissent jusqu'à se rejoindre. Un trait est une ellipse très aplatie (`border-radius: 50%` sur une boîte large et basse) animée en `scaleY` de 0 à 1,3 : les pointes sont franches, et les interstices entre deux traits voisins produisent les éclats effilés du geste.
+**Volontairement minimale : un seul élément, une seule propriété animée (`opacity`).** C'est un choix, pas une facilité. Un `opacity` sur un élément unique est composé par le GPU : il n'y a ni mise en page, ni peinture, ni plusieurs couches à synchroniser pendant l'animation, donc rien qui puisse saccader. Les versions précédentes — un voile à crêtes arrondies, puis des traits en lentille balayant en diagonale — demandaient jusqu'à six couches de grande taille et sont restées perçues comme sèches malgré un profil d'images propre à la mesure. **Ne pas y revenir sans une raison forte.**
 
-Deux nappes superposées : la nappe **orange** est décalée d'un demi-trait et part 60 ms avant la nappe **encre**, si bien que l'orange n'apparaît que dans les interstices que l'encre n'a pas encore refermés. L'écran couvert est donc encre, et l'orange reste un trait, jamais un aplat. À la sortie l'ordre s'inverse : l'encre se retire la première, les traits orange sont la dernière chose vue.
+Quatre points la maintiennent propre :
 
-### Fluidité : cinq points, tous nécessaires
+1. **Interception en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le voile ne se déclenche jamais. La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).
+2. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le voile. Next l'annonce en clair dans le log de dev.
+3. **Un répit avant le lever** (`SETTLE_MS`, 140 ms). Le voile ne doit pas se lever au moment où React commite la page entrante : sa mise en page, sa peinture et son hydratation tomberaient sur les premières images de l'animation. Ce répit se passe écran couvert, donc invisible.
+4. **Le contenu entrant n'anime pas par-dessus le voile.** `PageCurtain` pose `data-curtain` sur `<html>` pendant la transition ; `Reveal` le lit **au moment où il révèle** — pas au montage, sinon les blocs sous la ligne de flottaison perdraient leur apparition au scroll — et pose `data-reveal-now`, qui coupe le fondu. Le voile est la transition ; empiler trente fondus de 600 ms par-dessus rend l'arrivée confuse.
 
-1. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le rideau. Next l'annonce en clair dans le log de dev.
-2. **Un répit avant le retrait** (`SETTLE_MS`, 180 ms). Le retrait ne doit pas démarrer au moment où React commite la page entrante : sa mise en page, sa peinture et son hydratation tombent alors sur les premières images de l'animation. Ce répit se passe écran couvert, donc invisible. C'était la cause principale de la sécheresse du retrait.
-3. **Le contenu entrant n'anime pas par-dessus le rideau.** `PageCurtain` pose `data-curtain` sur `<html>` pendant la transition ; `Reveal` le lit **au moment où il révèle** (pas au montage, sinon les blocs sous la ligne de flottaison perdraient leur apparition au scroll) et pose `data-reveal-now`, qui coupe le fondu. Le rideau est la transition ; empiler trente fondus de 600 ms par-dessus est ce qui donne l'impression de saccade.
-4. **Easing symétrique dans les deux sens** (`--hel-ease-inout`). Une courbe « out » fait _claquer_ une forme qui apparaît et _arrache_ une forme qui disparaît. L'expo-out — 30 % du trajet dans les 6 % du temps — est à réserver aux micro-transitions.
-5. **Couches de composition promues avant le clic.** L'état `armed` est posé au `pointerdown` et n'applique que `will-change: transform` ; un `translate3d` figure dans chaque étape des keyframes pour maintenir la promotion. Promouvoir au premier frame de l'animation produit un à-coup.
+Un filet de sécurité rouvre le voile si la navigation n'aboutit pas. Sans JavaScript et sous `prefers-reduced-motion`, les liens naviguent normalement.
 
-Réglages du geste : **décalage court devant une course longue** (50 ms contre 700 ms) pour que les traits se chevauchent, et **ampleur du `scaleY`** à 1,3 — trop d'ampleur et les interstices se referment avant d'être vus, l'écran redevient un aplat qui monte.
-
-La transition dure ~860 ms à la couverture et ~880 ms au retrait, donc bien au-delà de la fourchette 100–360 ms de la DA. C'est assumé : cette fourchette vise les micro-transitions, pas un changement de page.
+Pas de `framer-motion` : l'animation porte sur `opacity`, déjà composée par le GPU. La bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
 
 ### Mesurer la fluidité, ne pas la juger à l'œil
 
-Des captures ne disent rien du nombre d'images perdues. Installer un enregistreur `requestAnimationFrame` qui note à chaque frame l'horodatage **et** la valeur de `data-phase`, déclencher la navigation, puis agréger les écarts par phase. L'agrégation par phase est ce qui compte : une pause de 150 ms pendant que l'écran est couvert est invisible, la même pause pendant le retrait est un défaut. Référence en production : médiane 8,3 ms, maximum 9,4 ms, **aucune frame au-delà de 24 ms** sur `cover` comme sur `reveal`.
+Des captures ne disent rien du nombre d'images perdues. Installer un enregistreur `requestAnimationFrame` qui note à chaque frame l'horodatage **et** la valeur de `data-phase`, déclencher la navigation, puis agréger les écarts par phase. L'agrégation par phase est ce qui compte : une pause de 150 ms pendant que l'écran est couvert est invisible, la même pause pendant le lever est un défaut. Référence en production : médiane 8,3 ms, maximum 9,4 ms, **aucune frame au-delà de 24 ms** sur `cover` comme sur `reveal`.
 
 Trois pièges de méthode, tous rencontrés :
 
-- **Simuler le clic avec `element.click()` ne déclenche pas `pointerdown`**, donc ni le pré-armement ni rien qui en dépende. Émettre la séquence complète `pointerdown` → `pointerup` → `click`.
-- **Chrome headless annonce `prefers-reduced-motion: reduce` par défaut**, ce qui désactive tout le rideau. Forcer `no-preference` via `Emulation.setEmulatedMedia`, sinon on mesure une page sans animation.
-- **Un `next start` resté en vie sert un build périmé.** Les chunks répondent alors en 500, l'hydratation échoue, le rideau ne tourne pas — et la mesure affiche une fluidité parfaite qui ne mesure rien. Toujours vérifier qu'un chunk référencé par le HTML répond en 200, et surveiller `Network.responseReceived` pour les statuts ≥ 400.
+- **Chrome headless annonce `prefers-reduced-motion: reduce` par défaut**, ce qui désactive toute la transition. Forcer `no-preference` via `Emulation.setEmulatedMedia`, sinon on mesure une page sans animation.
+- **Un `next start` resté en vie sert un build périmé.** Les chunks répondent alors en 500, l'hydratation échoue, la transition ne tourne pas — et la mesure affiche une fluidité parfaite qui ne mesure rien. Vérifier qu'un chunk référencé par le HTML répond en 200, et surveiller `Network.responseReceived` pour les statuts ≥ 400. Le `data-phase` du DOM est rendu côté serveur : sa présence ne prouve pas que le composant client a pris la main.
+- **`element.click()` ne déclenche pas `pointerdown`.** Sans conséquence sur l'implémentation actuelle, mais à savoir si un jour un comportement en dépend : émettre la séquence `pointerdown` → `pointerup` → `click`.
 
 ## Vérification visuelle
 

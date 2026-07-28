@@ -307,61 +307,29 @@
 }
 
 /* ==========================================================================
-   Rideau de transition de page — traits de crayon
+   Transition de page — voile encre
 
-   Trois traits en lentille (une ellipse très aplatie : pointue aux deux bouts)
-   balaient l'écran en diagonale et grossissent jusqu'à se rejoindre. Les
-   interstices entre deux traits voisins forment les éclats effilés
-   caractéristiques du geste.
+   Volontairement minimale : un seul élément, une seule propriété animée
+   (`opacity`), composée par le GPU. C'est le seul montage qui ne peut pas
+   saccader — il n'y a ni mise en page, ni peinture, ni plusieurs couches à
+   synchroniser. Les tentatives précédentes (traits en lentille balayant en
+   diagonale) demandaient six couches de grande taille et restaient sèches.
 
-   Deux nappes superposées : la nappe orange est décalée d'un demi-trait et part
-   60 ms avant la nappe encre, si bien que l'orange n'apparaît que dans les
-   interstices que l'encre n'a pas encore refermés. L'orange reste donc un trait,
-   jamais un aplat, et l'écran couvert est encre. À la sortie l'ordre s'inverse :
-   l'encre se retire la première, les traits orange ferment la marche.
-
-   Fluidité — trois points, tous nécessaires :
-   · easing symétrique dans les deux sens. Une courbe « out » ferait claquer
-     chaque trait à l'ouverture et l'arracherait à la fermeture ;
-   · décalage court (50 ms) devant une course longue (700 ms), pour que les
-     traits se chevauchent et donnent un geste continu, pas trois évènements ;
-   · couches de composition promues avant le clic (état `armed`, posé au
-     pointerdown) et maintenues par un translate3d présent dans chaque étape des
-     keyframes. Promouvoir au premier frame de l'animation produit un à-coup.
+   Le voile reste dans la palette : encre, comme les bandes de rupture. La
+   navigation a lieu écran couvert, ce qui masque le premier rendu de la page
+   entrante.
    ========================================================================== */
 
-/* translate3d dans chaque étape : force la couche de composition, si bien que
-   l'animation ne repasse jamais par le thread principal. */
-@keyframes hel-stroke-in {
-  from {
-    transform: translate3d(0, 0, 0) scaleY(0);
-  }
-  to {
-    transform: translate3d(0, 0, 0) scaleY(1.3);
-  }
-}
-
-@keyframes hel-stroke-out {
-  from {
-    transform: translate3d(0, 0, 0) scaleY(1.3);
-  }
-  to {
-    transform: translate3d(0, 0, 0) scaleY(0);
-  }
-}
-
-@keyframes hel-mark-in {
+@keyframes hel-curtain-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
-@keyframes hel-mark-out {
+@keyframes hel-curtain-out {
   from {
     opacity: 1;
   }
@@ -374,90 +342,18 @@
   position: fixed;
   inset: 0;
   z-index: 900;
-  overflow: hidden;
+  background: var(--hel-inverse);
+  opacity: 0;
   /* Ne capte jamais le pointeur : un voile ne doit pas pouvoir piéger un clic. */
   pointer-events: none;
 }
 
-/* Nappe surdimensionnée : la rotation ne doit jamais découvrir un coin. */
-.hel-curtain-field {
-  position: absolute;
-  top: -25%;
-  left: -25%;
-  width: 150%;
-  height: 150%;
-  transform: rotate(-22deg);
+[data-phase="cover"] .hel-curtain {
+  animation: hel-curtain-in 300ms var(--hel-ease-inout) forwards;
 }
 
-/* La nappe orange est décalée d'une demi-bande pour tomber dans les interstices. */
-.hel-curtain-field--trace {
-  transform: rotate(-22deg) translateY(-16.5%);
-}
-
-.hel-curtain-stroke {
-  position: absolute;
-  left: -5%;
-  width: 110%;
-  height: 34%;
-  /* Ellipse très aplatie : les pointes deviennent franches. */
-  border-radius: 50%;
-  transform: translate3d(0, 0, 0) scaleY(0);
-  backface-visibility: hidden;
-}
-
-.hel-curtain-field--trace .hel-curtain-stroke {
-  background: var(--hel-brand);
-}
-
-.hel-curtain-field--ink .hel-curtain-stroke {
-  background: var(--hel-inverse);
-}
-
-.hel-curtain-mark {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-}
-
-/* `armed` est posé au pointerdown : la promotion des couches a lieu avant le
-   clic, et non au premier frame de l'animation, où elle produit un à-coup. */
-[data-phase="armed"] .hel-curtain-stroke,
-[data-phase="cover"] .hel-curtain-stroke,
-[data-phase="reveal"] .hel-curtain-stroke {
-  will-change: transform;
-}
-
-/* Montée : les traits orange ouvrent la voie, l'encre les referme. */
-[data-phase="cover"] .hel-curtain-field--trace .hel-curtain-stroke {
-  animation: hel-stroke-in 700ms var(--hel-ease-inout)
-    calc(var(--stroke) * 50ms) forwards;
-}
-
-[data-phase="cover"] .hel-curtain-field--ink .hel-curtain-stroke {
-  animation: hel-stroke-in 700ms var(--hel-ease-inout)
-    calc(60ms + var(--stroke) * 50ms) forwards;
-}
-
-[data-phase="cover"] .hel-curtain-mark {
-  animation: hel-mark-in 320ms var(--hel-ease-inout) 600ms forwards;
-}
-
-/* Sortie : l'encre se retire, les traits orange ferment la marche. */
-[data-phase="reveal"] .hel-curtain-field--ink .hel-curtain-stroke {
-  animation: hel-stroke-out 700ms var(--hel-ease-inout)
-    calc(var(--stroke) * 50ms) forwards;
-}
-
-[data-phase="reveal"] .hel-curtain-field--trace .hel-curtain-stroke {
-  animation: hel-stroke-out 700ms var(--hel-ease-inout)
-    calc(60ms + var(--stroke) * 50ms) forwards;
-}
-
-[data-phase="reveal"] .hel-curtain-mark {
-  animation: hel-mark-out 240ms var(--hel-ease-inout) forwards;
+[data-phase="reveal"] .hel-curtain {
+  animation: hel-curtain-out 360ms var(--hel-ease-inout) forwards;
 }
 
 @keyframes hel-fade-up {
