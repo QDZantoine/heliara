@@ -11,6 +11,8 @@ type FinalCtaProps = {
   intro?: string
   /** Libellé du bouton unique. */
   action?: string
+  /** Liens secondaires ajoutés sous le bouton, sur fond encre. */
+  children?: React.ReactNode
 }
 
 /**
@@ -22,6 +24,7 @@ function FinalCta({
   title = cta.primary.label,
   intro = `Un échange de trente minutes, sans engagement. ${site.responseCommitment}`,
   action = "Prendre contact",
+  children,
 }: FinalCtaProps) {
   return (
     <Section
@@ -67,6 +70,7 @@ function FinalCta({
             ou écrivez-nous directement
           </a>
         </Reveal>
+        {children ? <Reveal delay={180}>{children}</Reveal> : null}
       </Container>
     </Section>
   )

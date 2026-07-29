@@ -1,6 +1,6 @@
 # Heliara - conventions du projet
 
-Site vitrine + portfolio du studio Heliara (marque du groupe Hexceos).
+Site vitrine + portfolio du studio Heliara.
 Next.js 16 App Router · TypeScript · Tailwind CSS v4 · shadcn/ui (style `base-nova`, primitives `@base-ui`).
 
 ## Sources de vérité
@@ -124,6 +124,16 @@ Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer
 
 Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grotesk élargissent la virgule décimale, ce qui transforme « 99,98 % » en « 99 , 98 % ». `[data-numeric]` est donc réservé aux colonnes de chiffres à aligner, jamais aux valeurs isolées.
 
+## Routes
+
+Cinq entrées de nav (`Expertises`, `Réalisations`, `Méthode`, `À propos`, `Ressources`) plus le CTA permanent vers `/contact`. `/le-groupe`, `/mentions-legales` et `/confidentialite` ne vivent que dans le pied de page.
+
+Carrières a été retiré du périmètre : la fiche existe dans l'Architecture UX et une maquette a été exportée, mais la page n'est pas construite. Rien n'y renvoie.
+
+`app/sitemap.ts` déclare les pages publiques et les trois collections dynamiques. Les pages légales en sont absentes : elles portent `robots: { index: false }`, il serait contradictoire de les déclarer. `app/robots.ts` pointe vers le plan du site.
+
+Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec next typegen`. Sans quoi `PageProps<"/ma/[route]">` échoue au typecheck.
+
 ## Formulaires
 
 `zod` + `react-hook-form`. Le schéma vit dans `lib/schemas/`, **partagé par le client et l'action serveur** : un seul schéma, donc aucun risque de voir les deux validations divergentes. Les messages y sont rédigés pour être affichés tels quels, en français, sans jargon de validation.
@@ -186,7 +196,8 @@ Issues de la DA et de l'Architecture UX, à vérifier sur chaque écran :
 - Une idée par section · rythme binaire dense/respirante · arc affirmation → preuve → action · **le CTA n'arrive jamais avant la preuve**.
 - Conversion à 3 niveaux : primaire « Parlons de votre projet » (1 par page + nav permanente) · secondaire « Voir nos réalisations » · tertiaire capture douce (fin d'article, footer).
 - Aucune impasse : chaque page finit par une action ou un rebond. Le footer est le seul terminus.
-- Endossement Hexceos : footer + `/le-groupe` + une ligne sur `/a-propos`. Jamais dans le hero, jamais dans la nav.
+- Endossement de groupe : footer + `/le-groupe` + une ligne sur `/a-propos`. Jamais dans le hero, jamais dans la nav.
+- **Le nom du holding n'apparaît nulle part sur le site public.** Il ne vit que dans les mentions légales. Hexceos et LessonSharing sont des **marques sœurs**, pas une maison mère : `/le-groupe` met en avant les trois marques et leur complémentarité, jamais le holding. Le footer dit « Heliara, une marque du groupe », sans le nommer.
 - Accessibilité AA : contrastes vérifiés, focus visible bleu 2 px, cibles ≥ 44 px, un seul `h1` par page, `prefers-reduced-motion` neutralise tout mouvement, contenu complet sans JS.
 - Motion : expo-out `cubic-bezier(0.16, 1, 0.3, 1)`, 100-360 ms. Entrées fondu + translation. Jamais de rebond ni de parallaxe profonde.
 

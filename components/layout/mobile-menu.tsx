@@ -108,7 +108,7 @@ function MobileMenu() {
                 onClick={close}
                 className="inline-flex min-h-11 items-center hover:text-body"
               >
-                Une marque du groupe {group.name}
+                {group.endorsement}
               </Link>
               <Link
                 href={legalNav[0].href}

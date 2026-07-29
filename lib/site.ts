@@ -18,21 +18,25 @@ export const site = {
   responseCommitment: "Réponse d’un associé sous 48 heures.",
 } as const
 
+/**
+ * Endossement de groupe. **Le nom du holding n’apparaît nulle part sur le site
+ * public** : il ne vit que dans les mentions légales. Hexceos et LessonSharing
+ * sont des marques sœurs, pas une maison mère, et /le-groupe met en avant les
+ * trois marques plutôt que le holding.
+ */
 export const group = {
-  name: "Hexceos",
-  /** Formulation d’endossement : footer, /le-groupe, une ligne sur /a-propos. */
-  endorsement: "Heliara, une marque du groupe Hexceos",
+  endorsement: "Heliara, une marque du groupe",
+  label: "Le groupe",
   href: "/le-groupe",
 } as const
 
-/** Six entrées de nav principale + un CTA permanent. Deux niveaux maximum. */
+/** Cinq entrées de nav principale + un CTA permanent. Deux niveaux maximum. */
 export const mainNav = [
   { label: "Expertises", href: "/expertises" },
   { label: "Réalisations", href: "/realisations" },
   { label: "Méthode", href: "/methode" },
   { label: "À propos", href: "/a-propos" },
   { label: "Ressources", href: "/ressources" },
-  { label: "Carrières", href: "/carrieres" },
 ] as const
 
 /** Trois niveaux d’engagement, jamais plus. */
@@ -74,7 +78,6 @@ export const footerNav = [
     links: [
       { label: "Méthode", href: "/methode" },
       { label: "À propos", href: "/a-propos" },
-      { label: "Carrières", href: "/carrieres" },
       { label: "Ressources", href: "/ressources" },
     ],
   },
@@ -83,7 +86,7 @@ export const footerNav = [
     links: [
       { label: cta.primary.label, href: cta.primary.href },
       { label: site.email, href: `mailto:${site.email}` },
-      { label: `Le groupe ${group.name}`, href: group.href },
+      { label: group.label, href: group.href },
     ],
   },
 ] as const

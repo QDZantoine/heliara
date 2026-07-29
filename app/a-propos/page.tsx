@@ -120,7 +120,8 @@ export default function AProposPage() {
         </Container>
       </Section>
 
-      {/* Endossement Hexceos : une ligne, un lien. Jamais plus sur cette page. */}
+      {/* Endossement de groupe : une ligne, un lien. Le nom du holding
+          n'apparaît jamais, ici comme ailleurs sur le site public. */}
       <Section tone="surface" space="sm" aria-labelledby="ancrage">
         <Container>
           <Reveal className="max-w-reading">
@@ -131,18 +132,18 @@ export default function AProposPage() {
               id="ancrage"
               className="mb-3 text-[clamp(1.375rem,5.5vw,1.875rem)] font-bold"
             >
-              Autonomes, adossés à un groupe qui dure.
+              Trois marques sœurs, trois métiers.
             </h2>
             <p className="mb-5 text-[0.97rem] leading-relaxed text-body">
-              Heliara est une marque du groupe {group.name}, qui apporte la
-              cybersécurité et l’infrastructure quand un projet en a besoin. Nos
-              décisions produit, elles, nous appartiennent.
+              Heliara avance rarement seule : LessonSharing forme les équipes,
+              Hexceos opère et sécurise l’infrastructure. Nos décisions produit,
+              elles, nous appartiennent.
             </p>
             <Link
               href={group.href}
               className="inline-flex min-h-11 items-center gap-1.5 text-[0.94rem] font-medium text-brand-text"
             >
-              Le groupe {group.name}
+              {group.label}
               <ArrowRight
                 aria-hidden="true"
                 className="size-4"
