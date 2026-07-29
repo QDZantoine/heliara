@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 
-import { articles } from "@/lib/content/articles"
+import { listPublicArticleSlugs } from "@/lib/db/public-articles"
 import { listPublicCaseSlugs } from "@/lib/db/public-cases"
 import { expertiseServices } from "@/lib/content/expertises"
 import { site } from "@/lib/site"
@@ -44,9 +44,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
-    ...articles.map((article) => ({
-      url: url(`/ressources/${article.slug}`),
-      lastModified: new Date(article.publishedAt),
+    // Les articles aussi, même repli. `lastModified` vient de la date de
+    // publication, que la procédure des slugs rend déjà : rien à charger de plus.
+    ...(await listPublicArticleSlugs()).map((item) => ({
+      url: url(`/ressources/${item.slug}`),
+      lastModified: new Date(item.publishedOn),
       changeFrequency: "yearly" as const,
       priority: 0.6,
     })),

@@ -39,6 +39,17 @@ GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_studies TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_get_case_study     TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_slugs    TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_sectors  TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_articles      TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_get_article        TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_article_slugs TO 'app_read'@'%';
+
+-- **La seule procédure d'écriture accordée au site public.** Elle ne peut
+-- qu'incrémenter deux compteurs, ne rend aucune ligne et n'accepte qu'un slug : le
+-- pire qu'un appelant hostile en tire est un chiffre gonflé. C'est le seul
+-- millimètre de surface d'écriture ouvert, et il l'est parce que les privilèges
+-- sont accordés procédure par procédure - un `GRANT EXECUTE ON heliara.*` aurait
+-- tout ouvert d'un coup.
+GRANT EXECUTE ON PROCEDURE heliara.pub_count_article_view TO 'app_read'@'%';
 
 -- Les fonctions utilitaires sont sans effet de bord et ne touchent aucune table.
 GRANT EXECUTE ON FUNCTION heliara.Bin2Uuid TO 'app_read'@'%';
@@ -90,6 +101,17 @@ GRANT EXECUTE ON PROCEDURE heliara.set_case_results     TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_case_meta        TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_case_lessons     TO 'app_write'@'%';
 
+-- Articles.
+GRANT EXECUTE ON PROCEDURE heliara.list_articles         TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.get_article_full      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.create_article        TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.update_article        TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_article_blocks    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.publish_article       TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_article        TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_article_featured  TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.get_article_views     TO 'app_write'@'%';
+
 -- Médias. Aucune n'est accordée à `app_read` : le site public lit les images par
 -- leur URL publique dans MinIO, il n'a jamais besoin d'interroger la table.
 GRANT EXECUTE ON PROCEDURE heliara.create_media       TO 'app_write'@'%';
@@ -107,6 +129,13 @@ GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_studies TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_get_case_study    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_slugs   TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_sectors TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_articles      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_get_article        TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_article_slugs TO 'app_write'@'%';
+-- Accordée aussi à l'administration, mais pour une autre raison : ses tests
+-- d'intégration exercent le comptage, et l'aperçu peut vouloir le déclencher. Elle
+-- ne lui ouvre rien de plus - elle a déjà tous les droits d'écriture.
+GRANT EXECUTE ON PROCEDURE heliara.pub_count_article_view TO 'app_write'@'%';
 
 -- Fonctions utilitaires.
 GRANT EXECUTE ON FUNCTION heliara.GenerateKey TO 'app_write'@'%';

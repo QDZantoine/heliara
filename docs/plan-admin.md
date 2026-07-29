@@ -9,37 +9,58 @@ accédée **exclusivement par procédures stockées** et un stockage objet MinIO
 
 ## Avancement
 
-Ce tableau est la première chose à lire pour reprendre le chantier. Le convenu et le
-vérifié y sont distingués : « fait » signifie éprouvé contre l'infrastructure en marche,
-pas seulement écrit.
+Ce tableau est la première chose à lire pour reprendre le chantier. « Fait » signifie
+éprouvé contre l'infrastructure en marche, pas seulement écrit.
 
-| Étape                                  | État                                                    |
-| -------------------------------------- | ------------------------------------------------------- |
-| 0 - Infrastructure                     | **fait**, vérifié sur la base et le stockage en marche  |
-| 1 - Schéma et procédures d'authentification | à faire, prochaine étape                           |
-| 2 - Couche d'accès                     | à faire                                                 |
-| 3 - Authentification applicative       | à faire                                                 |
-| 4 - Médias                             | à faire                                                 |
-| 5 - Réalisations                       | à faire                                                 |
-| 6 - Bascule du site public             | à faire                                                 |
+| Étape                                       | État                                           |
+| ------------------------------------------- | ---------------------------------------------- |
+| 0 - Infrastructure                          | **fait**                                       |
+| 1 - Schéma et procédures d'authentification | **fait**                                       |
+| 2 - Couche d'accès                          | **fait**                                       |
+| 3 - Authentification applicative            | **fait**                                       |
+| 4 - Médias                                  | **fait**, dépôt par URL présignée              |
+| 5 - Réalisations                            | **fait**, aperçu de brouillon compris          |
+| 6 - Bascule du site public                  | **fait** pour les réalisations et les articles |
+| 7 - Articles                                | **fait**, comptage de vues compris             |
+| 8 - Le reste des contenus                   | à faire                                        |
 
-Ce qui a été vérifié à l'étape 0, et n'a donc pas à être revérifié :
+Restent dans `lib/content/*.ts`, sans administration : expertises, équipe,
+témoignages, clients, chiffres, méthode, groupe et marques, sections légales, et les
+textes de pages. Le moule est établi - schéma, procédures, grants, couche d'accès,
+actions, écrans, seed, tests - il n'y a plus qu'à le reproduire.
 
-- Les trois comptes existent. `app_exec` se voit refuser `SELECT` comme `CREATE` sur
-  toute table, et ne dispose que de `GRANT EXECUTE ON heliara.*`.
-- `GenerateKey()`, `Uuid2Bin()`, `Bin2Uuid()` et `Slugify()` répondent, **appelées par
-  `app_exec`**. Aller-retour UUID conforme, entrée invalide à `NULL`, 16 octets, chiffre
-  de version à 7, ordre temporel respecté.
-- Le seau MinIO `heliara` est créé, son préfixe `public/` ouvert en lecture anonyme.
+Ce qui a été vérifié contre la base en marche, et n'a pas à l'être deux fois :
 
-Deux constats acquis à ne pas redécouvrir :
+- **La séparation lecture / écriture.** `app_read` se voit refuser toute procédure
+  d'écriture, `list_case_studies` et `list_articles` - celles qui montrent les
+  brouillons - `get_session`, `create_user`, `list_audit`, ainsi que `SELECT`,
+  `UPDATE` et `CREATE` sur toute table. Seule exception : `pub_count_article_view`,
+  qui ne peut qu'incrémenter deux compteurs.
+- **La propagation.** Publication dans l'administration, puis apparition sur le site
+  public sans redémarrage ni rebuild : 6 fiches avant, 7 après.
+- **Le parcours d'administration complet** en navigateur : connexion, création,
+  édition par onglets, dépôt d'image, aperçu de brouillon, publication.
+- **Le comptage de vues** : total et ligne du jour incrémentés ensemble, sans effet
+  sur un brouillon ni sur un slug inconnu, et emportés avec l'article supprimé.
 
+Constats acquis, à ne pas redécouvrir :
+
+- `SQL SECURITY DEFINER` est **la** condition du modèle. En `INVOKER`, la procédure
+  s'exécute avec les droits de l'appelant, donc un compte sans droit de table échoue
+  à l'intérieur même de la procédure.
+- `DROP PROCEDURE` emporte ses privilèges : `pnpm db:migrate` rejoue toujours les
+  grants après les procédures.
 - `UUID_v7()` n'existe qu'à partir de MariaDB 11.7, l'image est en 11.4 LTS.
-  `GenerateKey()` assemble donc le v7 à la main, ce qui rend l'API portable sur tout hôte
-  11.x. Ne pas « simplifier » en rappelant la fonction native.
-- L'entrypoint MariaDB ne substitue pas les variables d'environnement dans les fichiers
-  `.sql`. D'où `01-users.sh`, un script : c'est ce qui garde les mots de passe hors du
-  dépôt.
+  `GenerateKey()` assemble donc le v7 à la main. Ne pas « simplifier ».
+- L'entrypoint MariaDB ne substitue pas les variables d'environnement dans les
+  fichiers `.sql`. D'où `01-users.sh`, un script.
+- `LIMIT` n'accepte qu'un littéral ou une variable, jamais une expression.
+- `LEAVE` exige un bloc étiqueté.
+- `IFNULL(STR_TO_DATE(...), colonne)` ne protège de rien en mode strict : la forme
+  se vérifie par une expression régulière avant la conversion.
+- Next analyse `revalidate` statiquement : ce doit être un littéral.
+- Next 16 pose un verrou par répertoire de build : `pnpm dev:both` donne un
+  `NEXT_DIST_DIR` à chaque processus.
 
 ## Décisions actées
 

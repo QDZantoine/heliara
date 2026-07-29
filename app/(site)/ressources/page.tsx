@@ -8,13 +8,11 @@ import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { ArticleFeed } from "@/components/ressources/article-feed"
 import { NewsletterForm } from "@/components/ressources/newsletter-form"
+import { articleHref, categoryTone } from "@/lib/content/articles"
 import {
-  articleCategories,
-  articleHref,
-  categoryTone,
-  featuredArticle,
-  feedArticles,
-} from "@/lib/content/articles"
+  listPublicArticles,
+  publicArticleCategories,
+} from "@/lib/db/public-articles"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
@@ -23,7 +21,40 @@ export const metadata: Metadata = {
     "Guides, analyses et retours d’expérience : ce que nous apprenons en construisant des produits numériques.",
 }
 
-export default function RessourcesPage() {
+/**
+ * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next
+ * analyse cet export statiquement.
+ */
+export const revalidate = 60
+
+export default async function RessourcesPage() {
+  const all = await listPublicArticles()
+
+  /*
+    L'article en tête et le reste du flux.
+
+    La mise en avant est exclusive côté base - `set_article_featured` retire la
+    précédente - mais le repli sur le contenu statique peut en rendre plusieurs, et
+    une base amorçée à la main aussi. On prend donc le premier et l'on exclut
+    **celui-là seul** : sans cette précaution, deux mises en avant feraient
+    disparaître un article du flux sans que personne comprenne pourquoi.
+  */
+  const featured = all.find((item) => item.featured) ?? all[0]
+  const feed = all.filter((item) => item.slug !== featured?.slug)
+  const categories = publicArticleCategories(feed)
+
+  if (!featured) {
+    return (
+      <div className="border-b border-line">
+        <Container className="py-24 text-center">
+          <p className="text-[0.94rem] text-label">
+            Aucun article publié pour l&apos;instant.
+          </p>
+        </Container>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="border-b border-line">
@@ -45,7 +76,7 @@ export default function RessourcesPage() {
         <Container>
           <Reveal>
             <Link
-              href={articleHref(featuredArticle.slug)}
+              href={articleHref(featured.slug)}
               className="group grid overflow-hidden rounded-xl border border-line bg-surface transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 lg:grid-cols-[1.2fr_1fr]"
             >
               <div className="flex flex-col gap-3.5 p-6 md:p-11">
@@ -53,33 +84,33 @@ export default function RessourcesPage() {
                   <span
                     className={cn(
                       "rounded-xs px-2.25 py-1 text-[0.6875rem] font-semibold tracking-[0.08em] uppercase",
-                      categoryTone[featuredArticle.category]
+                      categoryTone[featured.category]
                     )}
                   >
-                    {featuredArticle.category}
+                    {featured.category}
                   </span>
                   <span className="text-[0.78rem] text-label">
-                    {featuredArticle.readingTime} de lecture
+                    {featured.readingTime} de lecture
                   </span>
                 </div>
                 <h2 className="font-display text-[clamp(1.5rem,5.5vw,2rem)] leading-[1.12] font-bold tracking-[-0.02em] text-ink">
-                  {featuredArticle.title}
+                  {featured.title}
                 </h2>
                 <p className="max-w-[28.75rem] flex-1 text-[0.94rem] leading-relaxed text-body">
-                  {featuredArticle.lead}
+                  {featured.lead}
                 </p>
                 <p className="flex items-center gap-2.5 text-[0.82rem]">
                   <span
                     aria-hidden="true"
                     className="inline-flex size-8 items-center justify-center rounded-full border border-line bg-inset text-[0.69rem] font-semibold text-body"
                   >
-                    {featuredArticle.authorInitials}
+                    {featured.authorInitials}
                   </span>
                   <span className="text-body">
                     <span className="font-semibold text-ink">
-                      {featuredArticle.author}
+                      {featured.author}
                     </span>{" "}
-                    · {featuredArticle.authorRole} · {featuredArticle.date}
+                    · {featured.authorRole} · {featured.date}
                   </span>
                 </p>
               </div>
@@ -131,7 +162,7 @@ export default function RessourcesPage() {
 
       <Section space="sm" className="pt-0 md:pt-0 lg:pt-0">
         <Container>
-          <ArticleFeed articles={feedArticles} categories={articleCategories} />
+          <ArticleFeed articles={feed} categories={categories} />
         </Container>
       </Section>
 

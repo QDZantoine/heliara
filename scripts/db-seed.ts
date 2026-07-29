@@ -28,9 +28,12 @@ import "@/scripts/env"
 import { stdout } from "node:process"
 
 import { hashPassword } from "@/lib/auth/password"
+import { articles } from "@/lib/content/articles"
 import { caseStudies } from "@/lib/content/cases"
+import { blocksToJson } from "@/lib/db/articles"
 import { BusinessError, write } from "@/lib/db/call"
 import { closePool } from "@/lib/db/pool"
+import type { BlockInput } from "@/lib/schemas/article"
 
 /** Compte technique auteur de l'amorçage, pour que le journal d'audit ait un acteur. */
 const SEED_EMAIL = "seed@heliara.local"
@@ -162,14 +165,102 @@ async function seedCases(actor: Buffer) {
   return { created, skipped }
 }
 
+/**
+ * Importe les articles.
+ *
+ * Le corps passe des blocs typés du fichier à la forme plate de la base :
+ * `text` / `lead` / `items`. La conversion est faite par `blocksToJson`, la même que
+ * celle de l'action d'administration - une seule définition du passage, donc aucune
+ * chance de voir l'import et l'éditeur produire des formes différentes.
+ *
+ * La mise en avant n'est pas posée dans la boucle : elle est exclusive, et
+ * `set_article_featured` s'en charge après coup, une fois. Sinon chaque insertion
+ * retirerait la précédente et seul le dernier article resterait en tête.
+ */
+async function seedArticles(actor: Buffer) {
+  const existing = new Set(
+    (await write.rows<{ slug: string }>("list_articles", [null])).map(
+      (row) => row.slug
+    )
+  )
+
+  let created = 0
+  let skipped = 0
+  let featured: Buffer | null = null
+
+  for (const article of articles) {
+    if (existing.has(article.slug)) {
+      skipped += 1
+      continue
+    }
+
+    const row = await write.rowStrict<{ id: Buffer }>("create_article", [
+      article.slug,
+      article.title,
+      article.category,
+      article.date,
+      actor,
+      null,
+    ])
+
+    await write.void("update_article", [
+      row.id,
+      article.slug,
+      article.category,
+      article.title,
+      article.lead,
+      article.author,
+      article.authorRole,
+      article.authorInitials,
+      article.publishedAt,
+      article.date,
+      article.readingTime,
+      null,
+      article.relatedCase ?? "",
+      null,
+      actor,
+      null,
+    ])
+
+    await write.void("set_article_blocks", [
+      row.id,
+      JSON.stringify(blocksToJson(article.body as BlockInput[])),
+      actor,
+      null,
+    ])
+
+    await write.void("publish_article", [row.id, 1, actor, null])
+
+    if (article.featured) {
+      featured = row.id
+    }
+
+    created += 1
+    stdout.write(`  + ${article.slug}\n`)
+  }
+
+  if (featured) {
+    // Après la boucle, et une seule fois : la mise en avant est exclusive.
+    await write.void("set_article_featured", [featured, 1, actor, null])
+  }
+
+  return { created, skipped }
+}
+
 async function main() {
   stdout.write("\nAmorçage de la base depuis le contenu statique.\n\n")
 
   const actor = await seedActor()
-  const cases = await seedCases(actor)
 
-  stdout.write(`\nRéalisations : ${cases.created} créée(s)`)
+  stdout.write("Réalisations\n")
+  const cases = await seedCases(actor)
+  stdout.write(`  ${cases.created} créée(s)`)
   stdout.write(cases.skipped ? `, ${cases.skipped} déjà présente(s).\n` : ".\n")
+
+  stdout.write("\nArticles\n")
+  const posts = await seedArticles(actor)
+  stdout.write(`  ${posts.created} créé(s)`)
+  stdout.write(posts.skipped ? `, ${posts.skipped} déjà présent(s).\n` : ".\n")
   stdout.write(
     "\nLe site public lit désormais la base. Le contenu statique reste en secours.\n\n"
   )

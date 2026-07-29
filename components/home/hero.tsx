@@ -33,8 +33,8 @@ function Hero() {
             delay={120}
             className="mb-9 max-w-[28.75rem] text-[1.0625rem] leading-relaxed text-body md:text-lg"
           >
-            Plateformes métiers, SaaS, applications et IA - conçus avec la
-            rigueur d’un atelier, pour des dirigeants qui pensent à dix ans.
+            Plateformes métiers, SaaS, applications et IA conçus avec la rigueur
+            d’un atelier, pour des dirigeants qui pensent à dix ans.
           </Reveal>
 
           <Reveal

@@ -503,6 +503,9 @@ pnpm db:migrate     # rejoue schéma, procédures ET privilèges
 pnpm db:seed        # amorce la base depuis le contenu statique
 ```
 
+Deux collections sont administrables : **Réalisations** et **Articles**. Les autres
+contenus vivent encore dans `lib/content/*.ts`.
+
 **`pnpm db:migrate` n'est pas un confort.** `DROP PROCEDURE` emporte avec lui les
 privilèges accordés sur cette procédure - ils vivent dans `mysql.procs_priv` et
 rien ne les restaure. Rejouer un fichier de procédures à la main révoque donc
@@ -548,6 +551,64 @@ double.
   synchronisation par effet - ce que `react-hooks/set-state-in-effect` refuse.
 - La colonne de navigation est `sticky` avec sa hauteur propre. Sans cela elle
   s'étire à la hauteur du contenu et le bloc du compte part hors de vue.
+
+### Articles
+
+Le corps reste en **blocs typés** - paragraphe, intertitre, encadré, liste
+numérotée - et non en HTML. Un encadré porte un chapô distinct de son texte, une
+liste numérotée des triplets numéro / titre / texte : aucun champ de texte riche ne
+saurait exprimer ces deux formes, et les écraser en HTML ferait perdre deux formes
+de la DA. Le corps de chaque paragraphe passe malgré tout par l'éditeur riche - à
+l'intérieur d'un bloc, gras, italique et liens ont leur place.
+
+**Une exception à la règle « jamais un JSON opaque ».** Elle vise les collections
+dont les éléments sont des entités qu'on veut requêter et réordonner. Les entrées
+d'un bloc numéroté n'en sont pas : sans identité, jamais lues séparément du bloc,
+disparaissant avec lui. Elles sont la charge d'un bloc, d'où `article_block.items`
+en JSON validé.
+
+Deux dates, et ce n'est pas une redondance : `published_on` en ISO trie et alimente
+le plan du site, `date_label` s'affiche en français. Formater l'un depuis l'autre en
+SQL dépendrait de la locale du serveur, et « été 2026 » est parfois plus juste
+qu'une date exacte.
+
+**La mise en avant est exclusive**, portée par `set_article_featured` et non par le
+formulaire : le flux public affiche un article en tête et l'exclut de la grille, donc
+deux mises en avant en feraient disparaître une sans que personne comprenne pourquoi.
+
+### Comptage des vues
+
+**Compter une vue est une écriture, et le site public ne peut pas écrire.** C'est
+là que le modèle par procédure paie : `pub_count_article_view` est la **seule**
+procédure d'écriture accordée à `app_read`, et le pire qu'un appelant hostile en
+tire est un chiffre gonflé - elle ne lit aucun contenu, ne rend aucune ligne,
+n'accepte qu'un slug, et ne touche que deux compteurs. Un `GRANT EXECUTE ON
+heliara.*` aurait tout ouvert d'un coup ; le grant par procédure permet d'ouvrir un
+millimètre.
+
+Le déclenchement vient du **navigateur** et non du rendu : les fiches sont prérendues
+et leur code ne s'exécute pas à chaque visite, donc un compteur incrémenté au rendu
+ne compterait qu'une visite sur beaucoup. `ViewCounter` attend deux secondes, ne
+compte qu'une fois par article et par session, s'abstient si l'onglet est caché ou
+sous automatisation. Le chiffre reste approximatif et gonflable, comme tout compteur
+public : il est présenté comme une indication de lecture, jamais comme une mesure
+d'audience.
+
+Deux niveaux de stockage : un total dénormalisé sur `article`, pour que la liste
+l'affiche sans un `SUM` par ligne, et un agrégat quotidien à part, parce qu'un total
+depuis toujours ne dit pas si l'article est lu **aujourd'hui**. Les deux écritures
+sont dans la même transaction - dénormaliser impose de tenir le total à jour au même
+instant que son détail.
+
+### Deux pièges SQL rencontrés sur les articles
+
+- **`LEAVE` exige un bloc étiqueté** en MariaDB : une sortie anticipée s'écrit
+  comme une condition, pas comme un saut.
+- **`IFNULL(STR_TO_DATE(...), colonne)` ne protège de rien** : en mode strict,
+  MariaDB lève sur une entrée illisible au lieu de rendre `NULL`. La forme se
+  vérifie par une expression régulière **avant** la conversion. Et côté schéma,
+  `Date.parse` ne suffit pas non plus - il accepte 2026-02-30 en le reportant au 2
+  mars, d'où le contrôle par aller-retour.
 
 ### Ce qui est facultatif dans une fiche
 

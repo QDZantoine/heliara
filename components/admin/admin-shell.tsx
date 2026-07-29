@@ -25,7 +25,7 @@ import { publicSiteUrl } from "@/lib/public-url"
 const nav = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/admin/realisations", label: "Réalisations", icon: FolderOpen },
-  { href: "/admin/articles", label: "Articles", icon: BookOpen, soon: true },
+  { href: "/admin/articles", label: "Articles", icon: BookOpen },
   { href: "/admin/comptes", label: "Comptes", icon: Users, soon: true },
 ] as const
 

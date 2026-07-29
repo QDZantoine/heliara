@@ -22,7 +22,7 @@ export default function MethodePage() {
         <PageHero
           eyebrow="Méthode"
           title="Le risque projet n’est pas une fatalité. C’est un défaut de méthode"
-          lead="Huit temps, des livrables nommés, des jalons courts. Voici exactement ce qui se passe quand vous travaillez avec nous - et ce que vous voyez à chaque étape."
+          lead="Huit temps, des livrables nommés, des jalons courts. Voici exactement ce qui se passe quand vous travaillez avec nous et ce que vous voyez à chaque étape."
         />
       </div>
 

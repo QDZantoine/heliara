@@ -125,4 +125,140 @@ BEGIN
   ORDER BY MIN(position) ASC;
 END$$
 
+-- ------------------------------------------------------------
+-- Articles
+-- ------------------------------------------------------------
+
+/**
+ * Le flux des articles publiés, du plus récent au plus ancien.
+ *
+ * Sans corps : la liste n'affiche que la carte. Charger les blocs de six articles
+ * pour n'en montrer aucun serait du gaspillage.
+ */
+DROP PROCEDURE IF EXISTS pub_list_articles$$
+CREATE PROCEDURE pub_list_articles()
+SQL SECURITY DEFINER
+BEGIN
+  SELECT
+    a.slug, a.category, a.title, a.lead,
+    a.author, a.author_role, a.author_initials,
+    a.published_on, a.date_label, a.reading_time,
+    a.featured, a.related_case_slug,
+    m.object_key AS hero_object_key,
+    m.alt        AS hero_alt,
+    m.width      AS hero_width,
+    m.height     AS hero_height,
+    a.published_at, a.updated_at
+  FROM article a
+  LEFT JOIN media m ON m.id = a.hero_media_id AND m.status = 'ready'
+  WHERE a.status = 'published'
+  ORDER BY a.published_on DESC, a.published_at DESC;
+END$$
+
+/**
+ * Un article publié, corps compris : deux jeux de résultats.
+ * Un brouillon rend zéro ligne, comme un article inexistant.
+ */
+DROP PROCEDURE IF EXISTS pub_get_article$$
+CREATE PROCEDURE pub_get_article(IN p_slug VARCHAR(120))
+SQL SECURITY DEFINER
+BEGIN
+  DECLARE v_id BINARY(16) DEFAULT NULL;
+
+  SELECT id INTO v_id
+  FROM article
+  WHERE slug = p_slug AND status = 'published'
+  LIMIT 1;
+
+  SELECT
+    a.slug, a.category, a.title, a.lead,
+    a.author, a.author_role, a.author_initials,
+    a.published_on, a.date_label, a.reading_time,
+    a.featured, a.related_case_slug,
+    m.object_key AS hero_object_key,
+    m.alt        AS hero_alt,
+    m.width      AS hero_width,
+    m.height     AS hero_height,
+    a.published_at, a.updated_at
+  FROM article a
+  LEFT JOIN media m ON m.id = a.hero_media_id AND m.status = 'ready'
+  WHERE a.id = v_id;
+
+  SELECT kind, text, lead, items
+  FROM article_block WHERE article_id = v_id ORDER BY position ASC;
+END$$
+
+/**
+ * Compte une vue d'article.
+ *
+ * **La seule procédure d'écriture accordée au site public, et il faut en mesurer la
+ * portée.**
+ *
+ * Le compte `app_read` n'a par ailleurs le droit d'écrire nulle part : c'est
+ * l'ensemble du modèle. Ouvrir une exception ici n'est possible que parce que les
+ * privilèges sont accordés **procédure par procédure** - le millimètre de surface
+ * qu'on ouvre est exactement celui-ci, et pas un de plus.
+ *
+ * Ce que cette procédure peut faire, au pire : gonfler un compteur. Elle ne lit
+ * aucun contenu, ne rend aucune ligne, n'accepte qu'un slug, et ne touche que deux
+ * colonnes numériques. Un appelant hostile ne peut ni modifier un article, ni le
+ * publier, ni le supprimer, ni découvrir un brouillon - un slug non publié ne
+ * correspond à rien et l'appel est sans effet.
+ *
+ * Le risque résiduel est celui de tout compteur public : le chiffre est
+ * approximatif et gonflable. C'est pourquoi il est présenté comme une indication de
+ * lecture et non comme une mesure d'audience, et pourquoi l'appel est déclenché
+ * côté navigateur avec un délai plutôt qu'au rendu - voir
+ * `components/ressources/view-counter.tsx`.
+ *
+ * Une remarque de conception qui compte : le total et la ligne du jour sont écrits
+ * dans la même transaction. Dénormaliser un total impose de le tenir à jour au même
+ * instant que son détail, sinon les deux finissent par se contredire.
+ */
+DROP PROCEDURE IF EXISTS pub_count_article_view$$
+CREATE PROCEDURE pub_count_article_view(IN p_slug VARCHAR(120))
+SQL SECURITY DEFINER
+BEGIN
+  DECLARE v_id BINARY(16) DEFAULT NULL;
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    -- **Silencieuse en cas d'échec, et c'est délibéré.** Un compteur qui casse ne
+    -- doit pas casser la lecture d'un article : l'appelant ne saura rien, et c'est
+    -- préférable à une erreur remontée au visiteur pour une statistique.
+  END;
+
+  SELECT id INTO v_id
+  FROM article
+  WHERE slug = p_slug AND status = 'published'
+  LIMIT 1;
+
+  -- Slug inconnu ou brouillon : aucun effet, aucune erreur, rien n'est révélé.
+  -- Le contrôle est une condition et non un `LEAVE`, que MariaDB n'accepte que
+  -- dans un bloc étiqueté.
+  IF v_id IS NOT NULL THEN
+    START TRANSACTION;
+
+    UPDATE article SET view_count = view_count + 1 WHERE id = v_id;
+
+    INSERT INTO article_view_daily (article_id, day, views)
+    VALUES (v_id, CURDATE(), 1)
+    ON DUPLICATE KEY UPDATE views = views + 1;
+
+    COMMIT;
+  END IF;
+END$$
+
+/** Les slugs publiés, pour `generateStaticParams` et le plan du site. */
+DROP PROCEDURE IF EXISTS pub_list_article_slugs$$
+CREATE PROCEDURE pub_list_article_slugs()
+SQL SECURITY DEFINER
+BEGIN
+  SELECT slug, published_on, updated_at
+  FROM article
+  WHERE status = 'published'
+  ORDER BY published_on DESC;
+END$$
+
 DELIMITER ;
