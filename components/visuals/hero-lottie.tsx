@@ -25,9 +25,9 @@ const HOLD_MS = 2200
 /**
  * Illustration du hero : trois fenêtres — wireframe, code, maquette haute
  * fidélité — qui s'empilent lentement, tiennent la pose, puis recommencent.
- * C'est le
- * propos du studio, montré plutôt qu'écrit, et cela reste dans la règle de la
- * DA : illustration abstraite, volumes simples, jamais de photo ni de 3D gadget.
+ * C'est le propos du studio, montré plutôt qu'écrit, et cela reste dans la règle
+ * de la DA : illustration abstraite, volumes simples, jamais de photo ni de 3D
+ * gadget.
  *
  * La boucle est pilotée à la main (`loop: false` plus un délai à la fin) parce
  * que Lottie ne sait pas tenir une pause entre deux cycles.
