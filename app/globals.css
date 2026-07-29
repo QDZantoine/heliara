@@ -414,6 +414,31 @@
   animation: hel-page-enter 560ms var(--hel-ease-inout) forwards;
 }
 
+/* --------------------------------------------------------------------------
+   Sélecteur de thème — interrupteur Lottie
+
+   Amélioration progressive : les icônes lucide tiennent le rôle jusqu'à ce que
+   l'illustration soit chargée, puis on permute. La commande fonctionne donc dès
+   le premier rendu, et reste fonctionnelle si le lecteur n'arrive jamais.
+   -------------------------------------------------------------------------- */
+
+.hel-theme-lottie {
+  display: none;
+  /* Le pavé de l'illustration est en 16/9 ; l'interrupteur y occupe environ
+     90 % de la largeur et 70 % de la hauteur, d'où ces proportions. */
+  width: 5rem;
+  height: 2.8125rem;
+  margin-block: -0.75rem;
+}
+
+[data-lottie="ready"] .hel-theme-icon {
+  display: none;
+}
+
+[data-lottie="ready"] .hel-theme-lottie {
+  display: block;
+}
+
 @keyframes hel-fade-up {
   from {
     opacity: 0;

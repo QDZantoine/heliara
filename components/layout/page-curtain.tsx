@@ -4,6 +4,8 @@ import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
 import type { AnimationItem } from "lottie-web"
 
+import { loadLottie, loadLottieData, whenIdle } from "@/lib/lottie"
+
 /** Fondu d'apparition du voile. */
 const COVER_MS = 300
 /**
@@ -114,11 +116,11 @@ function PageCurtain() {
 
     let cancelled = false
 
-    const load = async () => {
+    const cancelIdle = whenIdle(async () => {
       try {
-        const [{ default: lottie }, data] = await Promise.all([
-          import("lottie-web/build/player/lottie_light"),
-          fetch("/loading-animation-white.json").then((res) => res.json()),
+        const [lottie, animationData] = await Promise.all([
+          loadLottie(),
+          loadLottieData("/loading-animation-white.json"),
         ])
         if (cancelled || !markRef.current) {
           return
@@ -128,7 +130,7 @@ function PageCurtain() {
           renderer: "svg",
           loop: true,
           autoplay: false,
-          animationData: data,
+          animationData,
         })
         animation.setSpeed(LOTTIE_SPEED)
         animationRef.current = animation
@@ -136,19 +138,11 @@ function PageCurtain() {
         // Le lecteur ou l'illustration n'a pas pu être chargé : la transition
         // se joue sans, ce qui est un défaut acceptable.
       }
-    }
-
-    const idle = window.requestIdleCallback
-      ? window.requestIdleCallback(load, { timeout: 3000 })
-      : window.setTimeout(load, 1200)
+    })
 
     return () => {
       cancelled = true
-      if (window.cancelIdleCallback) {
-        window.cancelIdleCallback(idle)
-      } else {
-        clearTimeout(idle)
-      }
+      cancelIdle()
       animationRef.current?.destroy()
       animationRef.current = null
     }

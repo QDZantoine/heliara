@@ -123,6 +123,28 @@ Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer
 
 Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grotesk élargissent la virgule décimale, ce qui transforme « 99,98 % » en « 99 , 98 % ». `[data-numeric]` est donc réservé aux colonnes de chiffres à aligner, jamais aux valeurs isolées.
 
+## Illustrations Lottie
+
+Deux illustrations, un seul lecteur. `lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère le tout avec repli sur un délai pour Safari, qui n'implémente pas `requestIdleCallback`.
+
+- **La variante `lottie_light` suffit** : aucun de nos fichiers n'utilise d'expressions, et le build complet pèse près de 140 ko de plus.
+- **Rien n'est chargé sur le chemin critique**, ni du tout sous `prefers-reduced-motion`. Les deux usages partagent un chunk unique.
+- **Amélioration progressive obligatoire** : si le lecteur n'arrive pas, l'interface doit rester fonctionnelle. La transition se joue sans illustration ; le sélecteur de thème garde ses icônes lucide.
+- **La taille se porte sur le conteneur, jamais sur le SVG** : `lottie-web` pose `width: 100%` en style inline sur le SVG qu'il crée, une règle CSS visant le SVG serait perdue.
+
+### `public/loading-animation-white.json` — transition de page
+
+7,3 ko, quatre calques, 1,9 s par cycle. Centrée dans le voile, en boucle, jouée à 1,6× pour qu'on en voie environ la moitié. Enfant du voile, donc son opacité se multiplie à la sienne et elle s'efface avec lui sans règle dédiée. Mise en pause au retour au repos.
+
+### `public/theme-toggle.json` — sélecteur de thème
+
+57 ko, 19 calques, 60 i/s, 481 images. Le fichier enchaîne les deux bascules avec de longues tenues entre elles, **sans marqueur** : les repères ont été relevés en rendant la séquence image par image, et sont consignés en constantes dans `theme-toggle.tsx` (`LIGHT_REST` 40, `DARK_REST` 305, `TO_DARK` [40, 120], `TO_LIGHT` [305, 400]). On ne joue que les transitions, à 2,2× — 2 s d'origine par bascule serait bien trop lent pour une commande — et l'on se repose sur l'image de tenue d'où part la transition suivante. Les tenues étant visuellement identiques, le saut de l'une à l'autre ne se voit pas.
+
+Deux pièges rencontrés, à ne pas réintroduire :
+
+- **Suivre `resolvedTheme`, pas le clic.** Le thème change aussi par le raccourci clavier de `ThemeProvider` et par la préférence système ; un interrupteur piloté par le clic se désynchronise.
+- **Mémoriser le thème précédent même quand le lecteur n'est pas encore chargé.** Sinon la première bascule est prise pour un premier rendu et saute à l'état final au lieu de s'animer. C'est un bug qui ne se voit qu'en capturant la séquence, jamais en lisant le code.
+
 ## Règles non négociables
 
 Issues de la DA et de l'Architecture UX, à vérifier sur chaque écran :
