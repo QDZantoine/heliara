@@ -17,6 +17,7 @@ import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { FinalCta } from "@/components/sections/final-cta"
 import { GroupTriptych } from "@/components/visuals/group-triptych"
+import { LottieScene } from "@/components/visuals/lottie-scene"
 import {
   brandAccent,
   brands,
@@ -251,6 +252,13 @@ export default function LeGroupePage() {
                   <p className="max-w-[22rem] text-[0.9rem] leading-relaxed text-body">
                     {link.text}
                   </p>
+                  {/* Illustration du temps, sous le texte. Chargée à l'approche
+                      du champ : les trois fichiers pèsent lourd. */}
+                  <LottieScene
+                    src={link.scene.src}
+                    speed={link.scene.speed}
+                    className={cn("mt-5 aspect-4/3 w-full", link.scene.scale)}
+                  />
                 </Reveal>
               </li>
             ))}

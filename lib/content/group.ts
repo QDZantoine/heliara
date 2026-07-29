@@ -101,7 +101,14 @@ export const groupProofs = [
 export const groupManifesto =
   "Trois sociétés sœurs, indépendantes dans leur métier et complémentaires dans leur mission. Chacune est experte de son domaine ; ensemble, elles couvrent l'intégralité du cycle de vie d'un projet numérique, de la montée en compétences à l'hébergement souverain, en passant par la conception et le développement."
 
-/** La chaîne de valeur : c'est le récit qui montre l'utilité de chaque marque. */
+/**
+ * La chaîne de valeur : c'est le récit qui montre l'utilité de chaque marque.
+ *
+ * Chaque temps porte son illustration animée. Les trois fichiers pèsent lourd
+ * (778 ko au total), d'où le chargement à l'approche du champ plutôt qu'à
+ * l'inoccupation : un visiteur qui ne descend pas jusqu'ici ne télécharge rien.
+ * Les vitesses sont ralenties pour rester dans le registre posé de la DA.
+ */
 export const valueChain = [
   {
     num: "01",
@@ -109,6 +116,7 @@ export const valueChain = [
     brand: "LessonSharing",
     text: "On développe les compétences et on mobilise les talents.",
     accent: "blue" as const,
+    scene: { src: "/chain-former.json", speed: 0.7, scale: "scale-95" },
   },
   {
     num: "02",
@@ -116,6 +124,7 @@ export const valueChain = [
     brand: "Heliara",
     text: "On traduit le besoin en produit : conception, design et développement.",
     accent: "orange" as const,
+    scene: { src: "/chain-concevoir.json", speed: 0.75, scale: "scale-110" },
   },
   {
     num: "03",
@@ -123,6 +132,7 @@ export const valueChain = [
     brand: "Hexceos",
     text: "On exploite, on sécurise et on héberge dans la durée, 24/7.",
     accent: "ink" as const,
+    scene: { src: "/chain-operer.json", speed: 0.75, scale: "scale-110" },
   },
 ]
 

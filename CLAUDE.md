@@ -153,6 +153,70 @@ Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec ne
 
 ## Illustrations Lottie
 
+Six illustrations, **un seul composant** : `components/visuals/lottie-scene.tsx`. Ne pas réécrire un lecteur ailleurs, tout passe par lui.
+
+`lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère avec repli sur un délai pour Safari. Un seul chunk, un seul téléchargement par fichier, quel que soit le nombre de scènes.
+
+### `LottieScene`, et sa politique de chargement
+
+`load` est le réglage qui compte :
+
+- **`"visible"` (défaut)** : téléchargement à l'approche du champ, marge de 300 px. Un visiteur qui ne descend pas jusqu'à la section ne télécharge rien. Vérifié : sur `/le-groupe`, les 778 ko de la chaîne de valeur ne partent qu'au défilement.
+- **`"eager"`** : dès le montage. Réservé à ce qui est au-dessus de la ligne de flottaison, c'est-à-dire l'illustration du hero d'accueil, et à rien d'autre.
+- **`"idle"`** : quand le navigateur est inoccupé. Pour ce qui doit être prêt sans être visible, comme le sélecteur de thème du footer.
+
+Les autres garanties sont communes à toutes les scènes, et c'est la raison d'être du composant : boîte dimensionnée avant chargement (aucun décalage de mise en page), lecture arrêtée hors du champ et jamais relancée hors du champ, image représentative figée sous `prefers-reduced-motion` plutôt qu'une absence, et boîte vide sans casse si le fichier n'arrive pas.
+
+`holdMs` pilote la boucle à la main quand il faut tenir une pause entre deux cycles : Lottie ne sait pas le faire.
+
+### Trois règles apprises à l'usage
+
+- **La variante `lottie_light` suffit** : aucun de nos fichiers n'utilise d'expressions utiles, et le build complet pèse près de 140 ko de plus. Le fichier du hero en contient deux, qui sont des formules de rebond élastique - la DA interdit le rebond, ne pas les évaluer est donc un gain.
+- **La taille se porte sur le conteneur, jamais sur le SVG** : `lottie-web` pose `width: 100%` en style inline sur le SVG qu'il crée, une règle CSS visant le SVG serait perdue.
+- **Un fichier sans marqueur demande un relevé image par image.** C'est le cas du sélecteur de thème : les repères ont été trouvés en rendant la séquence, puis consignés en constantes.
+
+### Inventaire
+
+| Fichier                               | Usage                       | Chargement                       | Notes                                         |
+| ------------------------------------- | --------------------------- | -------------------------------- | --------------------------------------------- |
+| `hero-product.json` (47 ko)           | hero d'accueil              | `eager`                          | 0,44× et arrêt de 2,2 s : cycle mesuré à 10 s |
+| `loading-animation-white.json` (7 ko) | transition de page          | à la demande, dans `PageCurtain` | en boucle, 1,6×                               |
+| `theme-toggle.json` (56 ko)           | sélecteur de thème          | `idle`                           | segments relevés à la main, 2,2×              |
+| `chain-former.json` (227 ko)          | chaîne de valeur, Former    | `visible`                        | 0,7×                                          |
+| `chain-concevoir.json` (177 ko)       | chaîne de valeur, Concevoir | `visible`                        | 0,75×                                         |
+| `chain-operer.json` (374 ko)          | chaîne de valeur, Opérer    | `visible`                        | 0,75×                                         |
+
+Les artboards ont des proportions et des marges internes différentes : chaque scène porte une échelle en `transform` pour équilibrer les tailles apparentes, jamais une largeur, afin de ne pas toucher à la mise en page.
+
+## Routes## Routes
+
+Cinq entrées de nav (`Expertises`, `Réalisations`, `Méthode`, `À propos`, `Ressources`) plus le CTA permanent vers `/contact`. `/le-groupe`, `/mentions-legales` et `/confidentialite` ne vivent que dans le pied de page.
+
+Carrières a été retiré du périmètre : la fiche existe dans l'Architecture UX et une maquette a été exportée, mais la page n'est pas construite. Rien n'y renvoie.
+
+`app/sitemap.ts` déclare les pages publiques et les trois collections dynamiques. Les pages légales en sont absentes : elles portent `robots: { index: false }`, il serait contradictoire de les déclarer. `app/robots.ts` pointe vers le plan du site.
+
+Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec next typegen`. Sans quoi `PageProps<"/ma/[route]">` échoue au typecheck.
+
+## Formulaires
+
+`zod` + `react-hook-form`. Le schéma vit dans `lib/schemas/`, **partagé par le client et l'action serveur** : un seul schéma, donc aucun risque de voir les deux validations divergentes. Les messages y sont rédigés pour être affichés tels quels, en français, sans jargon de validation.
+
+- **Le serveur rejoue toujours le schéma.** Une action serveur est une route publique : elle ne peut pas faire confiance à son appelant. La validation du navigateur n'est qu'un confort.
+- **Résolveur `standardSchemaResolver`**, pas `zodResolver` : zod 4 implémente Standard Schema, et c'est la voie recommandée depuis `@hookform/resolvers` v5.
+- **Les erreurs que seul le serveur connaît sont réinjectées** par `form.setError`, pour qu'elles s'affichent au même endroit que les autres.
+- **On ne vide jamais un formulaire qu'on refuse** : `react-hook-form` conserve les valeurs saisies.
+- **Ne jamais prétendre avoir envoyé.** En l'absence de configuration d'envoi, l'action renvoie une erreur explicite qui redirige vers l'adresse e-mail publique.
+- Champ leurre anti-robot en `sr-only`, accepté par le schéma mais traité par l'action : rempli, elle renvoie un succès et n'envoie rien - un robot ne doit pas apprendre qu'il a été détecté.
+- Labels visibles au-dessus des champs, messages d'erreur en clair en dessous, `aria-invalid` et `aria-describedby` sur le champ concerné, cibles à 44 px.
+- **Limite assumée** : un formulaire sous `react-hook-form` exige JavaScript. La page de contact affiche l'e-mail et le téléphone en alternative, et le reste du site fonctionne sans.
+
+### Envoi des e-mails
+
+`resend`, configuré par variables d'environnement (voir `.env.example`) : `RESEND_API_KEY`, `CONTACT_FROM` - qui doit appartenir à un domaine vérifié chez Resend, sinon l'API refuse l'envoi - et `CONTACT_TO`, facultatif. `replyTo` porte l'adresse du prospect : répondre au message suffit.
+
+## Illustrations Lottie
+
 Deux illustrations, un seul lecteur. `lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère le tout avec repli sur un délai pour Safari, qui n'implémente pas `requestIdleCallback`.
 
 - **La variante `lottie_light` suffit** : aucun de nos fichiers n'utilise d'expressions, et le build complet pèse près de 140 ko de plus.
