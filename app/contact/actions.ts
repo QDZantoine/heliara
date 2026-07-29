@@ -21,7 +21,7 @@ export type ContactResult = {
  * est une route publique, elle ne peut faire confiance à son appelant.
  *
  * Le message part vers `CONTACT_TO` (à défaut l'adresse publique du site) depuis
- * `CONTACT_FROM`, qui doit appartenir à un domaine vérifié chez Resend — sans
+ * `CONTACT_FROM`, qui doit appartenir à un domaine vérifié chez Resend - sans
  * quoi l'API refuse l'envoi. En l'absence de clé, l'action ne prétend pas avoir
  * envoyé : elle renvoie une erreur explicite et renvoie vers l'e-mail direct.
  *
@@ -77,7 +77,7 @@ export async function submitContact(input: unknown): Promise<ContactResult> {
       from,
       to,
       replyTo: values.email,
-      subject: `Contact site — ${values.company} (${values.name})`,
+      subject: `Contact site - ${values.company} (${values.name})`,
       text: body,
     })
 

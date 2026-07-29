@@ -10,15 +10,15 @@ import { loadLottie, loadLottieData, whenIdle } from "@/lib/lottie"
 const COVER_MS = 300
 /**
  * Temps minimum écran couvert avant de lever le voile. Il sert deux fins :
- * laisser le navigateur peindre et hydrater la page entrante — sinon ce travail
- * tomberait sur les premières images du lever — et laisser l'illustration se
+ * laisser le navigateur peindre et hydrater la page entrante - sinon ce travail
+ * tomberait sur les premières images du lever - et laisser l'illustration se
  * dérouler assez pour être lisible. C'est le réglage à toucher pour rendre la
  * transition plus vive ou plus posée.
  */
 const COVERED_MS = 520
 /**
- * `REVEAL_MS` doit couvrir la plus longue des deux animations de la phase — la
- * montée de `main`, 560 ms, et non le lever du voile — sinon elle serait
+ * `REVEAL_MS` doit couvrir la plus longue des deux animations de la phase - la
+ * montée de `main`, 560 ms, et non le lever du voile - sinon elle serait
  * retirée en plein vol.
  */
 const REVEAL_MS = 580

@@ -57,7 +57,7 @@ export const caseStudies: CaseStudy[] = [
     teaser:
       "Un ERP métier sur mesure qui remplace quatre outils déconnectés : ordres de fabrication, qualité et expéditions dans une seule interface.",
     summary:
-      "Un ERP métier sur mesure qui remplace quatre outils déconnectés — ordres de fabrication, qualité, expéditions.",
+      "Un ERP métier sur mesure qui remplace quatre outils déconnectés - ordres de fabrication, qualité, expéditions.",
     figure: "−38 %",
     measure: "de temps administratif par commande",
     halo: "warm",
@@ -67,7 +67,7 @@ export const caseStudies: CaseStudy[] = [
     meta: [
       {
         label: "Client",
-        value: "Voltéis Industrie — équipementier, 340 salariés",
+        value: "Voltéis Industrie - équipementier, 340 salariés",
       },
       { label: "Secteur", value: "Industrie manufacturière" },
       {
@@ -96,7 +96,7 @@ export const caseStudies: CaseStudy[] = [
       {
         num: "02",
         title: "Problématique",
-        text: "Le coût n'était pas seulement du temps perdu : les écarts entre outils créaient des erreurs d'expédition, des non-conformités découvertes tard, et une direction pilotant avec des chiffres vieux de trois semaines. Le premier réflexe — acheter un ERP industriel du marché — avait échoué deux ans plus tôt : le processus de Voltéis, sa force commerciale, ne rentrait pas dans les cases.",
+        text: "Le coût n'était pas seulement du temps perdu : les écarts entre outils créaient des erreurs d'expédition, des non-conformités découvertes tard, et une direction pilotant avec des chiffres vieux de trois semaines. Le premier réflexe - acheter un ERP industriel du marché - avait échoué deux ans plus tôt : le processus de Voltéis, sa force commerciale, ne rentrait pas dans les cases.",
         callout:
           "Décision structurante : ne pas remplacer l'ERP comptable, qui fonctionnait. La plateforme s'y connecte par API et ne couvre que ce qui fait la spécificité de Voltéis. Périmètre réduit, valeur maximale.",
       },
@@ -108,12 +108,12 @@ export const caseStudies: CaseStudy[] = [
       {
         num: "04",
         title: "Recherche",
-        text: "Deux semaines d'immersion : observation des ateliers sur les trois équipes, entretiens avec quatorze utilisateurs, cartographie du parcours réel d'une commande — et non du parcours théorique, les deux différaient sur onze points. Cette cartographie est devenue le référentiel du projet.",
+        text: "Deux semaines d'immersion : observation des ateliers sur les trois équipes, entretiens avec quatorze utilisateurs, cartographie du parcours réel d'une commande - et non du parcours théorique, les deux différaient sur onze points. Cette cartographie est devenue le référentiel du projet.",
       },
       {
         num: "05",
         title: "Conception",
-        text: "Le parti pris : une interface par poste de travail, pas une interface générique avec des droits. L'opérateur qualité, le planificateur et le cariste voient trois outils différents nourris par les mêmes données. Prototype cliquable testé en atelier dès la semaine 6 — deux hypothèses invalidées, corrigées avant toute ligne de code.",
+        text: "Le parti pris : une interface par poste de travail, pas une interface générique avec des droits. L'opérateur qualité, le planificateur et le cariste voient trois outils différents nourris par les mêmes données. Prototype cliquable testé en atelier dès la semaine 6 - deux hypothèses invalidées, corrigées avant toute ligne de code.",
         callout:
           "Test le plus utile du projet : faire saisir une non-conformité réelle par un opérateur portant des gants de manutention. Résultat : cibles tactiles agrandies à 56 px et saisie vocale des mesures ajoutée au périmètre.",
       },
@@ -125,18 +125,18 @@ export const caseStudies: CaseStudy[] = [
       {
         num: "07",
         title: "Développement & stack",
-        text: "Itérations de deux semaines, chacune conclue par une démonstration en conditions réelles. Le flux « commande → fabrication » est passé en production au mois 4, le reste a suivi par vagues. Stack volontairement standard — TypeScript, React, Node.js, PostgreSQL — pour garantir la disponibilité des compétences dans dix ans. API documentée en OpenAPI, connectée à l'ERP comptable et au portail transporteurs.",
+        text: "Itérations de deux semaines, chacune conclue par une démonstration en conditions réelles. Le flux « commande → fabrication » est passé en production au mois 4, le reste a suivi par vagues. Stack volontairement standard - TypeScript, React, Node.js, PostgreSQL - pour garantir la disponibilité des compétences dans dix ans. API documentée en OpenAPI, connectée à l'ERP comptable et au portail transporteurs.",
       },
       {
         num: "08",
-        title: "Difficultés — et ce qu'on en a fait",
-        text: "Deux vraies difficultés. La reprise des données historiques : quinze ans de fichiers Excel hétérogènes, traités par un pipeline de nettoyage semi-automatique avec arbitrage humain sur 4 % des lignes. Et la résistance initiale de l'équipe de nuit, absente des ateliers de conception — corrigée par une vague de tests dédiée et deux évolutions demandées par elle, livrées avant la bascule.",
+        title: "Difficultés - et ce qu'on en a fait",
+        text: "Deux vraies difficultés. La reprise des données historiques : quinze ans de fichiers Excel hétérogènes, traités par un pipeline de nettoyage semi-automatique avec arbitrage humain sur 4 % des lignes. Et la résistance initiale de l'équipe de nuit, absente des ateliers de conception - corrigée par une vague de tests dédiée et deux évolutions demandées par elle, livrées avant la bascule.",
       },
     ],
-    resultsLabel: "Résultats mesurés — 12 mois après mise en production",
+    resultsLabel: "Résultats mesurés - 12 mois après mise en production",
     results: [
       { value: "−38 %", label: "de temps administratif par commande" },
-      { value: "0", label: "double saisie — contre 4 outils traversés avant" },
+      { value: "0", label: "double saisie - contre 4 outils traversés avant" },
       {
         value: "100 %",
         label: "des ateliers actifs sur la plateforme à 6 semaines",
@@ -152,7 +152,7 @@ export const caseStudies: CaseStudy[] = [
     },
     lessons: [
       "Le périmètre gagnant n'était pas « remplacer l'existant » mais « couvrir la différence » : brancher la plateforme sur l'ERP comptable plutôt que le remplacer a économisé quatre mois et un risque majeur.",
-      "Tester avec les contraintes physiques réelles — gants, luminosité, bruit — change davantage l'interface que dix ateliers en salle de réunion.",
+      "Tester avec les contraintes physiques réelles - gants, luminosité, bruit - change davantage l'interface que dix ateliers en salle de réunion.",
       "L'adoption se gagne avant la mise en production : les utilisateurs qui ont invalidé nos hypothèses en semaine 6 sont devenus les ambassadeurs de la bascule.",
     ],
   },
@@ -165,9 +165,9 @@ export const caseStudies: CaseStudy[] = [
     heroTitle:
       "Un portail de santé adopté sans formation, par 92 % des patients concernés",
     teaser:
-      "Prise de rendez-vous, documents et échanges sécurisés pour un groupement hospitalier — accessible RGAA, adopté sans formation.",
+      "Prise de rendez-vous, documents et échanges sécurisés pour un groupement hospitalier - accessible RGAA, adopté sans formation.",
     summary:
-      "Rendez-vous, documents et échanges sécurisés — accessible RGAA, adopté sans formation.",
+      "Rendez-vous, documents et échanges sécurisés - accessible RGAA, adopté sans formation.",
     figure: "92 %",
     measure: "d'adoption en trois mois",
     halo: "cool",
@@ -177,7 +177,7 @@ export const caseStudies: CaseStudy[] = [
     meta: [
       {
         label: "Client",
-        value: "CHU Rhône-Nord — groupement de 4 établissements",
+        value: "CHU Rhône-Nord - groupement de 4 établissements",
       },
       { label: "Secteur", value: "Santé publique" },
       {
@@ -228,7 +228,7 @@ export const caseStudies: CaseStudy[] = [
         text: "Hébergement certifié HDS en France, registre des traitements tenu avec le délégué à la protection des données du groupement, consentements traçables et export complet des données sur demande. La documentation de conformité fait partie du livrable, pas d'une annexe.",
       },
     ],
-    resultsLabel: "Résultats mesurés — 3 mois après ouverture au public",
+    resultsLabel: "Résultats mesurés - 3 mois après ouverture au public",
     results: [
       { value: "92 %", label: "des patients concernés ont activé leur compte" },
       { value: "−47 %", label: "d'appels de premier niveau au standard" },
@@ -269,7 +269,7 @@ export const caseStudies: CaseStudy[] = [
     meta: [
       {
         label: "Client",
-        value: "Fieldsy — maintenance multitechnique, 90 salariés",
+        value: "Fieldsy - maintenance multitechnique, 90 salariés",
       },
       { label: "Secteur", value: "Services aux entreprises" },
       {
@@ -294,7 +294,7 @@ export const caseStudies: CaseStudy[] = [
         title: "Problématique",
         text: "Vendre l'outil supposait trois chantiers simultanés : isoler les données par client, industrialiser la facturation, et rendre le produit compréhensible sans formation par quelqu'un qui ne connaît pas les habitudes de Fieldsy. Le tout sans interrompre l'exploitation quotidienne.",
         callout:
-          "Décision structurante : garder la base de code existante et la faire évoluer par étapes plutôt que réécrire. La réécriture aurait gelé les évolutions métier pendant un an — inacceptable pour une équipe qui vit de cet outil.",
+          "Décision structurante : garder la base de code existante et la faire évoluer par étapes plutôt que réécrire. La réécriture aurait gelé les évolutions métier pendant un an - inacceptable pour une équipe qui vit de cet outil.",
       },
       {
         num: "03",
@@ -317,7 +317,7 @@ export const caseStudies: CaseStudy[] = [
         text: "La migration multi-tenant sur une base en exploitation a été la partie la plus délicate : chaque vague a été jouée deux fois sur une copie de production avant d'être appliquée. Une seule vague a nécessité un retour arrière, sans perte de données.",
       },
     ],
-    resultsLabel: "Résultats mesurés — 12 mois après l'ouverture commerciale",
+    resultsLabel: "Résultats mesurés - 12 mois après l'ouverture commerciale",
     results: [
       { value: "×3", label: "de revenus récurrents en un an" },
       {
@@ -351,7 +351,7 @@ export const caseStudies: CaseStudy[] = [
     teaser:
       "Les démarches des usagers unifiées derrière un compte unique : état civil, urbanisme, famille, sans re-saisie d'un service à l'autre.",
     summary:
-      "Démarches des usagers unifiées : état civil, urbanisme, famille — un seul compte, zéro re-saisie.",
+      "Démarches des usagers unifiées : état civil, urbanisme, famille - un seul compte, zéro re-saisie.",
     figure: "−54 %",
     measure: "d'appels au standard",
     halo: "cool",
@@ -361,7 +361,7 @@ export const caseStudies: CaseStudy[] = [
     meta: [
       {
         label: "Client",
-        value: "Métropole d'Auréa — 38 communes, 420 000 habitants",
+        value: "Métropole d'Auréa - 38 communes, 420 000 habitants",
       },
       { label: "Secteur", value: "Collectivité territoriale" },
       {
@@ -396,7 +396,7 @@ export const caseStudies: CaseStudy[] = [
       {
         num: "04",
         title: "Conception",
-        text: "Les formulaires ont été redécoupés en étapes courtes, avec enregistrement automatique : une démarche d'urbanisme peut être reprise trois jours plus tard sans rien perdre. Le suivi affiche l'état réel du dossier, y compris « en attente d'un autre service » — l'information que les usagers réclamaient le plus.",
+        text: "Les formulaires ont été redécoupés en étapes courtes, avec enregistrement automatique : une démarche d'urbanisme peut être reprise trois jours plus tard sans rien perdre. Le suivi affiche l'état réel du dossier, y compris « en attente d'un autre service » - l'information que les usagers réclamaient le plus.",
       },
       {
         num: "05",
@@ -405,7 +405,7 @@ export const caseStudies: CaseStudy[] = [
       },
     ],
     resultsLabel:
-      "Résultats mesurés — 12 mois après l'ouverture du dernier lot",
+      "Résultats mesurés - 12 mois après l'ouverture du dernier lot",
     results: [
       {
         value: "−54 %",
@@ -449,7 +449,7 @@ export const caseStudies: CaseStudy[] = [
     meta: [
       {
         label: "Client",
-        value: "Kerlon — distribution de composants techniques",
+        value: "Kerlon - distribution de composants techniques",
       },
       { label: "Secteur", value: "E-commerce professionnel" },
       {
@@ -492,7 +492,7 @@ export const caseStudies: CaseStudy[] = [
         text: "Indexation des 40 000 références avec recherche tolérante aux erreurs et aux références partielles, tarification calculée par compte au moment de l'affichage, et synchronisation des stocks avec l'outil de gestion toutes les cinq minutes.",
       },
     ],
-    resultsLabel: "Résultats mesurés — 9 mois après mise en production",
+    resultsLabel: "Résultats mesurés - 9 mois après mise en production",
     results: [
       { value: "+31 %", label: "de panier moyen sur les comptes actifs" },
       {
@@ -526,7 +526,7 @@ export const caseStudies: CaseStudy[] = [
     teaser:
       "Un copilote de pré-remplissage documentaire pour les équipes de soin : proposé par l'IA, validé par le praticien, tracé de bout en bout.",
     summary:
-      "Pré-remplissage documentaire par IA pour les équipes de soin — validé par les praticiens, tracé, auditable.",
+      "Pré-remplissage documentaire par IA pour les équipes de soin - validé par les praticiens, tracé, auditable.",
     figure: "11 min",
     measure: "gagnées par dossier",
     halo: "cool",
@@ -534,7 +534,7 @@ export const caseStudies: CaseStudy[] = [
     featured: false,
     wide: true,
     meta: [
-      { label: "Client", value: "Nexa Santé — éditeur logiciel, 45 salariés" },
+      { label: "Client", value: "Nexa Santé - éditeur logiciel, 45 salariés" },
       { label: "Secteur", value: "Santé numérique" },
       {
         label: "Périmètre",
@@ -585,7 +585,7 @@ export const caseStudies: CaseStudy[] = [
         text: "Hébergement HDS en France, aucune donnée de santé utilisée pour entraîner un modèle, contrats de sous-traitance conformes au RGPD, et journal d'audit conservé selon la durée réglementaire applicable.",
       },
     ],
-    resultsLabel: "Résultats mesurés — 6 mois après mise à disposition",
+    resultsLabel: "Résultats mesurés - 6 mois après mise à disposition",
     results: [
       { value: "11 min", label: "gagnées en moyenne par dossier" },
       { value: "100 %", label: "des propositions validées par un praticien" },

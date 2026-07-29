@@ -47,7 +47,7 @@ export const expertiseFamilies: ExpertiseFamily[] = [
     label: "IA & API",
     title: "IA & API",
     summary:
-      "Des capacités d’intelligence intégrées à vos outils — copilotes métier, automatisations, API robustes qui connectent votre écosystème.",
+      "Des capacités d’intelligence intégrées à vos outils - copilotes métier, automatisations, API robustes qui connectent votre écosystème.",
     tag: "ia · api",
     halo: "warm",
     lines: [48, 62, 76],
@@ -131,7 +131,7 @@ export const expertiseServices: ExpertiseService[] = [
       {
         question: "Un progiciel du marché ne serait-il pas moins cher ?",
         answer:
-          "Souvent oui, si votre processus est standard — et nous le disons quand c’est le cas. Le sur-mesure se justifie quand le processus est justement ce qui vous différencie.",
+          "Souvent oui, si votre processus est standard - et nous le disons quand c’est le cas. Le sur-mesure se justifie quand le processus est justement ce qui vous différencie.",
       },
       {
         question: "Qui maintient la plateforme ensuite ?",
@@ -502,7 +502,7 @@ export const expertiseServices: ExpertiseService[] = [
     family: "plateformes-saas",
     title: "Maintenance évolutive",
     tagline:
-      "Un produit qui vit, se corrige et progresse — sans que vous ayez à relancer un projet.",
+      "Un produit qui vit, se corrige et progresse - sans que vous ayez à relancer un projet.",
     problem:
       "Votre produit est en production et le prestataire qui l’a construit n’est plus joignable, ou facture chaque correction comme un projet. Les mises à jour de sécurité s’accumulent et personne n’ose y toucher.",
     deliverables: [

@@ -10,7 +10,7 @@ import { featuredCases } from "@/lib/content/cases"
 import { cn } from "@/lib/utils"
 
 /**
- * S6 — la preuve centrale, placée quand le visiteur sait déjà quoi et comment.
+ * S6 - la preuve centrale, placée quand le visiteur sait déjà quoi et comment.
  * Le visuel alterne de côté un cas sur deux ; sur mobile, tout s'empile avec le
  * texte en premier.
  */

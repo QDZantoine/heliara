@@ -10,7 +10,7 @@ const tones = {
 /**
  * Petite carte de mesure accompagnant chaque temps de la méthode : le livrable
  * rendu visible, en CSS pur. Décorative, donc retirée de l'arbre
- * d'accessibilité — le contenu utile est dans le texte du temps.
+ * d'accessibilité - le contenu utile est dans le texte du temps.
  */
 function MethodGaugeCard({
   title,

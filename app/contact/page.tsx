@@ -36,7 +36,7 @@ export default function ContactPage() {
             delay={120}
             className="mb-9 max-w-[26.25rem] text-[1.0625rem] leading-relaxed text-body"
           >
-            Décrivez votre besoin avec vos mots — pas besoin de cahier des
+            Décrivez votre besoin avec vos mots - pas besoin de cahier des
             charges. Un associé vous répond personnellement sous 48 heures
             ouvrées.
           </Reveal>
@@ -119,7 +119,7 @@ export default function ContactPage() {
               >
                 {site.phone}
               </a>{" "}
-              — du lundi au vendredi, 9 h – 18 h
+              - du lundi au vendredi, 9 h - 18 h
             </p>
           </Reveal>
         </div>

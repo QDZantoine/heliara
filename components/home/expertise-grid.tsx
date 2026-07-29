@@ -9,7 +9,7 @@ import { ExpertiseSketch } from "@/components/visuals/expertise-sketch"
 import { expertiseFamilies, expertiseHref } from "@/lib/content/expertises"
 
 /**
- * S4 — trois familles, pas neuf services : le visiteur se reconnaît dans un
+ * S4 - trois familles, pas neuf services : le visiteur se reconnaît dans un
  * problème, le détail vit sur les pages expertise.
  */
 function ExpertiseGrid() {

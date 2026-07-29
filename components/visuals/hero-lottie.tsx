@@ -23,8 +23,8 @@ const SPEED = 0.44
 const HOLD_MS = 2200
 
 /**
- * Illustration du hero : trois fenêtres — wireframe, code, maquette haute
- * fidélité — qui s'empilent lentement, tiennent la pose, puis recommencent.
+ * Illustration du hero : trois fenêtres - wireframe, code, maquette haute
+ * fidélité - qui s'empilent lentement, tiennent la pose, puis recommencent.
  * C'est le propos du studio, montré plutôt qu'écrit, et cela reste dans la règle
  * de la DA : illustration abstraite, volumes simples, jamais de photo ni de 3D
  * gadget.
@@ -35,7 +35,7 @@ const HOLD_MS = 2200
  * Contrairement aux autres usages de Lottie du site, le chargement n'est pas
  * différé à l'inoccupation : l'illustration est au-dessus de la ligne de
  * flottaison. Il reste posté après le premier rendu, et le LCP est le titre,
- * rendu côté serveur — la charge ne le retarde donc pas.
+ * rendu côté serveur - la charge ne le retarde donc pas.
  *
  * Trois précautions :
  * - la boîte est dimensionnée avant le chargement, donc aucun décalage de mise
@@ -48,7 +48,7 @@ const HOLD_MS = 2200
  *
  * Le build `lottie_light` n'évalue pas les expressions du fichier, qui sont deux
  * formules de rebond élastique. C'est voulu : la DA interdit le rebond, et le
- * rendu est par ailleurs identique — vérifié image par image contre le build
+ * rendu est par ailleurs identique - vérifié image par image contre le build
  * complet.
  */
 function HeroLottie({ className }: { className?: string }) {
@@ -95,7 +95,7 @@ function HeroLottie({ className }: { className?: string }) {
           return
         }
 
-        // Fin de cycle : on tient la pose, puis on repart — jamais hors champ.
+        // Fin de cycle : on tient la pose, puis on repart - jamais hors champ.
         const onComplete = () => {
           hold = setTimeout(() => {
             if (visible) {

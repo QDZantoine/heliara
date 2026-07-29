@@ -11,7 +11,7 @@ import { loadLottie, loadLottieData, whenIdle } from "@/lib/lottie"
  * Repères relevés dans `public/theme-toggle.json` (60 i/s, 481 images). Le
  * fichier enchaîne les deux bascules avec de longues tenues entre elles ; on ne
  * joue que les transitions, et l'on se repose sur l'image de tenue d'où part la
- * transition suivante — les tenues étant visuellement identiques, le saut de
+ * transition suivante - les tenues étant visuellement identiques, le saut de
  * l'une à l'autre ne se voit pas.
  */
 const LIGHT_REST = 40
@@ -27,7 +27,7 @@ const SPEED = 2.2
  * d'attention doit rester le CTA.
  *
  * L'interrupteur est une illustration Lottie, chargée quand le navigateur est
- * inoccupé. Avant qu'elle n'arrive — et si elle n'arrive jamais — les icônes
+ * inoccupé. Avant qu'elle n'arrive - et si elle n'arrive jamais - les icônes
  * lucide tiennent le rôle : la commande est fonctionnelle dès le premier rendu.
  *
  * L'illustration suit `resolvedTheme` plutôt que le clic, ce qui la garde juste

@@ -10,7 +10,7 @@ import { methodPreview } from "@/lib/content/method"
 import { cta } from "@/lib/site"
 
 /**
- * S5 — lever l'objection du risque, juste après le « quoi ». Version condensée :
+ * S5 - lever l'objection du risque, juste après le « quoi ». Version condensée :
  * ici on installe le sentiment de maîtrise, /methode porte le détail.
  */
 function MethodPreview() {

@@ -183,7 +183,7 @@ export default async function CaseStudyPage(
                 {study.lessons.map((lesson) => (
                   <li key={lesson} className="flex gap-3">
                     <span aria-hidden="true" className="flex-none text-brand">
-                      —
+                      -
                     </span>
                     <span className="text-[0.94rem] leading-relaxed text-body">
                       {lesson}

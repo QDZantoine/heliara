@@ -18,7 +18,7 @@ export type Person = {
 export const partners: Person[] = [
   {
     name: "Léa Roussel",
-    role: "Associée — produit, cadrage, design",
+    role: "Associée - produit, cadrage, design",
     initials: "LR",
     background:
       "Douze ans de conception de produits métiers, dont six à diriger le design d'une plateforme logistique utilisée par 4 000 opérateurs.",
@@ -26,7 +26,7 @@ export const partners: Person[] = [
   },
   {
     name: "Marc Bianchi",
-    role: "Associé — architecture, technique, sécurité",
+    role: "Associé - architecture, technique, sécurité",
     initials: "MB",
     background:
       "Quinze ans d'ingénierie logicielle, ancien responsable technique d'un éditeur santé certifié HDS. Intervient sur les choix d'architecture de chaque projet.",
@@ -109,7 +109,7 @@ export const contactSteps = [
   {
     num: "02",
     title: "Échange de trente minutes",
-    text: "En visio ou au studio. On clarifie le besoin, on pose les bonnes questions — y compris celles qui fâchent.",
+    text: "En visio ou au studio. On clarifie le besoin, on pose les bonnes questions - y compris celles qui fâchent.",
   },
   {
     num: "03",
@@ -122,7 +122,7 @@ export const contactSteps = [
 export const budgetRanges = [
   "Je préfère en parler",
   "Moins de 50 k€",
-  "50 – 150 k€",
-  "150 – 400 k€",
+  "50 - 150 k€",
+  "150 - 400 k€",
   "Plus de 400 k€",
 ] as const

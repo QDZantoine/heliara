@@ -32,8 +32,8 @@ const fontMono = Spline_Sans_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — ${site.baseline.replace(/\.$/, "")}`,
-    template: `%s — ${site.name}`,
+    default: `${site.name} - ${site.baseline.replace(/\.$/, "")}`,
+    template: `%s - ${site.name}`,
   },
   description: site.description,
 }

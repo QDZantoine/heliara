@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ==========================================================================
-   Heliara — Direction Artistique v2 « Lumière d'écran »
+   Heliara - Direction Artistique v2 « Lumière d'écran »
    Couche 1 : variables CSS brutes (--hel-*), commutées par la classe .dark
    Couche 2 : @theme inline, qui les expose comme utilitaires Tailwind
    ========================================================================== */
@@ -21,8 +21,8 @@
 
   /* --- Texte ------------------------------------------------------------- */
   --hel-ink: #151517; /* titres */
-  --hel-body: #57574f; /* texte courant — 6.9:1 sur page */
-  --hel-label: #6f6f69; /* labels & méta — 4.8:1, seuil AA tenu */
+  --hel-body: #57574f; /* texte courant - 6.9:1 sur page */
+  --hel-label: #6f6f69; /* labels & méta - 4.8:1, seuil AA tenu */
   --hel-faint: #8f8f89; /* décoratif uniquement (barres, placeholders) */
 
   /* --- Filets ------------------------------------------------------------ */
@@ -31,10 +31,10 @@
 
   /* --- Orange vital ------------------------------------------------------ */
   --hel-brand: #e9591f; /* le geste : point, pastilles, filets, halos */
-  --hel-brand-solid: #c9481a; /* fond de bouton — 4.8:1 avec du blanc */
+  --hel-brand-solid: #c9481a; /* fond de bouton - 4.8:1 avec du blanc */
   --hel-brand-solid-hover: #e9591f;
   --hel-brand-on-solid: #ffffff;
-  --hel-brand-text: #c24512; /* orange lisible sur fond clair — 4.8:1 */
+  --hel-brand-text: #c24512; /* orange lisible sur fond clair - 4.8:1 */
   --hel-brand-subtle: #fdece5;
 
   /* --- Bleu profond : liens, focus, information -------------------------- */
@@ -74,7 +74,7 @@
     rgb(233 89 31 / 0.13),
     transparent 70%
   );
-  /* Éclairage du hero : deux lobes, une seule couche — la règle « un halo par
+  /* Éclairage du hero : deux lobes, une seule couche - la règle « un halo par
      écran » reste tenue au sens strict. */
   --hel-halo-hero:
     radial-gradient(
@@ -103,7 +103,7 @@
   --hel-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --hel-ease-io: cubic-bezier(0.4, 0, 0.2, 1);
   /* Grandes surfaces, dans les deux sens. Symétrique : départ lent, accélération,
-     arrivée lente. Une courbe « out » y est à éviter — appliquée à une
+     arrivée lente. Une courbe « out » y est à éviter - appliquée à une
      apparition elle fait claquer la forme, à une disparition elle l'arrache. */
   --hel-ease-inout: cubic-bezier(0.45, 0, 0.55, 1);
 
@@ -307,13 +307,13 @@
 }
 
 /* ==========================================================================
-   Transition de page — voile encre, illustration Lottie, arrivée de la page
+   Transition de page - voile encre, illustration Lottie, arrivée de la page
 
    Volontairement peu de pièces : le voile (`opacity`), l'illustration centrée
    (`opacity`) et `main` (`opacity` + `transform`). Tout est composé par le GPU,
    il n'y a ni mise en page ni peinture pendant l'animation. Les tentatives
-   précédentes — voile à crêtes arrondies, puis traits en lentille balayant en
-   diagonale sur six couches de grande taille — sont restées perçues comme
+   précédentes - voile à crêtes arrondies, puis traits en lentille balayant en
+   diagonale sur six couches de grande taille - sont restées perçues comme
    sèches malgré un profil d'images propre à la mesure : ne pas y revenir sans
    raison forte.
 
@@ -321,7 +321,7 @@
    le voile opaque, la navigation a lieu à couvert, puis le voile se lève
    pendant que la page entrante monte se mettre en place. La montée dure plus
    longtemps que le lever du voile, si bien que la page finit de se poser à
-   découvert — c'est ce décalage qui donne une impression d'arrivée plutôt que
+   découvert - c'est ce décalage qui donne une impression d'arrivée plutôt que
    d'apparition.
    ========================================================================== */
 
@@ -406,7 +406,7 @@
    qu'un composant client ait à la toucher.
 
    Seule l'arrivée est animée. Animer aussi le départ obligeait le navigateur à
-   promouvoir `main` — plusieurs milliers de pixels de haut — au moment même du
+   promouvoir `main` - plusieurs milliers de pixels de haut - au moment même du
    clic : 140 ms de blocage mesurés, juste là où la réactivité compte le plus.
    Ici la promotion tombe pendant le répit, écran couvert, donc invisible. Et on
    ne perdait presque rien : la page sortante est recouverte aussitôt. */
@@ -415,7 +415,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   Sélecteur de thème — interrupteur Lottie
+   Sélecteur de thème - interrupteur Lottie
 
    Amélioration progressive : les icônes lucide tiennent le rôle jusqu'à ce que
    l'illustration soit chargée, puis on permute. La commande fonctionne donc dès
@@ -502,7 +502,7 @@
   }
 }
 
-/* Apparition au scroll — l'état de repos n'est appliqué que si le JS a pris
+/* Apparition au scroll - l'état de repos n'est appliqué que si le JS a pris
    la main (data-reveal-ready sur <html>), afin que le contenu reste visible
    si le JS échoue ou n'a pas encore chargé. */
 [data-reveal] {

@@ -4,7 +4,7 @@ import { Section } from "@/components/primitives/section"
 import { kpis } from "@/lib/content/kpis"
 
 /**
- * S7 — respiration après la densité du portfolio. Grille 2×2 sur mobile,
+ * S7 - respiration après la densité du portfolio. Grille 2×2 sur mobile,
  * quatre colonnes au-delà. Aucune animation nécessaire à la lecture.
  */
 function KpiBand() {

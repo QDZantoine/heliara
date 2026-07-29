@@ -178,7 +178,7 @@ function ContactForm() {
       <Field
         id="budget"
         label="Enveloppe envisagée"
-        hint="(optionnel — aide à cadrer la réponse)"
+        hint="(optionnel - aide à cadrer la réponse)"
       >
         <select
           id="budget"
@@ -205,7 +205,7 @@ function ContactForm() {
       </div>
 
       <Button type="submit" size="xl" disabled={form.formState.isSubmitting}>
-        {form.formState.isSubmitting ? "Envoi…" : "Envoyer — réponse sous 48 h"}
+        {form.formState.isSubmitting ? "Envoi…" : "Envoyer - réponse sous 48 h"}
       </Button>
 
       <p className="text-center text-xs text-label">

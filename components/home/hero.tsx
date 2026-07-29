@@ -6,7 +6,7 @@ import { HeroLottie } from "@/components/visuals/hero-lottie"
 import { cta } from "@/lib/site"
 
 /**
- * S2 — positionner en cinq secondes. Le double CTA segmente immédiatement :
+ * S2 - positionner en cinq secondes. Le double CTA segmente immédiatement :
  * les convaincus contactent, les prudents vont vers la preuve.
  * Le texte est en premier dans le DOM : c’est lui le LCP, la scène produit
  * passe sous le pli sur mobile.
@@ -33,7 +33,7 @@ function Hero() {
             delay={120}
             className="mb-9 max-w-[28.75rem] text-[1.0625rem] leading-relaxed text-body md:text-lg"
           >
-            Plateformes métiers, SaaS, applications et IA — conçus avec la
+            Plateformes métiers, SaaS, applications et IA - conçus avec la
             rigueur d’un atelier, pour des dirigeants qui pensent à dix ans.
           </Reveal>
 

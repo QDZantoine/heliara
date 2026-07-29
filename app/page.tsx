@@ -8,7 +8,7 @@ import { Testimonials } from "@/components/home/testimonials"
 import { FinalCta } from "@/components/sections/final-cta"
 
 /**
- * Accueil — une conversation en dix temps (Architecture UX, 05).
+ * Accueil - une conversation en dix temps (Architecture UX, 05).
  *
  * Arc : affirmation (hero) → caution (preuve sociale) → quoi (expertises) →
  * comment (méthode) → preuve (réalisations, chiffres) → pairs (témoignages) →

@@ -3,7 +3,7 @@ import { Section } from "@/components/primitives/section"
 import { clients } from "@/lib/content/clients"
 
 /**
- * S3 — la caution arrive avant le premier scroll d'effort. Section respirante.
+ * S3 - la caution arrive avant le premier scroll d'effort. Section respirante.
  *
  * Le défilement est une animation CSS : la liste est doublée pour boucler, la
  * copie est retirée de l'arbre d'accessibilité, et le ticker se met en pause au

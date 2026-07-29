@@ -30,7 +30,7 @@ const LOCKUP = {
  * n'apporte rien sur un SVG.
  *
  * En thème clair comme en sombre, la bascule est faite en CSS via le variant
- * `dark:` — pas d'état React, donc pas de clignotement à l'hydratation.
+ * `dark:` - pas d'état React, donc pas de clignotement à l'hydratation.
  */
 function Logo({ tone = "default", alt = "Heliara", className }: LogoProps) {
   const size = "h-7 w-auto"

@@ -79,7 +79,7 @@ export const methodPhases: MethodPhase[] = [
     title: "Cadrage",
     text: "Périmètre minimal viable, risques nommés, jalons datés, budget ferme sur la première phase. Tout est écrit avant de commencer.",
     deliverable:
-      "la note de cadrage — l’unique document contractuel de référence.",
+      "la note de cadrage - l’unique document contractuel de référence.",
     gaugeTitle: "Périmètre",
     gauges: [
       { width: 90, label: "flux critique", tone: "brand" },
@@ -90,7 +90,7 @@ export const methodPhases: MethodPhase[] = [
   {
     num: "03",
     title: "Conception des parcours",
-    text: "Parcours, arborescences, prototype cliquable testé avec vos vrais utilisateurs — dans leurs conditions réelles de travail.",
+    text: "Parcours, arborescences, prototype cliquable testé avec vos vrais utilisateurs - dans leurs conditions réelles de travail.",
     deliverable: "un prototype navigable et les comptes rendus de tests.",
     gaugeTitle: "Hypothèses testées",
     gauges: [
@@ -168,7 +168,7 @@ export const commitments = [
   },
   {
     title: "Des jalons tenus",
-    text: "Chaque jalon est daté au cadrage. Un glissement se signale au sprint où il apparaît — jamais à la fin.",
+    text: "Chaque jalon est daté au cadrage. Un glissement se signale au sprint où il apparaît - jamais à la fin.",
   },
   {
     title: "Un interlocuteur unique",

@@ -13,7 +13,7 @@ export type Testimonial = {
 export const testimonials: Testimonial[] = [
   {
     quote:
-      "Ils ont compris notre métier avant de parler technologie. Le produit livré fait exactement ce que nos équipes attendaient — et il tient la charge.",
+      "Ils ont compris notre métier avant de parler technologie. Le produit livré fait exactement ce que nos équipes attendaient - et il tient la charge.",
     name: "Claire Fontaine",
     role: "Directrice générale, Groupe Ardan",
     initials: "CF",

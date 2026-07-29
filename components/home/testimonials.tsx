@@ -5,7 +5,7 @@ import { Section } from "@/components/primitives/section"
 import { testimonials } from "@/lib/content/testimonials"
 
 /**
- * S8 — après les faits, l’émotion. Grille statique, pas de carrousel
+ * S8 - après les faits, l’émotion. Grille statique, pas de carrousel
  * auto-rotatif : sur mobile, une citation par écran en scroll naturel.
  */
 function Testimonials() {

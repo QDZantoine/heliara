@@ -14,7 +14,7 @@ type FinalCtaProps = {
 }
 
 /**
- * S9 — toutes les objections sont levées, la demande peut être franche.
+ * S9 - toutes les objections sont levées, la demande peut être franche.
  * La rupture de fond encre signale la fin du parcours et concentre l'attention
  * sur une action unique. Réutilisée en bas des pages internes.
  */

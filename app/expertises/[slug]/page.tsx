@@ -134,8 +134,8 @@ export default async function ExpertiseServicePage(
               Des choix techniques assumés.
             </h2>
             <p className="mb-6 text-[0.97rem] leading-relaxed text-body">
-              Le déroulé complet — cadrage, conception, construction, mise en
-              production, suivi — vit sur la page méthode.
+              Le déroulé complet - cadrage, conception, construction, mise en
+              production, suivi - vit sur la page méthode.
             </p>
             <Link
               href={cta.method.href}
