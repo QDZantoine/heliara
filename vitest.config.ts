@@ -11,13 +11,23 @@ import { defineConfig } from "vitest/config"
  * `dom` tourne en jsdom avec le plugin React : composants, et les deux fonctions
  * de `lib/lottie` qui touchent à `window`.
  *
- * `db` n'est pas ici : les procédures SQL se testent contre la base en marche,
- * c'est de l'intégration. Voir `pnpm test:db`.
+ * `db` parle à la vraie base : les procédures stockées ne se testent pas
+ * autrement. Les fichiers se déclarent avec `describeDb`, qui les met en attente
+ * plutôt qu'en échec quand la base n'est pas démarrée - `pnpm test` reste donc
+ * vert sans Docker.
  */
 export default defineConfig({
   resolve: {
-    // Le même alias que tsconfig.json, sans dépendance supplémentaire.
-    alias: { "@": path.resolve(import.meta.dirname) },
+    alias: {
+      // Le même alias que tsconfig.json, sans dépendance supplémentaire.
+      "@": path.resolve(import.meta.dirname),
+      // `server-only` lève à l'import hors contexte React Server : c'est son
+      // rôle en production, mais il empêcherait de tester la couche d'accès.
+      "server-only": path.resolve(
+        import.meta.dirname,
+        "tests/stubs/server-only.ts"
+      ),
+    },
   },
   test: {
     projects: [
@@ -27,6 +37,19 @@ export default defineConfig({
           name: "unit",
           environment: "node",
           include: ["tests/unit/**/*.test.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "db",
+          environment: "node",
+          include: ["tests/db/**/*.test.ts"],
+          setupFiles: ["tests/setup-db.ts"],
+          // Les tests d'intégration partagent une base : les faire tourner en
+          // parallèle rendrait leurs jeux de données concurrents.
+          fileParallelism: false,
+          testTimeout: 20000,
         },
       },
       {

@@ -6,10 +6,6 @@ import {
 } from "next/font/google"
 
 import "./globals.css"
-import { PageCurtain } from "@/components/layout/page-curtain"
-import { SiteFooter } from "@/components/layout/site-footer"
-import { SiteHeader } from "@/components/layout/site-header"
-import { SkipLink } from "@/components/layout/skip-link"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { site } from "@/lib/site"
@@ -67,13 +63,10 @@ export default function RootLayout({
               'document.documentElement.setAttribute("data-reveal-ready","")',
           }}
         />
-        <ThemeProvider>
-          <PageCurtain />
-          <SkipLink />
-          <SiteHeader />
-          <main id="contenu">{children}</main>
-          <SiteFooter />
-        </ThemeProvider>
+        {/* Le chrome du site public vit dans app/(site)/layout.tsx, celui de
+            l'administration dans app/admin/layout.tsx : ce layout racine ne
+            porte que ce qui vaut pour les deux. */}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   )

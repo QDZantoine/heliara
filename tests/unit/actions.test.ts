@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { submitContact } from "@/app/contact/actions"
-import { subscribe } from "@/app/ressources/actions"
+import { submitContact } from "@/app/(site)/contact/actions"
+import { subscribe } from "@/app/(site)/ressources/actions"
 import { budgetRanges } from "@/lib/content/team"
 import { site } from "@/lib/site"
 

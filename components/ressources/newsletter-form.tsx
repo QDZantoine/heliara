@@ -4,7 +4,10 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 
-import { subscribe, type NewsletterResult } from "@/app/ressources/actions"
+import {
+  subscribe,
+  type NewsletterResult,
+} from "@/app/(site)/ressources/actions"
 import { Button } from "@/components/ui/button"
 import { newsletterSchema } from "@/lib/schemas/newsletter"
 

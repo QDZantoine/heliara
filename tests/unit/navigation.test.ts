@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs"
+import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
 
@@ -27,6 +27,29 @@ const dynamicSlugs: Record<string, string[]> = {
 }
 
 /**
+ * Les préfixes sous lesquels une route peut vivre : la racine de `app/` et chacun
+ * de ses groupes de routes.
+ *
+ * Les parenthèses d'un groupe ne figurent pas dans l'URL - `app/(site)/methode`
+ * répond sur `/methode` - donc les chercher fait partie de la résolution. Ils sont
+ * découverts plutôt que déclarés : ajouter un groupe ne demande pas de toucher à ce
+ * test.
+ */
+const groups = [
+  "",
+  ...readdirSync(path.join(root, "app"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith("("))
+    .map((entry) => entry.name),
+]
+
+/** Le fichier existe-t-il sous la racine de `app/` ou sous l'un de ses groupes ? */
+function inApp(...segments: string[]) {
+  return groups.some((group) =>
+    existsSync(path.join(root, "app", group, ...segments))
+  )
+}
+
+/**
  * Une route interne est-elle réellement servie ?
  *
  * Le test lit l'arborescence `app/` plutôt qu'une liste recopiée : une page
@@ -37,17 +60,19 @@ function routeExists(href: string) {
   const segments = href.replace(/^\//, "").split("/").filter(Boolean)
 
   if (segments.length === 0) {
-    return existsSync(path.join(root, "app/page.tsx"))
+    return inApp("page.tsx")
   }
 
   if (segments.length === 1) {
-    return existsSync(path.join(root, "app", segments[0], "page.tsx"))
+    return inApp(segments[0], "page.tsx")
   }
 
   if (segments.length === 2) {
     const [collection, slug] = segments
-    const dynamic = path.join(root, "app", collection, "[slug]", "page.tsx")
-    return existsSync(dynamic) && dynamicSlugs[collection]?.includes(slug)
+    return (
+      inApp(collection, "[slug]", "page.tsx") &&
+      Boolean(dynamicSlugs[collection]?.includes(slug))
+    )
   }
 
   return false

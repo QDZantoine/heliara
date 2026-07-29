@@ -15,10 +15,12 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD manquant}
       MARIADB_DATABASE: ${DB_NAME:-heliara}
-      # Lues par 01-users.sh pour créer les trois comptes.
+      # Lues par 01-users.sh pour créer les quatre comptes. `app_read` et
+      # `app_write` portent la séparation lecture / écriture : voir 10-grants.sql.
       DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:?DB_ADMIN_PASSWORD manquant}
       DB_MIGRATE_PASSWORD: ${DB_MIGRATE_PASSWORD:?DB_MIGRATE_PASSWORD manquant}
-      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?DB_APP_PASSWORD manquant}
+      DB_READ_PASSWORD: ${DB_READ_PASSWORD:?DB_READ_PASSWORD manquant}
+      DB_WRITE_PASSWORD: ${DB_WRITE_PASSWORD:?DB_WRITE_PASSWORD manquant}
     # 3307 par défaut : le 3306 est souvent pris par une base locale.
     ports:
       - "${DB_PORT:-3307}:3306"

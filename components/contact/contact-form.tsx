@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Check } from "lucide-react"
 
-import { submitContact, type ContactResult } from "@/app/contact/actions"
+import { submitContact, type ContactResult } from "@/app/(site)/contact/actions"
 import { Button } from "@/components/ui/button"
 import { budgetRanges } from "@/lib/content/team"
 import { contactDefaults, contactSchema } from "@/lib/schemas/contact"
