@@ -30,6 +30,8 @@ pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# Le modèle est versionné : il documente les variables attendues, sans valeur.
+!.env.example
 
 # typescript
 *.tsbuildinfo

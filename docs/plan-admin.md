@@ -7,6 +7,40 @@ accédée **exclusivement par procédures stockées** et un stockage objet MinIO
 État de départ : site 100 % statique, contenu en dur dans `lib/content/*.ts`, 24 commits,
 36 pages prérendues.
 
+## Avancement
+
+Ce tableau est la première chose à lire pour reprendre le chantier. Le convenu et le
+vérifié y sont distingués : « fait » signifie éprouvé contre l'infrastructure en marche,
+pas seulement écrit.
+
+| Étape                                  | État                                                    |
+| -------------------------------------- | ------------------------------------------------------- |
+| 0 - Infrastructure                     | **fait**, vérifié sur la base et le stockage en marche  |
+| 1 - Schéma et procédures d'authentification | à faire, prochaine étape                           |
+| 2 - Couche d'accès                     | à faire                                                 |
+| 3 - Authentification applicative       | à faire                                                 |
+| 4 - Médias                             | à faire                                                 |
+| 5 - Réalisations                       | à faire                                                 |
+| 6 - Bascule du site public             | à faire                                                 |
+
+Ce qui a été vérifié à l'étape 0, et n'a donc pas à être revérifié :
+
+- Les trois comptes existent. `app_exec` se voit refuser `SELECT` comme `CREATE` sur
+  toute table, et ne dispose que de `GRANT EXECUTE ON heliara.*`.
+- `GenerateKey()`, `Uuid2Bin()`, `Bin2Uuid()` et `Slugify()` répondent, **appelées par
+  `app_exec`**. Aller-retour UUID conforme, entrée invalide à `NULL`, 16 octets, chiffre
+  de version à 7, ordre temporel respecté.
+- Le seau MinIO `heliara` est créé, son préfixe `public/` ouvert en lecture anonyme.
+
+Deux constats acquis à ne pas redécouvrir :
+
+- `UUID_v7()` n'existe qu'à partir de MariaDB 11.7, l'image est en 11.4 LTS.
+  `GenerateKey()` assemble donc le v7 à la main, ce qui rend l'API portable sur tout hôte
+  11.x. Ne pas « simplifier » en rappelant la fonction native.
+- L'entrypoint MariaDB ne substitue pas les variables d'environnement dans les fichiers
+  `.sql`. D'où `01-users.sh`, un script : c'est ce qui garde les mots de passe hors du
+  dépôt.
+
 ## Décisions actées
 
 | Sujet                           | Choix                                                                         |
@@ -38,19 +72,22 @@ Elles viennent du projet de référence et s'appliquent à tout le SQL.
 
 ## Étape 0 - Infrastructure
 
-```
+Fait. Le détail opérationnel - ports, cycle de vie de `db/init`, comptes, politique du
+seau - est consigné dans `CLAUDE.md`, section « Administration des contenus ».
+
+```text
 docker-compose.yml
-  mariadb      11.x, volume db_data, healthcheck
+  mariadb      11.4 LTS, publiée sur 3307, volume db_data, healthcheck
   minio        API 9000, console 9001, volume minio_data, healthcheck
-  minio-init   crée le bucket et sa politique, puis sort
+  minio-init   crée le seau et ouvre `public/` en lecture anonyme, puis sort
 
 db/init/     monté dans /docker-entrypoint-initdb.d, exécuté une fois sur volume vierge
-  01-users.sql       les trois comptes et leurs privilèges
-  02-functions.sql   GenerateKey(), Bin2Uuid(), Uuid2Bin()
-```
+  01-users.sh        les trois comptes et leurs privilèges
+  02-functions.sql   GenerateKey(), Uuid2Bin(), Bin2Uuid(), Slugify()
 
-`.env.example` complété : identifiants base, identifiants MinIO, nom du bucket.
-Le fichier `.env` reste hors du dépôt.
+package.json   pnpm db:up / db:down / db:reset / db:shell / db:logs
+.env.example   toutes les variables attendues, sans valeur. `.env` hors du dépôt
+```
 
 ## Étape 1 - Schéma et procédures d'authentification
 

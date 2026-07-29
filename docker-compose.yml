@@ -1,0 +1,77 @@
+name: heliara
+
+# Infrastructure de développement : base MariaDB et stockage objet MinIO.
+#
+# Les mots de passe viennent tous de `.env`, jamais du dépôt. Le fichier
+# `db/init` n'est exécuté qu'une fois, sur volume vierge : toute modification du
+# schéma après le premier démarrage suppose soit une migration, soit
+# `docker compose down -v` pour repartir de zéro.
+
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: heliara-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD manquant}
+      MARIADB_DATABASE: ${DB_NAME:-heliara}
+      # Lues par 01-users.sh pour créer les trois comptes.
+      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:?DB_ADMIN_PASSWORD manquant}
+      DB_MIGRATE_PASSWORD: ${DB_MIGRATE_PASSWORD:?DB_MIGRATE_PASSWORD manquant}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?DB_APP_PASSWORD manquant}
+    # 3307 par défaut : le 3306 est souvent pris par une base locale.
+    ports:
+      - "${DB_PORT:-3307}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    container_name: heliara-s3
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ROOT_USER:?S3_ROOT_USER manquant}
+      MINIO_ROOT_PASSWORD: ${S3_ROOT_PASSWORD:?S3_ROOT_PASSWORD manquant}
+    ports:
+      - "${S3_PORT:-9000}:9000"
+      - "${S3_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 5s
+
+  # Crée le seau et ouvre en lecture anonyme le seul préfixe `public/`, celui des
+  # médias servis sur le site. Le reste du seau demeure privé. Sort une fois fait.
+  minio-init:
+    image: minio/mc:RELEASE.2025-04-16T18-13-26Z
+    container_name: heliara-s3-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      S3_ROOT_USER: ${S3_ROOT_USER}
+      S3_ROOT_PASSWORD: ${S3_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET:-heliara}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 \"$${S3_ROOT_USER}\" \"$${S3_ROOT_PASSWORD}\" &&
+      mc mb --ignore-existing \"local/$${S3_BUCKET}\" &&
+      mc anonymous set download \"local/$${S3_BUCKET}/public\" &&
+      echo 'Seau pret.'
+      "
+
+volumes:
+  db_data:
+  minio_data:

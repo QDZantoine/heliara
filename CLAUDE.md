@@ -13,15 +13,24 @@ Next.js 16 App Router · TypeScript · Tailwind CSS v4 · shadcn/ui (style `base
 
 ## Commandes
 
-```
+```text
 pnpm dev        # Turbopack
 pnpm lint       # eslint (flat config)
 pnpm typecheck  # tsc --noEmit
 pnpm build
 pnpm format     # prettier --write
+
+pnpm db:up      # MariaDB + MinIO + création du seau
+pnpm db:down    # arrêt, volumes conservés
+pnpm db:reset   # détruit les volumes et rejoue db/init - perte de données
+pnpm db:shell   # console SQL en db_admin, accepte -e "SELECT ..."
+pnpm db:logs
 ```
 
 Après chaque phase : `pnpm lint && pnpm typecheck && pnpm build`, puis un commit atomique.
+
+Le `.env` local n'est pas versionné. `.env.example` liste toutes les variables
+attendues et fait référence : le compléter en même temps qu'on en ajoute une.
 
 ## Style de code
 
@@ -196,46 +205,6 @@ Les autres garanties sont communes à toutes les scènes, et c'est la raison d'�
 
 Les artboards ont des proportions et des marges internes différentes : chaque scène porte une échelle en `transform` pour équilibrer les tailles apparentes, jamais une largeur, afin de ne pas toucher à la mise en page.
 
-## Routes## Routes
-
-Cinq entrées de nav (`Expertises`, `Réalisations`, `Méthode`, `À propos`, `Ressources`) plus le CTA permanent vers `/contact`. `/le-groupe`, `/mentions-legales` et `/confidentialite` ne vivent que dans le pied de page.
-
-Carrières a été retiré du périmètre : la fiche existe dans l'Architecture UX et une maquette a été exportée, mais la page n'est pas construite. Rien n'y renvoie.
-
-`app/sitemap.ts` déclare les pages publiques et les trois collections dynamiques. Les pages légales en sont absentes : elles portent `robots: { index: false }`, il serait contradictoire de les déclarer. `app/robots.ts` pointe vers le plan du site.
-
-Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec next typegen`. Sans quoi `PageProps<"/ma/[route]">` échoue au typecheck.
-
-## Formulaires
-
-`zod` + `react-hook-form`. Le schéma vit dans `lib/schemas/`, **partagé par le client et l'action serveur** : un seul schéma, donc aucun risque de voir les deux validations divergentes. Les messages y sont rédigés pour être affichés tels quels, en français, sans jargon de validation.
-
-- **Le serveur rejoue toujours le schéma.** Une action serveur est une route publique : elle ne peut pas faire confiance à son appelant. La validation du navigateur n'est qu'un confort.
-- **Résolveur `standardSchemaResolver`**, pas `zodResolver` : zod 4 implémente Standard Schema, et c'est la voie recommandée depuis `@hookform/resolvers` v5.
-- **Les erreurs que seul le serveur connaît sont réinjectées** par `form.setError`, pour qu'elles s'affichent au même endroit que les autres.
-- **On ne vide jamais un formulaire qu'on refuse** : `react-hook-form` conserve les valeurs saisies.
-- **Ne jamais prétendre avoir envoyé.** En l'absence de configuration d'envoi, l'action renvoie une erreur explicite qui redirige vers l'adresse e-mail publique.
-- Champ leurre anti-robot en `sr-only`, accepté par le schéma mais traité par l'action : rempli, elle renvoie un succès et n'envoie rien - un robot ne doit pas apprendre qu'il a été détecté.
-- Labels visibles au-dessus des champs, messages d'erreur en clair en dessous, `aria-invalid` et `aria-describedby` sur le champ concerné, cibles à 44 px.
-- **Limite assumée** : un formulaire sous `react-hook-form` exige JavaScript. La page de contact affiche l'e-mail et le téléphone en alternative, et le reste du site fonctionne sans.
-
-### Envoi des e-mails
-
-`resend`, configuré par variables d'environnement (voir `.env.example`) : `RESEND_API_KEY`, `CONTACT_FROM` - qui doit appartenir à un domaine vérifié chez Resend, sinon l'API refuse l'envoi - et `CONTACT_TO`, facultatif. `replyTo` porte l'adresse du prospect : répondre au message suffit.
-
-## Illustrations Lottie
-
-Deux illustrations, un seul lecteur. `lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère le tout avec repli sur un délai pour Safari, qui n'implémente pas `requestIdleCallback`.
-
-- **La variante `lottie_light` suffit** : aucun de nos fichiers n'utilise d'expressions, et le build complet pèse près de 140 ko de plus.
-- **Rien n'est chargé sur le chemin critique**, ni du tout sous `prefers-reduced-motion`. Les deux usages partagent un chunk unique.
-- **Amélioration progressive obligatoire** : si le lecteur n'arrive pas, l'interface doit rester fonctionnelle. La transition se joue sans illustration ; le sélecteur de thème garde ses icônes lucide.
-- **La taille se porte sur le conteneur, jamais sur le SVG** : `lottie-web` pose `width: 100%` en style inline sur le SVG qu'il crée, une règle CSS visant le SVG serait perdue.
-
-### `public/loading-animation-white.json` - transition de page
-
-7,3 ko, quatre calques, 1,9 s par cycle. Centrée dans le voile, en boucle, jouée à 1,6× pour qu'on en voie environ la moitié. Enfant du voile, donc son opacité se multiplie à la sienne et elle s'efface avec lui sans règle dédiée. Mise en pause au retour au repos.
-
 ### `public/hero-product.json` - illustration du hero
 
 48 ko, trois calques nommés `wireframe`, `code`, `hi-fidelity` : les trois fenêtres s'empilent, tiennent la pose, puis recommencent. C'est le propos du studio montré plutôt qu'écrit, et cela reste dans la règle de la DA - illustration abstraite, volumes simples, jamais de photo ni de 3D gadget. Elle a remplacé la fenêtre produit en CSS pur et ses trois cartes flottantes (`hero-stage`, `product-window`, `parallax`, supprimés).
@@ -257,6 +226,125 @@ Deux pièges rencontrés, à ne pas réintroduire :
 
 - **Suivre `resolvedTheme`, pas le clic.** Le thème change aussi par le raccourci clavier de `ThemeProvider` et par la préférence système ; un interrupteur piloté par le clic se désynchronise.
 - **Mémoriser le thème précédent même quand le lecteur n'est pas encore chargé.** Sinon la première bascule est prise pour un premier rendu et saute à l'état final au lieu de s'animer. C'est un bug qui ne se voit qu'en capturant la séquence, jamais en lisant le code.
+
+## Architecture du dépôt
+
+```text
+app/                      routes App Router. Un dossier par route, `page.tsx` en
+                          Server Component, `actions.ts` pour les actions serveur.
+  page.tsx                accueil
+  realisations/           liste + [slug]
+  expertises/             liste + [slug]
+  ressources/             liste + [slug] + actions.ts (capture newsletter)
+  methode/ a-propos/ contact/ le-groupe/
+  mentions-legales/ confidentialite/
+  layout.tsx              polices, ThemeProvider, PageCurtain, header, main, footer
+  globals.css             la totalité des tokens et des keyframes
+  sitemap.ts robots.ts icon.svg
+
+components/
+  layout/                 chrome du site : header, footer, nav, menu mobile,
+                          sélecteur de thème, voile de transition, logo, skip link
+  primitives/             Container, Section, Eyebrow, Halo, Reveal
+  sections/               blocs réutilisés entre pages : PageHero, CtaBand,
+                          FinalCta, Faq, Breadcrumb, LegalArticle
+  home/ realisations/ ressources/ contact/   blocs propres à une page
+  visuals/                illustrations : LottieScene (le seul lecteur Lottie),
+                          HeroLottie, et les maquettes d'UI en CSS pur
+  ui/                     shadcn : Button, ButtonLink, buttonVariants
+  theme-provider.tsx
+
+lib/
+  content/                contenu éditorial, données statiques typées. Une source
+                          par domaine : cases, expertises, articles, group, team,
+                          method, testimonials, clients, kpis, legal
+  schemas/                schémas zod partagés client / serveur
+  site.ts                 nav, CTA, coordonnées, endossement de groupe
+  lottie.ts utils.ts
+
+db/init/                  monté dans /docker-entrypoint-initdb.d, exécuté une
+                          seule fois sur volume vierge
+docs/plan-admin.md        plan de l'administration des contenus, avancement inclus
+reference/claude-design/  maquettes exportées. Lecture seule, jamais de code repris
+public/                   logos, illustrations SVG, fichiers Lottie
+```
+
+## Administration des contenus
+
+Objectif : rendre modifiable depuis un back-office l'intégralité des contenus
+aujourd'hui figés dans `lib/content/*.ts` - textes, projets et leurs images,
+articles. Le plan détaillé, son avancement et les décisions actées vivent dans
+**`docs/plan-admin.md`** : le consulter avant de reprendre le chantier.
+
+### Infrastructure locale
+
+```text
+pnpm db:up        # MariaDB + MinIO + création du seau
+pnpm db:down      # arrêt, volumes conservés
+pnpm db:reset     # détruit les volumes et rejoue db/init - perte de données
+pnpm db:shell     # console SQL en db_admin
+pnpm db:logs
+```
+
+- MariaDB est publiée sur **3307**, pas 3306 : le port par défaut est souvent
+  pris par une base locale. MinIO expose l'API sur 9000 et sa console sur 9001.
+- `db/init/` **n'est exécuté qu'une fois, sur volume vierge.** Modifier un
+  fichier déjà joué n'a aucun effet sur une base existante : soit on rejoue le
+  fichier à la main en `db_migrate` (ce que fait un déploiement), soit on passe
+  par `pnpm db:reset`.
+- `01-users.sh` est un script et non un `.sql` parce que l'entrypoint MariaDB ne
+  substitue pas les variables d'environnement dans les fichiers SQL : c'est ce
+  qui permet de garder les mots de passe hors du dépôt.
+- Seau MinIO `heliara`. Seul le préfixe `public/` est ouvert en lecture anonyme,
+  le reste demeure privé. Conséquence assumée : les images d'un brouillon sont
+  accessibles à qui connaît leur URL, qui n'est ni listée ni devinable.
+
+### Trois comptes base, un seul pour l'application
+
+| Compte       | Privilèges                            | Usage                             |
+| ------------ | ------------------------------------- | --------------------------------- |
+| `db_admin`   | `ALL`                                 | maintenance. Jamais l'application |
+| `db_migrate` | DDL, routines, DML                    | migrations et seed, déploiement   |
+| `app_exec`   | **`EXECUTE` seul**, aucun accès table | l'application, et rien d'autre    |
+
+Vérifié sur la base en marche : `app_exec` se voit refuser `SELECT` comme
+`CREATE` sur toute table. Une injection SQL réussie chez lui ne donne accès qu'à
+la surface des procédures existantes.
+
+### Conventions SQL non négociables
+
+- **Procédures stockées uniquement.** Aucune requête écrite côté application, ni
+  en lecture ni en écriture. Une nouvelle donnée à lire suppose une nouvelle
+  procédure : c'est le coût assumé du modèle, et ce qui rend `EXECUTE` seul
+  possible.
+- **Identifiants en `BINARY(16)`**, en entrée comme en sortie. L'API SQL reste
+  agnostique du langage appelant, chaque client convertit de son côté
+  (`lib/db/id.ts`). `GenerateKey()` pour les identifiants créés par la base.
+- **Dates en `BIGINT`**, toujours des `UNIX_TIMESTAMP()`. Jamais de `DATETIME` :
+  pas de fuseau à trancher, comparaison directe en JavaScript.
+- **Nommage** : `p_` pour les paramètres, `v_` pour les variables locales,
+  colonnes et procédures en `snake_case`, fonctions utilitaires en `PascalCase`.
+- **Transactions et erreurs** : `DECLARE EXIT HANDLER FOR SQLEXCEPTION` avec
+  `ROLLBACK` puis `RESIGNAL`, et `SIGNAL SQLSTATE '45000'` pour les erreurs
+  métier - que la couche d'accès traduit en erreur typée.
+- **Journal d'audit sur toute écriture** : acteur, action, ressource, ancienne et
+  nouvelle valeur, adresse.
+
+### `GenerateKey()`, et pourquoi pas `UUID_v7()`
+
+UUID version 7 : horodatage en tête, donc identifiants triés dans l'ordre de
+création et insertions groupées en fin d'index InnoDB, là où `UUID()` (version 1)
+éparpille les pages.
+
+Le v7 est **assemblé à la main** en SQL et non délégué à `UUID_v7()`, qui
+n'existe qu'à partir de MariaDB 11.7 alors que l'image est en 11.4 LTS. L'API
+reste ainsi portable sur n'importe quel hôte 11.x ; seul prérequis,
+`RANDOM_BYTES()`, présent depuis 11.3. Vérifié : 16 octets, chiffre de version à
+7, marqueur de variante conforme, ordre temporel respecté.
+
+`Uuid2Bin()` **renvoie `NULL` sur une entrée invalide** plutôt que des octets
+tronqués : l'erreur remonte au lieu de corrompre silencieusement une clé
+étrangère.
 
 ## Règles non négociables
 

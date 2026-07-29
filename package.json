@@ -9,7 +9,12 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "db:logs": "docker compose logs -f",
+    "db:shell": "docker compose exec mariadb sh -c 'exec mariadb -u db_admin -p\"$DB_ADMIN_PASSWORD\" \"$MARIADB_DATABASE\" \"$@\"' sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
