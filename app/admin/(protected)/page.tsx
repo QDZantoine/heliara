@@ -78,14 +78,22 @@ export default async function AdminDashboard() {
         <Stat
           icon={FolderOpen}
           value={published.length}
-          label={published.length > 1 ? "réalisations en ligne" : "réalisation en ligne"}
+          label={
+            published.length > 1
+              ? "réalisations en ligne"
+              : "réalisation en ligne"
+          }
         />
         <Stat
           icon={FileEdit}
           value={drafts.length}
           label={drafts.length > 1 ? "brouillons" : "brouillon"}
         />
-        <Stat icon={ShieldCheck} value={audit.length} label="actions récentes" />
+        <Stat
+          icon={ShieldCheck}
+          value={audit.length}
+          label="actions récentes"
+        />
       </div>
 
       <section className="grid gap-3">
@@ -155,9 +163,7 @@ export default async function AdminDashboard() {
                   {actionLabels[entry.action] ?? entry.action}
                 </span>
                 {entry.actor_name ? (
-                  <span className="text-xs text-label">
-                    {entry.actor_name}
-                  </span>
+                  <span className="text-xs text-label">{entry.actor_name}</span>
                 ) : null}
               </li>
             ))}

@@ -200,14 +200,16 @@ export default async function ExpertiseServicePage(
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-4">
-                  <span>
-                    <span className="block font-display text-[2rem] leading-none font-extrabold text-brand-text">
-                      {relatedCase.figure}
+                  {relatedCase.figure ? (
+                    <span>
+                      <span className="block font-display text-[2rem] leading-none font-extrabold text-brand-text">
+                        {relatedCase.figure}
+                      </span>
+                      <span className="text-[0.78rem] text-label">
+                        {relatedCase.measure}
+                      </span>
                     </span>
-                    <span className="text-[0.78rem] text-label">
-                      {relatedCase.measure}
-                    </span>
-                  </span>
+                  ) : null}
                   <ArrowRight
                     aria-hidden="true"
                     className="size-5 text-brand-text transition-transform duration-[160ms] ease-expo group-hover:translate-x-1"

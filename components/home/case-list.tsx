@@ -67,14 +67,20 @@ function CaseList() {
                       <p className="max-w-[25rem] text-[0.9rem] leading-relaxed text-body">
                         {study.teaser}
                       </p>
-                      <p className="mt-auto flex items-baseline gap-2.5 border-t border-line pt-3.5">
-                        <span className="font-display text-[1.875rem] font-extrabold tracking-[-0.02em] text-brand-text">
-                          {study.figure}
-                        </span>
-                        <span className="text-[0.82rem] text-label">
-                          {study.measure}
-                        </span>
-                      </p>
+                      {/* Le chiffre est facultatif : toute mission ne se résume
+                          pas à une mesure. Sans lui, le filet de séparation
+                          disparaît aussi, sinon la carte finirait sur un trait
+                          qui ne sépare rien. */}
+                      {study.figure ? (
+                        <p className="mt-auto flex items-baseline gap-2.5 border-t border-line pt-3.5">
+                          <span className="font-display text-[1.875rem] font-extrabold tracking-[-0.02em] text-brand-text">
+                            {study.figure}
+                          </span>
+                          <span className="text-[0.82rem] text-label">
+                            {study.measure}
+                          </span>
+                        </p>
+                      ) : null}
                     </div>
                     <CaseSketch halo={study.halo} accent={study.accent} />
                   </Link>

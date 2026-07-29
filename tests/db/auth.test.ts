@@ -4,7 +4,13 @@ import { afterAll, expect, it } from "vitest"
 import { BusinessError, write } from "@/lib/db/call"
 import { isVersion7, toHex, toUuid } from "@/lib/db/id"
 import { closePool } from "@/lib/db/pool"
-import { FAKE_HASH, describeDb, uniqueEmail } from "@/tests/db/helpers"
+import {
+  FAKE_HASH,
+  cleanupUsers,
+  describeDb,
+  trackUser,
+  uniqueEmail,
+} from "@/tests/db/helpers"
 
 /**
  * Tests d'intégration des procédures d'authentification.
@@ -40,10 +46,12 @@ async function makeUser(role = "admin") {
     "127.0.0.1",
   ])
   expect(row).not.toBeNull()
+  trackUser(row!.id)
   return row!
 }
 
 afterAll(async () => {
+  await cleanupUsers()
   await closePool()
 })
 
@@ -59,6 +67,7 @@ describeDb("create_user", () => {
       "127.0.0.1",
     ])
 
+    trackUser(row!.id)
     expect(row?.email).toBe(email)
     expect(row?.display_name).toBe("Léa Roussel")
     expect(row?.role).toBe("admin")
@@ -120,6 +129,7 @@ describeDb("create_user", () => {
       null,
       null,
     ])
+    trackUser(row!.id)
     expect(row?.role).toBe("admin")
   })
 

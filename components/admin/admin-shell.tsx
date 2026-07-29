@@ -1,4 +1,3 @@
-import Link from "next/link"
 import {
   BookOpen,
   ExternalLink,
@@ -13,6 +12,7 @@ import { AdminNavLink } from "@/components/admin/admin-nav-link"
 import { Logo } from "@/components/layout/logo"
 import { Button } from "@/components/ui/button"
 import type { SessionUser } from "@/lib/auth/session"
+import { publicSiteUrl } from "@/lib/public-url"
 
 /**
  * Entrées de l'administration. Une par collection de contenu, dans l'ordre où
@@ -47,7 +47,11 @@ function AdminShell({
 }) {
   return (
     <div className="min-h-dvh bg-page lg:grid lg:grid-cols-[16rem_1fr]">
-      <aside className="flex flex-col gap-6 border-line bg-surface px-4 py-5 lg:min-h-dvh lg:border-r">
+      {/* `sticky` avec une hauteur propre : sans cela, la colonne s'étire à la
+          hauteur du contenu - un formulaire d'édition fait plusieurs écrans - et
+          le bloc du bas, compte et déconnexion, part hors de vue. Elle défile
+          pour elle-même si jamais ses entrées dépassent l'écran. */}
+      <aside className="flex flex-col gap-6 border-line bg-surface px-4 py-5 lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:overflow-y-auto lg:border-r">
         <div className="flex items-center justify-between gap-3 px-1">
           <Logo />
           <span className="rounded-xs bg-inset px-2 py-1 font-mono text-[0.6875rem] tracking-[0.06em] text-label uppercase">
@@ -82,13 +86,18 @@ function AdminShell({
         </nav>
 
         <div className="grid gap-2 border-t border-line pt-4">
-          <Link
-            href="/"
+          {/* Une ancre et non `next/link` : la cible est une autre origine, celle
+              du déploiement de lecture. Un lien relatif resterait sur le port
+              d'écriture, où tout ce qui n'est pas `/admin` répond 404. */}
+          <a
+            href={publicSiteUrl("/")}
+            target="_blank"
+            rel="noopener"
             className="flex min-h-11 items-center gap-2.5 rounded-sm px-3 text-[0.845rem] text-body hover:bg-inset hover:text-ink"
           >
             <ExternalLink className="size-4 shrink-0" strokeWidth={1.5} />
             Voir le site
-          </Link>
+          </a>
 
           <div className="px-3 pt-1">
             <p className="truncate text-[0.845rem] font-medium text-ink">

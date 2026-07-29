@@ -59,6 +59,7 @@ GRANT EXECUTE ON PROCEDURE heliara.get_user_for_login    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.list_users            TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_user_password     TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_user_suspended    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_user           TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.create_password_reset TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.reset_password        TO 'app_write'@'%';
 
@@ -88,6 +89,17 @@ GRANT EXECUTE ON PROCEDURE heliara.set_case_chapters    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_case_results     TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_case_meta        TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_case_lessons     TO 'app_write'@'%';
+
+-- Médias. Aucune n'est accordée à `app_read` : le site public lit les images par
+-- leur URL publique dans MinIO, il n'a jamais besoin d'interroger la table.
+GRANT EXECUTE ON PROCEDURE heliara.create_media       TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.confirm_media      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.get_media          TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.list_media         TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_media_alt      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_media       TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_case_gallery   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.list_case_gallery  TO 'app_write'@'%';
 
 -- L'administration lit aussi la surface publique, pour prévisualiser ce que verra
 -- un visiteur, avec exactement la même requête que lui.

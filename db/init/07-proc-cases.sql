@@ -326,11 +326,14 @@ BEGIN
 
   -- Publier une fiche vide serait publier une page cassée : les champs que la
   -- page publique lit sans garde sont exigés ici.
+  --
+  -- `figure` et `measure` n'en font **pas** partie, volontairement : toute mission
+  -- ne se résume pas à un chiffre, et en réclamer un pousserait à en inventer.
+  -- Les cartes du site savent se passer du bloc chiffré.
   IF p_publish = 1 AND EXISTS (
     SELECT 1 FROM case_study
     WHERE id = p_id
-      AND (title = '' OR summary = '' OR teaser = ''
-           OR figure = '' OR measure = '' OR sector = '')
+      AND (title = '' OR summary = '' OR teaser = '' OR sector = '')
   ) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'CASE_INCOMPLETE';
   END IF;

@@ -95,14 +95,17 @@ function CaseGrid({ cases, sectors }: CaseGridProps) {
                     <p className="flex-1 text-[0.845rem] leading-relaxed text-body">
                       {study.summary}
                     </p>
-                    <p className="flex items-baseline gap-2 border-t border-line pt-2.5">
-                      <span className="font-display text-[1.375rem] font-extrabold text-brand-text">
-                        {study.figure}
-                      </span>
-                      <span className="text-[0.78rem] text-label">
-                        {study.measure}
-                      </span>
-                    </p>
+                    {/* Facultatif : sans chiffre, ni le bloc ni son filet. */}
+                    {study.figure ? (
+                      <p className="flex items-baseline gap-2 border-t border-line pt-2.5">
+                        <span className="font-display text-[1.375rem] font-extrabold text-brand-text">
+                          {study.figure}
+                        </span>
+                        <span className="text-[0.78rem] text-label">
+                          {study.measure}
+                        </span>
+                      </p>
+                    ) : null}
                   </div>
                 </Link>
               </Reveal>

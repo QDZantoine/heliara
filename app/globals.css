@@ -540,3 +540,90 @@
     transform: none;
   }
 }
+
+/* ------------------------------------------------------------
+   Contenu riche
+   ------------------------------------------------------------
+   Style du corps produit par l'éditeur Tiptap de l'administration, et du même
+   HTML une fois rendu sur le site public. Les deux lisent ces règles, ce qui
+   garantit que ce qu'on voit en écrivant est ce qui sera publié.
+
+   Le jeu de marques est court par construction - gras, italique, lien, listes,
+   citation - parce que la hiérarchie et la typographie appartiennent à la DA,
+   pas à la personne qui rédige. Il n'y a donc pas de règle de titre ici : il n'y
+   a pas de titre à styler. */
+.hel-prose > :first-child {
+  margin-top: 0;
+}
+
+.hel-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.hel-prose p {
+  margin-block: 0.75em;
+}
+
+.hel-prose strong {
+  font-weight: 600;
+  color: var(--hel-ink);
+}
+
+.hel-prose em {
+  font-style: italic;
+}
+
+.hel-prose a {
+  color: var(--hel-info-text);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.hel-prose ul,
+.hel-prose ol {
+  margin-block: 0.75em;
+  padding-inline-start: 1.35em;
+}
+
+.hel-prose ul {
+  list-style: disc;
+}
+
+.hel-prose ol {
+  list-style: decimal;
+}
+
+.hel-prose li {
+  margin-block: 0.3em;
+}
+
+.hel-prose li::marker {
+  color: var(--hel-label);
+}
+
+/* Filet orange à gauche : le seul geste de marque du corps de texte. */
+.hel-prose blockquote {
+  margin-block: 1em;
+  border-inline-start: 2px solid var(--hel-brand);
+  padding-inline-start: 1em;
+  color: var(--hel-body);
+  font-style: italic;
+}
+
+.hel-prose code {
+  border-radius: var(--radius-xs);
+  background: var(--hel-inset);
+  padding: 0.1em 0.35em;
+  font-family: var(--font-spline), ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+/* Le substitut d'invite de Tiptap. Il n'existe que dans l'éditeur : le contenu
+   publié n'a jamais de paragraphe vide. */
+.hel-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: inline-start;
+  height: 0;
+  color: var(--hel-label);
+  pointer-events: none;
+}

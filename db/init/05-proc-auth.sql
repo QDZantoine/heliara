@@ -451,3 +451,61 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER $$
+
+/**
+ * Supprime un compte.
+ *
+ * Le journal d'audit conserve ses actes : `audit_log.actor_id` est en
+ * `ON DELETE SET NULL`, donc l'historique reste mais n'est plus attribué. C'est le
+ * compromis choisi - on ne réécrit pas le passé, on ne garde pas de compte fantôme.
+ *
+ * Refuse de retirer le dernier administrateur actif : la porte se refermerait sur
+ * tout le monde. Suspendre reste préférable dans l'usage courant, la suppression
+ * étant réservée à un compte créé par erreur et aux jeux de test.
+ */
+DROP PROCEDURE IF EXISTS delete_user$$
+CREATE PROCEDURE delete_user(
+  IN p_id       BINARY(16),
+  IN p_actor_id BINARY(16),
+  IN p_ip       VARCHAR(45)
+)
+SQL SECURITY DEFINER
+BEGIN
+  DECLARE v_email VARCHAR(180) DEFAULT NULL;
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  START TRANSACTION;
+
+  SELECT email INTO v_email FROM `user` WHERE id = p_id;
+
+  IF v_email IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'USER_NOT_FOUND';
+  END IF;
+
+  IF (
+    SELECT COUNT(*) FROM `user`
+    WHERE role = 'admin' AND suspended_at IS NULL AND id <> p_id
+  ) = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'LAST_ADMIN';
+  END IF;
+
+  -- La trace est écrite avant la suppression : après, `actor_id` serait déjà nul
+  -- si l'acteur se supprimait lui-même.
+  CALL write_audit(
+    p_actor_id, 'user.delete', 'user', p_id,
+    JSON_OBJECT('email', v_email), NULL, p_ip
+  );
+
+  DELETE FROM `user` WHERE id = p_id;
+
+  COMMIT;
+END$$
+
+DELIMITER ;
