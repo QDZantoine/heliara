@@ -16,7 +16,6 @@ import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { FinalCta } from "@/components/sections/final-cta"
-import { GroupTriptych } from "@/components/visuals/group-triptych"
 import { LottieScene } from "@/components/visuals/lottie-scene"
 import {
   brandAccent,
@@ -91,8 +90,20 @@ export default function LeGroupePage() {
             </Reveal>
           </div>
 
+          {/* Illustration undraw (Katerina Limpitsouni), recolorée sur la
+              palette : le seul carré hors palette, un rose, est passé au bleu
+              LessonSharing pour que les trois teintes de la page se retrouvent
+              dans le visuel. Décorative, donc hors arbre d'accessibilité. */}
           <Reveal>
-            <GroupTriptych />
+            <Image
+              src="/illustrations/three-process.svg"
+              width={744}
+              height={800}
+              alt=""
+              unoptimized
+              priority
+              className="mx-auto h-auto w-full max-w-[22rem] md:max-w-[26rem] lg:max-w-[30rem]"
+            />
           </Reveal>
         </Container>
       </section>

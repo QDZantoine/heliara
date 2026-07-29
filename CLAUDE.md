@@ -151,6 +151,14 @@ Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec ne
 
 `resend`, configuré par variables d'environnement (voir `.env.example`) : `RESEND_API_KEY`, `CONTACT_FROM` - qui doit appartenir à un domaine vérifié chez Resend, sinon l'API refuse l'envoi - et `CONTACT_TO`, facultatif. `replyTo` porte l'adresse du prospect : répondre au message suffit.
 
+## Illustrations vectorielles
+
+`public/illustrations/` accueille les illustrations SVG statiques, servies par `next/image` en `unoptimized` : l'optimiseur n'apporte rien sur un SVG. Elles sont décoratives, donc `alt=""` et hors arbre d'accessibilité.
+
+`three-process.svg` (hero de `/le-groupe`) vient d'undraw, signée Katerina Limpitsouni - conserver l'attribution portée par le fichier. Son unique couleur hors palette, un carré rose, a été passée au bleu LessonSharing pour que les trois teintes de la page se retrouvent dans le visuel. **Toujours vérifier les couleurs d'une illustration importée avant de l'intégrer**, et la recolorer plutôt que d'accepter une teinte étrangère à la DA.
+
+Limite connue et acceptée : les flèches de ce fichier sont en `#090814` et perdent leur contraste sur fond encre. La composition reste lisible ; recolorer ces neuf occurrences délaverait aussi les cheveux et les chaussures du personnage en thème clair.
+
 ## Illustrations Lottie
 
 Six illustrations, **un seul composant** : `components/visuals/lottie-scene.tsx`. Ne pas réécrire un lecteur ailleurs, tout passe par lui.
