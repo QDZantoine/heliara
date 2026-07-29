@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 
 import { articles } from "@/lib/content/articles"
-import { caseStudies } from "@/lib/content/cases"
+import { listPublicCaseSlugs } from "@/lib/db/public-cases"
 import { expertiseServices } from "@/lib/content/expertises"
 import { site } from "@/lib/site"
 
@@ -12,7 +12,7 @@ import { site } from "@/lib/site"
  * Les priorités suivent l'architecture UX : l'accueil et la preuve d'abord, le
  * contact ensuite, l'éditorial en dernier.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (path: string) => `${site.url}${path}`
 
   const staticPages = [
@@ -32,8 +32,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority,
     })),
-    ...caseStudies.map((study) => ({
-      url: url(`/realisations/${study.slug}`),
+    // Les réalisations viennent de la base, avec repli sur le contenu statique :
+    // le plan du site ne doit pas se vider parce que la base n'a pas répondu.
+    ...(await listPublicCaseSlugs()).map((slug) => ({
+      url: url(`/realisations/${slug}`),
       changeFrequency: "yearly" as const,
       priority: 0.8,
     })),

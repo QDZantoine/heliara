@@ -2,9 +2,18 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Check, Eye, EyeOff, Loader2, Pencil, ScanEye } from "lucide-react"
+import {
+  Archive,
+  Check,
+  Eye,
+  Globe,
+  Loader2,
+  Pencil,
+  Trash2,
+} from "lucide-react"
 
 import {
+  deleteCase,
   publishCase,
   reorderCases,
 } from "@/app/admin/(protected)/realisations/actions"
@@ -63,6 +72,27 @@ function CaseBoard({ cases }: { cases: CaseSummary[] }) {
     })
   }
 
+  /**
+   * La suppression demande une confirmation dans la ligne même.
+   *
+   * Deux temps plutôt qu'un `confirm()` natif : le libellé nomme ce qui va
+   * disparaître, l'annulation reste à portée, et l'on ne dépend pas d'une boîte de
+   * dialogue du navigateur que rien ne permet d'habiller ni de traduire.
+   */
+  const [confirming, setConfirming] = React.useState<string | null>(null)
+
+  const onDelete = async (item: CaseSummary) => {
+    setBusy(item.id)
+    setError(null)
+    const result = await deleteCase(item.id)
+    // En cas de succès l'action redirige vers la liste : rien après.
+    if (result?.status === "error") {
+      setError(result.formError ?? "La suppression a échoué.")
+    }
+    setBusy(null)
+    setConfirming(null)
+  }
+
   const onPublish = async (item: CaseSummary) => {
     setBusy(item.id)
     setError(null)
@@ -102,7 +132,7 @@ function CaseBoard({ cases }: { cases: CaseSummary[] }) {
         clavier.
       </p>
 
-      <SortableList items={items} onReorder={onReorder}>
+      <SortableList id="cases" items={items} onReorder={onReorder}>
         {(item) => (
           <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
             <div className="min-w-0">
@@ -128,48 +158,93 @@ function CaseBoard({ cases }: { cases: CaseSummary[] }) {
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1.5">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => onPublish(item)}
-                disabled={busy === item.id}
-                title={
-                  item.status === "published"
-                    ? "Repasser en brouillon"
-                    : "Publier"
-                }
-              >
-                {busy === item.id ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : item.status === "published" ? (
-                  <EyeOff className="size-3.5" strokeWidth={1.5} />
-                ) : (
-                  <Eye className="size-3.5" strokeWidth={1.5} />
-                )}
-                <span className="hidden sm:inline">
-                  {item.status === "published" ? "Dépublier" : "Publier"}
+            {/* La confirmation **remplace** la rangée d'actions au lieu de s'y
+                ajouter : rien ne doit rester cliquable à côté d'une question qui
+                attend une réponse. */}
+            {confirming === item.id ? (
+              <div className="flex shrink-0 flex-wrap items-center gap-1.5 rounded-sm border border-danger bg-danger-subtle px-2 py-1">
+                <span className="text-[0.82rem] text-danger-text">
+                  Supprimer « {item.title} » ?
                 </span>
-              </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onDelete(item)}
+                  disabled={busy === item.id}
+                >
+                  {busy === item.id ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : null}
+                  Oui, supprimer
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirming(null)}
+                >
+                  Annuler
+                </Button>
+              </div>
+            ) : (
+              <div className="flex shrink-0 items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onPublish(item)}
+                  disabled={busy === item.id}
+                  title={
+                    item.status === "published"
+                      ? "Repasser en brouillon"
+                      : "Publier"
+                  }
+                >
+                  {/* Ni l'un ni l'autre n'est un oeil : ceux-ci appartiennent à
+                    l'aperçu, et les confondre fait dépublier en croyant regarder.
+                    Le globe met en ligne, l'archive retire. */}
+                  {busy === item.id ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : item.status === "published" ? (
+                    <Archive className="size-3.5" strokeWidth={1.5} />
+                  ) : (
+                    <Globe className="size-3.5" strokeWidth={1.5} />
+                  )}
+                  <span className="hidden sm:inline">
+                    {item.status === "published" ? "Dépublier" : "Publier"}
+                  </span>
+                </Button>
 
-              <Link
-                href={`/admin/realisations/${item.slug}/apercu`}
-                title="Aperçu"
-                className="inline-flex h-9 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-body transition-colors duration-100 hover:bg-inset hover:text-ink"
-              >
-                <ScanEye className="size-3.5" strokeWidth={1.5} />
-                <span className="sr-only">Aperçu de {item.title}</span>
-              </Link>
+                <Link
+                  href={`/admin/realisations/${item.slug}/apercu`}
+                  title="Aperçu"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-body transition-colors duration-100 hover:bg-inset hover:text-ink"
+                >
+                  <Eye className="size-3.5" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Aperçu</span>
+                  <span className="sr-only">de {item.title}</span>
+                </Link>
 
-              <Link
-                href={`/admin/realisations/${item.slug}`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-body transition-colors duration-100 hover:bg-inset hover:text-ink"
-              >
-                <Pencil className="size-3.5" strokeWidth={1.5} />
-                <span className="hidden sm:inline">Modifier</span>
-              </Link>
-            </div>
+                <Link
+                  href={`/admin/realisations/${item.slug}`}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-sm px-3 text-sm font-medium text-body transition-colors duration-100 hover:bg-inset hover:text-ink"
+                >
+                  <Pencil className="size-3.5" strokeWidth={1.5} />
+                  <span className="hidden sm:inline">Modifier</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setConfirming(item.id)}
+                  aria-label={`Supprimer ${item.title}`}
+                  title="Supprimer"
+                  className="grid size-9 place-items-center rounded-sm text-label transition-colors duration-100 hover:bg-danger-subtle hover:text-danger-text"
+                >
+                  <Trash2 className="size-3.5" strokeWidth={1.5} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </SortableList>

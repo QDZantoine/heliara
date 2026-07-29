@@ -5,3 +5,6 @@ node_modules/
 coverage/
 pnpm-lock.yaml
 .pnpm-store/
+# Répertoires de build de `pnpm dev:both`, un par rôle.
+.next-read
+.next-write

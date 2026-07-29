@@ -45,6 +45,16 @@ type SortableListProps<T extends Identified> = {
   items: T[]
   onReorder: (items: T[]) => void
   children: (item: T, index: number) => React.ReactNode
+  /**
+   * Identifiant du contexte, **obligatoire en pratique**.
+   *
+   * dnd-kit fabrique les identifiants de ses descriptions d'accessibilité à partir
+   * d'un compteur de module : celui du serveur et celui du client ne coïncident
+   * pas, et React signale une divergence d'hydratation sur `aria-describedby`.
+   * Un identifiant explicite et stable règle le problème, et il doit être unique
+   * par liste dans la page.
+   */
+  id: string
   className?: string
 }
 
@@ -52,6 +62,7 @@ function SortableList<T extends Identified>({
   items,
   onReorder,
   children,
+  id,
   className,
 }: SortableListProps<T>) {
   const sensors = useSensors(
@@ -78,6 +89,7 @@ function SortableList<T extends Identified>({
 
   return (
     <DndContext
+      id={id}
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={onDragEnd}

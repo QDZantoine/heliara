@@ -3,7 +3,6 @@
 import * as React from "react"
 import { EditorContent, useEditor, type Editor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
-import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import {
   Bold,
@@ -67,11 +66,15 @@ function RichText({
         heading: false,
         horizontalRule: false,
         codeBlock: false,
-      }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-        HTMLAttributes: { rel: "noopener", target: "_blank" },
+        // **Le lien se configure ici**, pas en ajoutant `@tiptap/extension-link` à
+        // côté : StarterKit l'embarque depuis Tiptap 3, et le déclarer deux fois
+        // provoque un « Duplicate extension names found: ['link'] » - avec deux
+        // marques concurrentes pour le même nom.
+        link: {
+          openOnClick: false,
+          autolink: true,
+          HTMLAttributes: { rel: "noopener", target: "_blank" },
+        },
       }),
       Placeholder.configure({ placeholder: placeholder ?? "" }),
     ],

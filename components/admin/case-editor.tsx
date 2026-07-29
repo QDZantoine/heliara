@@ -3,7 +3,16 @@
 import * as React from "react"
 import Link from "next/link"
 import { Tabs } from "@base-ui/react/tabs"
-import { Check, Eye, ExternalLink, Loader2, Plus, Trash2 } from "lucide-react"
+import {
+  Archive,
+  Check,
+  ExternalLink,
+  Eye,
+  Globe,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react"
 
 import {
   deleteCase,
@@ -199,7 +208,11 @@ function Header({ item }: { item: CaseDetail }) {
           >
             {busy === "publish" ? (
               <Loader2 className="size-4 animate-spin" />
-            ) : null}
+            ) : item.status === "published" ? (
+              <Archive className="size-4" strokeWidth={1.5} />
+            ) : (
+              <Globe className="size-4" strokeWidth={1.5} />
+            )}
             {item.status === "published" ? "Dépublier" : "Publier"}
           </Button>
 
@@ -615,11 +628,16 @@ function FicheForm({ item }: { item: CaseDetail }) {
             checked={values.featured}
             onChange={(checked) => set("featured", checked)}
             label="Mise en avant sur l'accueil"
+            hint="La fiche apparaît dans la section Réalisations de la page d'accueil."
           />
+          {/* Le libellé dit explicitement où l'option agit : sur l'accueil, la
+              disposition alterne selon la position de la fiche, et cette case n'y
+              change rien. Sans cette précision, on croit qu'elle est en cause. */}
           <Toggle
             checked={values.wide}
             onChange={(checked) => set("wide", checked)}
-            label="Carte large dans la grille du hub"
+            label="Carte large sur /realisations"
+            hint="Sans effet sur l'accueil, où le visuel alterne de côté un cas sur deux."
           />
         </div>
       </Section>
@@ -662,6 +680,7 @@ function ChaptersForm({ item }: { item: CaseDetail }) {
       </p>
 
       <SortableList
+        id="chapters"
         items={rows}
         onReorder={(next) => {
           setRows(next)
@@ -760,6 +779,7 @@ function ResultsForm({ item }: { item: CaseDetail }) {
       </p>
 
       <SortableList
+        id="results"
         items={rows}
         onReorder={(next) => {
           setRows(next)
@@ -873,6 +893,7 @@ function GalleryForm({ item }: { item: CaseDetail }) {
             Galerie ({rows.length})
           </h3>
           <SortableList
+            id="gallery"
             items={rows}
             onReorder={(next) => {
               setRows(next)
@@ -959,6 +980,7 @@ function AnnexesForm({ item }: { item: CaseDetail }) {
       <div className="grid gap-4">
         <Section title="Fiche technique" hint="Durée, équipe, technologies…">
           <SortableList
+            id="meta"
             items={meta}
             onReorder={(next) => {
               setMetaRows(next)
@@ -1038,6 +1060,7 @@ function AnnexesForm({ item }: { item: CaseDetail }) {
           hint="Ce que la mission a appris, sans langue de bois"
         >
           <SortableList
+            id="lessons"
             items={lessons}
             onReorder={(next) => {
               setLessonRows(next)
@@ -1189,20 +1212,25 @@ function Toggle({
   checked,
   onChange,
   label,
+  hint,
 }: {
   checked: boolean
   onChange: (checked: boolean) => void
   label: string
+  hint?: string
 }) {
   return (
-    <label className="flex min-h-11 items-center gap-2.5 text-[0.9rem] text-body">
+    <label className="flex min-h-11 items-start gap-2.5 py-1 text-[0.9rem] text-body">
       <input
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="size-4 accent-brand-solid"
+        className="mt-1 size-4 shrink-0 accent-brand-solid"
       />
-      {label}
+      <span className="grid gap-0.5">
+        {label}
+        {hint ? <span className="text-xs text-label">{hint}</span> : null}
+      </span>
     </label>
   )
 }

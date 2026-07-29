@@ -6,15 +6,18 @@ import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { CaseSketch } from "@/components/visuals/case-sketch"
-import { featuredCases } from "@/lib/content/cases"
+import type { CaseStudy } from "@/lib/content/cases"
 import { cn } from "@/lib/utils"
 
 /**
  * S6 - la preuve centrale, placée quand le visiteur sait déjà quoi et comment.
  * Le visuel alterne de côté un cas sur deux ; sur mobile, tout s'empile avec le
  * texte en premier.
+ *
+ * Les cas arrivent en prop plutôt qu'importés : la page les lit en base, avec repli
+ * sur le contenu statique. Le composant reste ignorant de leur provenance.
  */
-function CaseList() {
+function CaseList({ cases }: { cases: CaseStudy[] }) {
   return (
     <Section
       id="realisations"
@@ -43,7 +46,7 @@ function CaseList() {
         </Reveal>
 
         <ul className="grid gap-5">
-          {featuredCases.map((study, index) => {
+          {cases.map((study, index) => {
             const visualFirst = index % 2 === 1
             return (
               <li key={study.slug}>

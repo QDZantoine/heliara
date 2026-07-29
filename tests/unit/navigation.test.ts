@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
-import { describe, expect, it } from "vitest"
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 
 import robots from "@/app/robots"
 import sitemap from "@/app/sitemap"
@@ -196,8 +196,31 @@ describe("pied de page", () => {
 })
 
 describe("plan du site", () => {
-  const entries = sitemap()
-  const urls = entries.map((entry) => entry.url)
+  /**
+   * Le plan du site est désormais asynchrone : il lit les réalisations en base.
+   *
+   * Ce projet de test tourne sans `.env`, donc sans identifiant de base : la
+   * lecture échoue et le repli sur le contenu statique s'applique. C'est
+   * exactement ce qu'on veut vérifier au passage - **le plan du site ne se vide
+   * pas quand la base ne répond pas.**
+   *
+   * Le chargement passe par `beforeAll` et non par un `await` de haut niveau : le
+   * corps d'un `describe` est synchrone.
+   */
+  let entries: Awaited<ReturnType<typeof sitemap>>
+  let urls: string[]
+
+  beforeAll(async () => {
+    // Le repli journalise un avertissement : attendu ici, on ne pollue pas la
+    // sortie des tests avec.
+    vi.spyOn(console, "warn").mockImplementation(() => {})
+    entries = await sitemap()
+    urls = entries.map((entry) => entry.url)
+  })
+
+  afterAll(() => {
+    vi.restoreAllMocks()
+  })
 
   it("préfixe toutes les URL par le domaine, sans doublon", () => {
     for (const url of urls) {

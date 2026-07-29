@@ -415,3 +415,144 @@ un champ leurre rempli, alors que la conception veut qu'il l'accepte et laisse
 l'action serveur répondre « envoyé » sans rien envoyer. La validation échouait
 donc, le robot recevait une erreur sur ce champ - il apprenait qu'il était
 détecté - et la branche prévue dans l'action était inatteignable.
+
+## Les deux déploiements
+
+Un seul code, **deux processus**, distingués par `HELIARA_ROLE` :
+
+```text
+pnpm dev:both    # les deux, 3000 et 3001, journaux préfixés
+pnpm dev:read    # 3000, le site public
+pnpm dev:write   # 3001, l'administration
+```
+
+|                | `read`, port 3000  | `write`, port 3001 |
+| -------------- | ------------------ | ------------------ |
+| Exposition     | publique           | VPN seulement      |
+| Compte base    | `app_read`         | `app_write`        |
+| Routes servies | tout sauf `/admin` | `/admin` seulement |
+
+**La séparation lecture / écriture est portée par la base, pas par le réseau.**
+`app_read` n'a `EXECUTE` que sur les quatre procédures `pub_*`, accordées une par
+une dans `db/init/10-grants.sql`. Il se voit refuser toute procédure d'écriture,
+`list_case_studies` - celle qui montrerait un brouillon - et `SELECT` sur toute
+table. Vérifié contre la base en marche dans `tests/db/separation.test.ts`.
+
+Trois barrières se cumulent, de la plus faible à la plus forte :
+
+1. `proxy.ts` renvoie 404 - pas 403, qui confirmerait l'existence.
+2. `getPool("write")` refuse de s'ouvrir hors du rôle `write`.
+3. Le déploiement de lecture ne reçoit pas `DB_WRITE_PASSWORD` : les deux
+   premières contournées, il n'a aucun identifiant capable d'écrire.
+
+`read` est la valeur par défaut : un oubli de configuration dégrade vers moins de
+droits, jamais vers plus.
+
+Limite assumée : un seul build sert les deux processus, donc le code de
+l'administration existe sur l'hôte public même si ses routes y répondent 404. Le
+rendre physiquement absent demanderait deux applications en monorepo.
+
+### Pièges de ce mode à deux processus
+
+- **Next 16 pose un verrou par répertoire de build** et refuse un second serveur
+  de dev : « Another next dev server is already running ». D'où `NEXT_DIST_DIR`
+  dans `next.config.ts`, et `.next-read` / `.next-write` pour `pnpm dev:both`.
+- **Un lien relatif écrit dans l'administration reste sur le port d'écriture**, où
+  tout ce qui n'est pas `/admin` répond 404. « Voir le site » et « Voir en ligne »
+  passent par `publicSiteUrl()`, réglé par `NEXT_PUBLIC_SITE_ORIGIN`.
+- **Le cache d'un processus n'est pas celui de l'autre.** Un `updateTag` écrit côté
+  administration ne franchit pas la frontière : la fraîcheur du site public vient
+  d'un `revalidate` de 60 s, pas d'une invalidation par tag.
+- **`revalidate` doit être un littéral.** Next analyse les exports de configuration
+  de segment statiquement : une valeur importée fait échouer le build sur « Invalid
+  segment configuration export ». `CASES_REVALIDATE_SECONDS` n'est que
+  documentaire, les deux valeurs doivent rester d'accord.
+
+## Contenu : base d'abord, statique en secours
+
+Les réalisations sont lues en base par `lib/db/public-cases.ts`, **avec repli
+explicite sur `lib/content/cases.ts`** quand la base est vide ou injoignable. Un
+déploiement ne doit pas échouer parce que la base n'a pas répondu, et le site ne
+doit jamais afficher une page de réalisations vide. Le repli est silencieux pour le
+visiteur et bruyant dans les journaux : une base injoignable est un incident.
+
+**Le repli est « tout ou rien », et c'est pourquoi `pnpm db:seed` existe.** Dès
+qu'une fiche est publiée en base, le repli cesse de s'appliquer : sans amorçage, la
+première publication ferait disparaître les six fiches statiques de la grille.
+`pnpm db:seed` importe le contenu existant, une fois, de façon idempotente - une
+fiche dont le slug existe déjà n'est jamais écrasée.
+
+Fusionner base et statique à la lecture a été écarté : cela installerait une
+ambiguïté permanente, puisqu'il deviendrait impossible de supprimer une fiche
+statique depuis l'administration.
+
+## Administration
+
+`app/admin/layout.tsx` ne porte **pas** de garde : il couvre aussi `/admin/login`,
+qui doit rester atteignable sans session. La garde vit dans
+`app/admin/(protected)/layout.tsx`, ce qui évite la boucle de redirection qu'un
+contrôle posé plus haut provoquerait.
+
+**L'autorisation est refaite dans chaque action serveur.** Une action serveur est
+une route publique : le layout protège le rendu des pages, pas les actions. Toutes
+commencent par `requireSession()`, sans exception, et rejouent leur schéma zod.
+
+```text
+pnpm admin:create   # premier compte, mot de passe saisi sans écho
+pnpm db:migrate     # rejoue schéma, procédures ET privilèges
+pnpm db:seed        # amorce la base depuis le contenu statique
+```
+
+**`pnpm db:migrate` n'est pas un confort.** `DROP PROCEDURE` emporte avec lui les
+privilèges accordés sur cette procédure - ils vivent dans `mysql.procs_priv` et
+rien ne les restaure. Rejouer un fichier de procédures à la main révoque donc
+silencieusement l'accès des comptes applicatifs, et l'application répond « execute
+command denied » sur une procédure qui existe pourtant. Le symptôme est déroutant,
+la cause invisible.
+
+**`SQL SECURITY DEFINER` sur toutes les procédures**, et c'est ce qui rend le
+modèle possible : en `INVOKER`, la procédure s'exécute avec les droits de
+l'appelant, donc un compte sans droit de table échoue à l'intérieur même de la
+procédure. Aucune clause `DEFINER = ...` explicite, pour ne pas exiger `SET USER`.
+
+### Aperçu de brouillon
+
+`/admin/realisations/[slug]/apercu`, servi par l'administration, **et il ne peut
+pas en être autrement** : le déploiement public utilise `app_read`, à qui la base
+refuse de lire un brouillon. Un aperçu servi par le site public exigerait de percer
+cette séparation, ce qui annulerait la garantie qu'elle apporte. Il est donc
+derrière la session et le VPN : aucun lien signé à faire expirer.
+
+`CaseStudyView` est partagé par la page publique et l'aperçu : **le même rendu, les
+mêmes composants, le même CSS.** Il ne peut pas diverger, il n'y a rien à tenir en
+double.
+
+### Interface
+
+- **Glisser-déposer d'images** : `MediaDropzone`. Le fichier ne traverse pas
+  l'application - l'action signe une URL, le navigateur envoie l'octet directement
+  à MinIO, une seconde action confirme. `XMLHttpRequest` et non `fetch`, seule API
+  qui rapporte la progression d'un envoi. Le média n'est `ready` qu'après
+  confirmation : un envoi interrompu ne laisse rien d'affichable.
+- **Éditeur riche** : `RichText`, sur Tiptap. Jeu de marques volontairement court -
+  gras, italique, lien, listes, citation. Ni titres ni couleurs : la hiérarchie et
+  la typographie appartiennent à la DA, pas à la personne qui rédige.
+  `immediatelyRender: false` est obligatoire dans l'App Router.
+- **Réordonnancement** : `SortableList`, sur dnd-kit, **à la souris et au clavier**.
+  C'est la raison de la dépendance : l'API de glisser-déposer du navigateur n'a
+  aucun équivalent clavier.
+- **Chaque onglet de l'éditeur s'enregistre séparément** : une saisie invalide dans
+  un onglet ne fait pas perdre le travail fait dans un autre.
+- `useOptimistic` pour le réordonnancement, jamais un `useState` recopié des props :
+  React retombe seul sur la valeur du serveur, donc ni rollback à écrire ni
+  synchronisation par effet - ce que `react-hooks/set-state-in-effect` refuse.
+- La colonne de navigation est `sticky` avec sa hauteur propre. Sans cela elle
+  s'étire à la hauteur du contenu et le bloc du compte part hors de vue.
+
+### Ce qui est facultatif dans une fiche
+
+Le chiffre, le témoignage, l'étiquette de hero, la fiche technique, les résultats
+et les enseignements. **Chaque bloc est conditionné à son contenu** dans les vues
+publiques : toute mission ne se résume pas à une mesure, et en réclamer une
+pousserait à en inventer. La publication n'exige que le titre, le secteur, les deux
+résumés et au moins un chapitre.

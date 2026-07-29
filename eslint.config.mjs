@@ -20,6 +20,10 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    // Répertoires de build de `pnpm dev:both` : un par rôle, pour contourner le
+    // verrou de Next sur le serveur de dev.
+    ".next-read/**",
+    ".next-write/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
