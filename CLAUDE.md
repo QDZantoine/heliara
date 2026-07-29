@@ -139,11 +139,12 @@ Deux illustrations, un seul lecteur. `lib/lottie.ts` centralise le chargement : 
 
 ### `public/hero-product.json` — illustration du hero
 
-48 ko, trois calques nommés `wireframe`, `code`, `hi-fidelity` : les trois fenêtres s'empilent en boucle sur 3,5 s. C'est le propos du studio montré plutôt qu'écrit, et cela reste dans la règle de la DA — illustration abstraite, volumes simples, jamais de photo ni de 3D gadget. Elle a remplacé la fenêtre produit en CSS pur et ses trois cartes flottantes (`hero-stage`, `product-window`, `parallax`, supprimés).
+48 ko, trois calques nommés `wireframe`, `code`, `hi-fidelity` : les trois fenêtres s'empilent, tiennent la pose, puis recommencent. C'est le propos du studio montré plutôt qu'écrit, et cela reste dans la règle de la DA — illustration abstraite, volumes simples, jamais de photo ni de 3D gadget. Elle a remplacé la fenêtre produit en CSS pur et ses trois cartes flottantes (`hero-stage`, `product-window`, `parallax`, supprimés).
 
+- **Le rythme est ralenti et la boucle marque un temps d'arrêt.** Lecture à 0,44× (3,5 s d'origine portées à 8 s) et `loop: false` plus un délai de 2,2 s en fin de cycle, Lottie ne sachant pas tenir une pause entre deux boucles. La pause perçue est plus longue que ce délai : la fin du fichier compte environ une seconde sans changement visible. Mesuré sur le rendu — cycle de 10 s, dont 6,7 s de mouvement et 3,3 s d'arrêt. C'est cette respiration, plus que la lenteur, qui rend l'illustration calme.
 - **Seul usage chargé sans attendre l'inoccupation** : l'illustration est au-dessus de la ligne de flottaison. Le chargement reste posté après le premier rendu, et le LCP est le titre rendu côté serveur, donc il n'est pas retardé.
 - **La boîte est dimensionnée avant le chargement** : aucun décalage de mise en page à l'arrivée de l'illustration.
-- **La lecture se met en pause hors du champ** (`IntersectionObserver`) : rien n'occupe le processeur pendant le reste du défilement.
+- **La lecture s'arrête hors du champ** (`IntersectionObserver`), et le cycle ne se relance pas hors champ : rien n'occupe le processeur pendant le reste du défilement. Si le cycle s'est terminé pendant l'absence, il repart du début plutôt que de reprendre sur la dernière image.
 - **Sous `prefers-reduced-motion`, l'illustration est figée sur sa dernière image** plutôt qu'absente : on garde le visuel, on retire le mouvement.
 - **La mise à l'échelle est un `transform`**, pas une largeur : l'artboard porte de larges marges internes, et un transform leur fait rendre l'espace sans toucher à la mise en page ni provoquer de débordement horizontal.
 - Les 11 expressions du fichier sont deux formules de **rebond élastique**, que `lottie_light` n'évalue pas. C'est voulu : la DA interdit le rebond. Le rendu a été comparé image par image contre le build complet — identique par ailleurs.
