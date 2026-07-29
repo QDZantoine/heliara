@@ -370,3 +370,48 @@ Mobile-first. Conteneurs : `max-w-page` (1240 px) pour les sections, `max-w-read
 - `params` et `searchParams` sont des **Promises**. Utiliser les helpers générés : `export default async function Page(props: PageProps<"/realisations/[slug]">)` puis `await props.params`. Régénérer avec `pnpm exec next typegen` après avoir ajouté une route dynamique.
 - Turbopack est le bundler par défaut en dev **et** en build.
 - Les docs de la version installée sont dans `node_modules/next/dist/docs/` - les consulter plutôt que la mémoire.
+
+## Tests
+
+`vitest`, deux projets dans `vitest.config.ts` :
+
+- **`unit`** (Node, `tests/unit/`) - schémas zod, contenu éditorial, navigation,
+  actions serveur, plan du site, règle typographique. Rapide, aucun DOM.
+- **`dom`** (jsdom + plugin React, `tests/dom/`) - composants, et les deux
+  fonctions de `lib/lottie` qui touchent à `window`.
+
+```text
+pnpm test           # tout
+pnpm test:watch
+pnpm test:coverage
+npx vitest run --project unit
+```
+
+`tests/setup-dom.tsx` fournit le socle des tests de composants : `next/link`
+remplacé par une ancre (le vrai composant réclame le contexte du routeur, et une
+ancre est exactement ce que `PageCurtain` intercepte en production),
+`next/navigation` simulé et pilotable, plus des doubles de `IntersectionObserver`
+et `matchMedia` que jsdom n'implémente pas. `intersect()` déclenche l'entrée dans
+le champ, `media.reducedMotion` bascule la préférence de mouvement.
+
+Ce que ces tests ont appris, à ne pas redécouvrir :
+
+- **Le vrai `lottie-web` ne peut pas s'initialiser dans jsdom** : il réclame un
+  contexte de canevas dès son évaluation. Les tests simulent `lib/lottie`, qui est
+  de toute façon le contrat que les composants consomment.
+- **Le lever du voile passe par un `requestAnimationFrame`** : sous minuteries
+  simulées, avancer de `COVERED_MS` seul ne suffit pas, il faut une image de plus.
+- **`tailwind-merge` ne connaît pas nos échelles maison** (`max-w-page`) et ne les
+  dédoublonne donc pas : régler une largeur par la prop `width` de `Container`, pas
+  par une classe.
+- **Un clic déjà préempté** se simule en appelant `preventDefault()` sur
+  l'évènement avant de le distribuer : `PageCurtain` écoute sur `document` en
+  capture, donc aucun gestionnaire de l'arbre ne peut le précéder.
+- **`AGENTS.md` est exclu du contrôle typographique** : son bloc est posé et
+  régénéré par l'outillage Next, le corriger serait défait au prochain passage.
+
+Un défaut trouvé par ces tests, pour mémoire : le schéma de contact **refusait**
+un champ leurre rempli, alors que la conception veut qu'il l'accepte et laisse
+l'action serveur répondre « envoyé » sans rien envoyer. La validation échouait
+donc, le robot recevait une erreur sur ce champ - il apprenait qu'il était
+détecté - et la branche prévue dans l'action était inatteignable.

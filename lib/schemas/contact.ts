@@ -39,10 +39,16 @@ export const contactSchema = z.object({
   budget: z.enum(budgetRanges).optional(),
   /**
    * Champ leurre. Hors du flux visuel, vide pour un humain, souvent rempli par
-   * un robot. Le schéma l'accepte tel quel ; c'est l'action serveur qui décide
-   * quoi en faire, pour ne pas afficher d'erreur à un robot.
+   * un robot.
+   *
+   * Le schéma l'accepte **rempli comme vide**, sans le contraindre : c'est
+   * l'action serveur qui décide quoi en faire, et elle répond « envoyé » sans
+   * rien envoyer. Le refuser ici serait une erreur de conception - la validation
+   * échouerait, le robot recevrait un message d'erreur sur ce champ, donc il
+   * apprendrait qu'il a été détecté, et la branche prévue dans l'action ne
+   * serait jamais atteinte.
    */
-  website: z.string().max(0).optional().or(z.literal("")),
+  website: z.string().optional(),
 })
 
 export type ContactInput = z.infer<typeof contactSchema>

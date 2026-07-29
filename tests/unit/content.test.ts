@@ -1,0 +1,470 @@
+import { describe, expect, it } from "vitest"
+
+import {
+  articleCategories,
+  articleHref,
+  articles,
+  categoryTone,
+  featuredArticle,
+  feedArticles,
+  getArticle,
+  getRelatedArticles,
+} from "@/lib/content/articles"
+import {
+  caseHref,
+  caseSectors,
+  caseStudies,
+  featuredCases,
+  getCase,
+  getNextCase,
+} from "@/lib/content/cases"
+import { clients } from "@/lib/content/clients"
+import {
+  expertiseFamilies,
+  expertiseHref,
+  expertiseServices,
+  getExpertiseService,
+  getFamily,
+  servicesByFamily,
+} from "@/lib/content/expertises"
+import {
+  brandAccent,
+  brands,
+  complianceBadges,
+  groupFigures,
+  valueChain,
+} from "@/lib/content/group"
+import { kpis } from "@/lib/content/kpis"
+import { legalNotice, privacyPolicy } from "@/lib/content/legal"
+import { commitments, methodPhases, methodPreview } from "@/lib/content/method"
+import { budgetRanges, partners, team } from "@/lib/content/team"
+import { testimonials } from "@/lib/content/testimonials"
+
+/** Un slug d'URL : minuscules, chiffres, tirets simples, ni début ni fin en tiret. */
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+function duplicates(values: string[]) {
+  const seen = new Set<string>()
+  return values.filter((value) => (seen.has(value) ? true : !seen.add(value)))
+}
+
+describe("réalisations", () => {
+  it("a des slugs uniques et bien formés", () => {
+    expect(duplicates(caseStudies.map((study) => study.slug))).toEqual([])
+    for (const study of caseStudies) {
+      expect(study.slug, study.title).toMatch(SLUG)
+    }
+  })
+
+  it("porte sur chaque cas ce dont les cartes et la fiche ont besoin", () => {
+    for (const study of caseStudies) {
+      expect(study.title, study.slug).not.toBe("")
+      expect(study.summary, study.slug).not.toBe("")
+      expect(study.figure, study.slug).not.toBe("")
+      expect(study.measure, study.slug).not.toBe("")
+      expect(study.sector, study.slug).not.toBe("")
+      expect(study.chapters.length, study.slug).toBeGreaterThan(0)
+      expect(study.results.length, study.slug).toBeGreaterThan(0)
+    }
+  })
+
+  it("numérote les chapitres de chaque cas sans trou ni doublon", () => {
+    for (const study of caseStudies) {
+      const nums = study.chapters.map((chapter) => chapter.num)
+      expect(nums, study.slug).toEqual(
+        Array.from({ length: nums.length }, (_, i) =>
+          String(i + 1).padStart(2, "0")
+        )
+      )
+    }
+  })
+
+  it("expose au moins une mise en avant pour l'accueil", () => {
+    expect(featuredCases.length).toBeGreaterThan(0)
+    expect(featuredCases.every((study) => study.featured)).toBe(true)
+  })
+
+  describe("caseSectors", () => {
+    it("commence par « Tous » puis liste chaque secteur une seule fois", () => {
+      expect(caseSectors[0]).toBe("Tous")
+      expect(duplicates([...caseSectors])).toEqual([])
+    })
+
+    it("ne propose aucun filtre qui donnerait une grille vide", () => {
+      for (const sector of caseSectors.slice(1)) {
+        expect(
+          caseStudies.some((study) => study.sector === sector),
+          sector
+        ).toBe(true)
+      }
+    })
+  })
+
+  describe("getCase", () => {
+    it("retrouve un cas par son slug", () => {
+      expect(getCase(caseStudies[0].slug)).toBe(caseStudies[0])
+    })
+
+    it("renvoie undefined sur un slug inconnu, ce qui déclenche le notFound de la page", () => {
+      expect(getCase("nexiste-pas")).toBeUndefined()
+    })
+  })
+
+  describe("getNextCase", () => {
+    it("passe au cas suivant", () => {
+      expect(getNextCase(caseStudies[0].slug)).toBe(caseStudies[1])
+    })
+
+    it("boucle sur le premier après le dernier : aucune impasse en fin de fiche", () => {
+      const last = caseStudies[caseStudies.length - 1]
+      expect(getNextCase(last.slug)).toBe(caseStudies[0])
+    })
+
+    it("ne se renvoie jamais lui-même", () => {
+      for (const study of caseStudies) {
+        expect(getNextCase(study.slug)?.slug, study.slug).not.toBe(study.slug)
+      }
+    })
+
+    it("renvoie undefined sur un slug inconnu", () => {
+      expect(getNextCase("nexiste-pas")).toBeUndefined()
+    })
+  })
+
+  it("caseHref pointe vers la route existante", () => {
+    expect(caseHref("refonte")).toBe("/realisations/refonte")
+  })
+})
+
+describe("expertises", () => {
+  it("a des slugs uniques et bien formés, familles comme services", () => {
+    expect(duplicates(expertiseServices.map((s) => s.slug))).toEqual([])
+    expect(duplicates(expertiseFamilies.map((f) => f.slug))).toEqual([])
+    for (const service of expertiseServices) {
+      expect(service.slug, service.title).toMatch(SLUG)
+    }
+  })
+
+  it("rattache chaque service à une famille qui existe", () => {
+    const known = new Set(expertiseFamilies.map((family) => family.slug))
+    for (const service of expertiseServices) {
+      expect(known.has(service.family), service.slug).toBe(true)
+    }
+  })
+
+  it("donne à chaque famille au moins un service, sinon sa page serait vide", () => {
+    for (const { family, services } of servicesByFamily) {
+      expect(services.length, family.slug).toBeGreaterThan(0)
+    }
+  })
+
+  it("répartit tous les services sans en perdre ni en dupliquer", () => {
+    const grouped = servicesByFamily.flatMap((entry) => entry.services)
+    expect(grouped).toHaveLength(expertiseServices.length)
+    expect(new Set(grouped).size).toBe(expertiseServices.length)
+  })
+
+  it("garde le nom de famille comme slug de service : c'est ce qui rend la nav valide", () => {
+    // `expertiseNav` fabrique ses liens avec `expertiseHref(family.slug)`, et la
+    // route /expertises/[slug] ne connaît que les services. Les deux jeux de
+    // slugs doivent donc se recouvrir.
+    for (const family of expertiseFamilies) {
+      expect(getExpertiseService(family.slug), family.slug).toBeDefined()
+    }
+  })
+
+  it("getFamily retrouve une famille, et rien sur un slug inconnu", () => {
+    expect(getFamily(expertiseFamilies[0].slug)).toBe(expertiseFamilies[0])
+    expect(
+      getFamily("inconnue" as (typeof expertiseFamilies)[number]["slug"])
+    ).toBeUndefined()
+  })
+
+  it("expertiseHref pointe vers la route existante", () => {
+    expect(expertiseHref("ux-ui")).toBe("/expertises/ux-ui")
+  })
+})
+
+describe("articles", () => {
+  it("a des slugs uniques et bien formés", () => {
+    expect(duplicates(articles.map((article) => article.slug))).toEqual([])
+    for (const article of articles) {
+      expect(article.slug, article.title).toMatch(SLUG)
+    }
+  })
+
+  it("date chaque article en ISO, pour que le tri et le sitemap soient justes", () => {
+    for (const article of articles) {
+      expect(article.publishedAt, article.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(Number.isNaN(Date.parse(article.publishedAt)), article.slug).toBe(
+        false
+      )
+    }
+  })
+
+  it("donne un corps non vide à chaque article", () => {
+    for (const article of articles) {
+      expect(article.body.length, article.slug).toBeGreaterThan(0)
+    }
+  })
+
+  it("connaît une teinte pour chaque catégorie utilisée", () => {
+    for (const article of articles) {
+      expect(categoryTone[article.category], article.category).toBeTruthy()
+    }
+  })
+
+  it("n'a qu'un seul article mis en avant, et le flux ne le reprend pas", () => {
+    expect(articles.filter((article) => article.featured)).toHaveLength(1)
+    expect(feedArticles).not.toContain(featuredArticle)
+    expect(feedArticles).toHaveLength(articles.length - 1)
+  })
+
+  describe("articleCategories", () => {
+    it("commence par « Tout » puis liste chaque catégorie une seule fois", () => {
+      expect(articleCategories[0]).toBe("Tout")
+      expect(duplicates([...articleCategories])).toEqual([])
+    })
+
+    it("ne propose aucun filtre qui donnerait un flux vide", () => {
+      for (const category of articleCategories.slice(1)) {
+        expect(
+          feedArticles.some((article) => article.category === category) ||
+            featuredArticle.category === category,
+          category
+        ).toBe(true)
+      }
+    })
+  })
+
+  describe("getRelatedArticles", () => {
+    it("propose deux lectures par défaut", () => {
+      expect(getRelatedArticles(articles[0].slug)).toHaveLength(2)
+    })
+
+    it("n'inclut jamais l'article courant", () => {
+      for (const article of articles) {
+        const related = getRelatedArticles(article.slug, articles.length)
+        expect(
+          related.map((r) => r.slug),
+          article.slug
+        ).not.toContain(article.slug)
+      }
+    })
+
+    it("préfère la même catégorie, et retombe sur le plus récent à égalité", () => {
+      const source = articles.find((article) =>
+        articles.some(
+          (other) =>
+            other.slug !== article.slug && other.category === article.category
+        )
+      )
+      expect(source, "il faut deux articles d'une même catégorie").toBeDefined()
+      const first = getRelatedArticles(source!.slug, 1)[0]
+      expect(first.category).toBe(source!.category)
+    })
+
+    it("respecte le nombre demandé", () => {
+      expect(getRelatedArticles(articles[0].slug, 1)).toHaveLength(1)
+      expect(getRelatedArticles(articles[0].slug, 3)).toHaveLength(3)
+    })
+
+    it("répond quand même sur un slug inconnu, sans planter", () => {
+      expect(getRelatedArticles("nexiste-pas")).toHaveLength(2)
+    })
+  })
+
+  describe("getArticle", () => {
+    it("retrouve un article par son slug", () => {
+      expect(getArticle(articles[0].slug)).toBe(articles[0])
+    })
+
+    it("renvoie undefined sur un slug inconnu", () => {
+      expect(getArticle("nexiste-pas")).toBeUndefined()
+    })
+  })
+
+  it("articleHref pointe vers la route existante", () => {
+    expect(articleHref("dette-technique")).toBe("/ressources/dette-technique")
+  })
+})
+
+describe("groupe", () => {
+  it("présente trois marques sœurs", () => {
+    expect(brands).toHaveLength(3)
+    expect(duplicates(brands.map((brand) => brand.name))).toEqual([])
+  })
+
+  it("connaît une teinte pour chaque marque", () => {
+    for (const brand of brands) {
+      expect(brandAccent[brand.accent], brand.name).toBeTruthy()
+    }
+  })
+
+  it("donne à chaque marque un logo dimensionné, servi depuis public/", () => {
+    for (const brand of brands) {
+      expect(brand.logo.src, brand.name).toMatch(/^\/logos\/.+\.(svg|png)$/)
+      // Les dimensions sont indispensables : sans elles, next/image ne peut pas
+      // réserver la place et l'arrivée du logo décalerait la mise en page.
+      expect(brand.logo.width, brand.name).toBeGreaterThan(0)
+      expect(brand.logo.height, brand.name).toBeGreaterThan(0)
+    }
+  })
+
+  it("ordonne la chaîne de valeur en trois temps, chacun rattaché à une marque", () => {
+    expect(valueChain).toHaveLength(3)
+    const names = new Set(brands.map((brand) => brand.name))
+    for (const step of valueChain) {
+      expect(names.has(step.brand), step.brand).toBe(true)
+    }
+  })
+
+  it("associe une illustration à chaque temps de la chaîne", () => {
+    for (const step of valueChain) {
+      expect(step.scene.src, step.brand).toMatch(/^\/.+\.json$/)
+    }
+  })
+
+  it("chiffre les preuves et badge la conformité", () => {
+    expect(groupFigures.length).toBeGreaterThan(0)
+    expect(complianceBadges.length).toBeGreaterThan(0)
+    for (const figure of groupFigures) {
+      expect(figure.value, figure.label).not.toBe("")
+    }
+  })
+})
+
+describe("méthode", () => {
+  it("condense les 8 temps en 4 sur l'accueil : la maquette gagne sur la fiche UX", () => {
+    expect(methodPhases).toHaveLength(8)
+    expect(methodPreview).toHaveLength(4)
+  })
+
+  it("numérote les phases de 01 à 08, dans l'ordre", () => {
+    expect(methodPhases.map((phase) => phase.num)).toEqual([
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+    ])
+  })
+
+  it("nomme un livrable pour chaque phase : c'est ce qui rend la méthode vérifiable", () => {
+    for (const phase of methodPhases) {
+      expect(phase.title, phase.num).not.toBe("")
+      expect(phase.text, phase.num).not.toBe("")
+      expect(phase.deliverable, phase.num).not.toBe("")
+    }
+  })
+
+  it("borne les jauges de chaque phase entre 0 et 100 %", () => {
+    for (const phase of methodPhases) {
+      expect(phase.gauges.length, phase.num).toBeGreaterThan(0)
+      for (const gauge of phase.gauges) {
+        expect(gauge.width, `${phase.num} / ${gauge.label}`).toBeGreaterThan(0)
+        expect(
+          gauge.width,
+          `${phase.num} / ${gauge.label}`
+        ).toBeLessThanOrEqual(100)
+      }
+    }
+  })
+
+  it("numérote l'aperçu de l'accueil comme les quatre premiers temps", () => {
+    expect(methodPreview.map((step) => step.num)).toEqual([
+      "01",
+      "02",
+      "03",
+      "04",
+    ])
+  })
+
+  it("liste des engagements titrés et explicités", () => {
+    expect(commitments.length).toBeGreaterThan(0)
+    for (const commitment of commitments) {
+      expect(commitment.title).not.toBe("")
+      expect(commitment.text, commitment.title).not.toBe("")
+    }
+  })
+})
+
+describe("équipe et contact", () => {
+  it("compte des associés parmi l'équipe", () => {
+    expect(partners.length).toBeGreaterThan(0)
+    expect(team.length).toBeGreaterThanOrEqual(partners.length)
+  })
+
+  it("donne des initiales cohérentes avec le nom", () => {
+    for (const person of team) {
+      expect(person.initials, person.name).toMatch(/^[A-ZÀ-Ý]{2}$/)
+    }
+  })
+
+  it("propose des enveloppes distinctes au formulaire", () => {
+    expect(budgetRanges.length).toBeGreaterThan(1)
+    expect(duplicates([...budgetRanges])).toEqual([])
+  })
+})
+
+describe("preuve sociale", () => {
+  it("attribue chaque témoignage à une personne identifiée", () => {
+    expect(testimonials.length).toBeGreaterThan(0)
+    for (const testimonial of testimonials) {
+      expect(testimonial.quote, testimonial.name).not.toBe("")
+      expect(testimonial.name).not.toBe("")
+      expect(testimonial.role, testimonial.name).not.toBe("")
+    }
+  })
+
+  it("chiffre chaque indicateur avec son libellé", () => {
+    expect(kpis.length).toBeGreaterThan(0)
+    for (const kpi of kpis) {
+      expect(kpi.value, kpi.label).not.toBe("")
+      expect(kpi.label).not.toBe("")
+    }
+  })
+
+  it("alimente le bandeau clients", () => {
+    expect(clients.length).toBeGreaterThan(0)
+  })
+})
+
+describe("pages légales", () => {
+  it("structure les deux pages en sections titrées, chacune portant du contenu", () => {
+    for (const [name, sections] of [
+      ["mentions légales", legalNotice],
+      ["confidentialité", privacyPolicy],
+    ] as const) {
+      expect(sections.length, name).toBeGreaterThan(0)
+      for (const section of sections) {
+        expect(section.title, name).not.toBe("")
+        // Une section porte des paragraphes, un tableau d'identification, ou
+        // les deux - mais jamais rien : elle s'afficherait comme un titre seul.
+        const paragraphs = section.paragraphs?.length ?? 0
+        const rows = section.rows?.length ?? 0
+        expect(paragraphs + rows, `${name} / ${section.title}`).toBeGreaterThan(
+          0
+        )
+      }
+    }
+  })
+
+  it("ne répète pas un titre de section dans une même page", () => {
+    for (const sections of [legalNotice, privacyPolicy]) {
+      expect(duplicates(sections.map((section) => section.title))).toEqual([])
+    }
+  })
+
+  it("libelle chaque ligne d'identification et lui donne une valeur", () => {
+    for (const sections of [legalNotice, privacyPolicy]) {
+      for (const row of sections.flatMap((section) => section.rows ?? [])) {
+        expect(row.label).not.toBe("")
+        expect(row.value, row.label).not.toBe("")
+      }
+    }
+  })
+})
