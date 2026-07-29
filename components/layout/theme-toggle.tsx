@@ -117,7 +117,7 @@ function ThemeToggle() {
       ref={buttonRef}
       type="button"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="hel-theme-toggle inline-flex min-h-11 items-center gap-2 text-inverse-fg-faint transition-colors duration-100 hover:text-inverse-fg-muted"
+      className="hel-theme-toggle inline-flex min-h-11 cursor-pointer items-center gap-2 text-inverse-fg-faint transition-colors duration-100 hover:text-inverse-fg-muted"
     >
       <Sun
         aria-hidden="true"

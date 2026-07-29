@@ -9,8 +9,16 @@ import { cta, mainNav } from "@/lib/site"
 /**
  * Sticky translucide : le CTA primaire vit dans la nav dès la première seconde
  * (Architecture UX, S1). Six entrées, un seul élément accentué.
+ *
+ * Les entrées d'expertise ne sont transmises qu'au menu mobile : la nav horizontale
+ * n'a pas de sous-menu, elle mène au hub. Elles arrivent du layout, qui les lit en
+ * base.
  */
-function SiteHeader() {
+function SiteHeader({
+  expertiseNav,
+}: {
+  expertiseNav: readonly { label: string; href: string }[]
+}) {
   return (
     <header className="sticky top-0 z-200 border-b border-line bg-[color-mix(in_srgb,var(--hel-page)_82%,transparent)] backdrop-blur-[14px]">
       <div className="mx-auto flex h-17 max-w-page items-center justify-between gap-4 pr-5 pl-5 md:pl-6">
@@ -43,7 +51,7 @@ function SiteHeader() {
             <span className="hidden menu:inline">{cta.primary.label}</span>
             <span className="menu:hidden">{cta.primary.shortLabel}</span>
           </ButtonLink>
-          <MobileMenu />
+          <MobileMenu expertiseNav={expertiseNav} />
         </div>
       </div>
     </header>

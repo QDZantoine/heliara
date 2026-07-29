@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next"
 
 import { listPublicArticleSlugs } from "@/lib/db/public-articles"
 import { listPublicCaseSlugs } from "@/lib/db/public-cases"
-import { expertiseServices } from "@/lib/content/expertises"
+import { listPublicServiceSlugs } from "@/lib/db/public-expertises"
 import { site } from "@/lib/site"
 
 /**
@@ -39,8 +39,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "yearly" as const,
       priority: 0.8,
     })),
-    ...expertiseServices.map((service) => ({
-      url: url(`/expertises/${service.slug}`),
+    // Les expertises aussi, même repli sur le contenu statique.
+    ...(await listPublicServiceSlugs()).map((slug) => ({
+      url: url(`/expertises/${slug}`),
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),

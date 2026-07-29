@@ -503,8 +503,8 @@ pnpm db:migrate     # rejoue schéma, procédures ET privilèges
 pnpm db:seed        # amorce la base depuis le contenu statique
 ```
 
-Deux collections sont administrables : **Réalisations** et **Articles**. Les autres
-contenus vivent encore dans `lib/content/*.ts`.
+Trois collections sont administrables : **Réalisations**, **Articles** et
+**Expertises**. Les autres contenus vivent encore dans `lib/content/*.ts`.
 
 **`pnpm db:migrate` n'est pas un confort.** `DROP PROCEDURE` emporte avec lui les
 privilèges accordés sur cette procédure - ils vivent dans `mysql.procs_priv` et
@@ -575,6 +575,51 @@ qu'une date exacte.
 **La mise en avant est exclusive**, portée par `set_article_featured` et non par le
 formulaire : le flux public affiche un article en tête et l'exclut de la grille, donc
 deux mises en avant en feraient disparaître une sans que personne comprenne pourquoi.
+
+### Expertises, et la navigation du site
+
+Deux niveaux : une **famille** regroupe des services et porte une entrée du menu ; un
+**service** est une page. C'est la seule collection dont une écriture peut casser la
+navigation, présente sur chaque page - d'où trois garde-fous en base :
+`nav_service_slug` doit désigner un service existant, une famille non vide ne se
+supprime pas, un service cible de nav ne se supprime pas.
+
+**Un défaut de conception corrigé.** Le contenu statique faisait pointer chaque entrée
+de nav vers `/expertises/<slug de la famille>`, ce qui ne fonctionnait que parce que
+trois services portaient par coïncidence le même slug que leur famille. Renommer un
+service cassait la nav en silence. La famille désigne désormais explicitement sa
+cible, et `update_expertise_service` la fait suivre en cas de renommage.
+
+**Les familles sans service publié sont écartées de la nav comme du hub.** Les garder
+en les faisant mener au hub paraissait prudent, et c'était une erreur : deux familles
+vides donnaient deux entrées vers la même adresse, et le visiteur y aurait trouvé un
+hub où la famille n'apparaît pas. Une entrée de menu sans destination propre est une
+impasse.
+
+La nav est lue dans `app/(site)/layout.tsx` et passée à l'en-tête et au pied de page.
+`lib/site.ts` n'en garde qu'un **repli** (`expertiseNavFallback`), et ce repli compte
+double : une base muette ne doit pas vider le menu de toutes les pages.
+
+### Texte riche : validé, jamais nettoyé
+
+Les corps de chapitre et les paragraphes d'article sont saisis dans Tiptap, donc
+stockés en HTML, donc affichés par `dangerouslySetInnerHTML` - via `RichHtml`. Cela
+n'est acceptable qu'à une condition : **rien d'autre que ce fragment ne peut entrer en
+base**, ce que `lib/rich-text.ts` garantit.
+
+**Valider plutôt que nettoyer.** Un nettoyeur transforme ce qu'il ne comprend pas et
+laisse passer ce qu'il a mal compris ; les contournements de nettoyeurs écrits à la
+main remplissent des rapports de vulnérabilité. La validation échoue en cas de doute :
+toute balise hors liste, tout attribut inconnu, tout `<` non reconnu, tout commentaire
+HTML fait rejeter l'enregistrement. Le pire cas est un refus, pas une injection.
+24 tests couvrent les tentatives usuelles.
+
+La liste des balises reprend **exactement** ce que l'éditeur sait produire. L'étendre
+d'un côté sans l'autre ouvre une porte que personne n'emprunte, ou fait rejeter du
+contenu légitime.
+
+Défaut constaté en production avant correction : le corps des chapitres affichait
+`<p>` et `</p>` en clair, la vue le rendant comme du texte.
 
 ### Comptage des vues
 

@@ -261,4 +261,98 @@ BEGIN
   ORDER BY published_on DESC;
 END$$
 
+-- ------------------------------------------------------------
+-- Expertises
+-- ------------------------------------------------------------
+
+/**
+ * Les familles et leur entrée de nav.
+ *
+ * Rendues même sans service publié : la famille structure le hub, et la masquer
+ * ferait disparaître une rubrique du site parce qu'un service est en cours
+ * d'écriture. `nav_href` est calculé ici plutôt que côté application, pour que la
+ * cible du lien soit décidée à un seul endroit - une famille sans service publié
+ * mène au hub, pas à une page vide.
+ */
+DROP PROCEDURE IF EXISTS pub_list_expertise_families$$
+CREATE PROCEDURE pub_list_expertise_families()
+SQL SECURITY DEFINER
+BEGIN
+  SELECT
+    f.slug, f.label, f.title, f.summary, f.tag, f.halo,
+    f.sketch_1, f.sketch_2, f.sketch_3,
+    -- Le service désigné, s'il est publié. Sinon le premier publié de la famille.
+    -- Sinon rien : l'appelant renverra vers le hub.
+    IFNULL(
+      (SELECT s.slug FROM expertise_service s
+       WHERE s.slug = f.nav_service_slug AND s.status = 'published'),
+      (SELECT s.slug FROM expertise_service s
+       WHERE s.family_id = f.id AND s.status = 'published'
+       ORDER BY s.position ASC LIMIT 1)
+    ) AS nav_slug,
+    f.position
+  FROM expertise_family f
+  ORDER BY f.position ASC;
+END$$
+
+/** Les services publiés, avec leur famille, pour le hub. */
+DROP PROCEDURE IF EXISTS pub_list_expertise_services$$
+CREATE PROCEDURE pub_list_expertise_services()
+SQL SECURITY DEFINER
+BEGIN
+  SELECT
+    s.slug, s.title, s.tagline, s.related_case_slug,
+    f.slug AS family_slug, f.label AS family_label,
+    s.position, f.position AS family_position
+  FROM expertise_service s
+  JOIN expertise_family f ON f.id = s.family_id
+  WHERE s.status = 'published'
+  ORDER BY f.position ASC, s.position ASC;
+END$$
+
+/**
+ * Un service publié, complet : quatre jeux de résultats.
+ * Un brouillon rend zéro ligne, comme un service inexistant.
+ */
+DROP PROCEDURE IF EXISTS pub_get_expertise_service$$
+CREATE PROCEDURE pub_get_expertise_service(IN p_slug VARCHAR(120))
+SQL SECURITY DEFINER
+BEGIN
+  DECLARE v_id BINARY(16) DEFAULT NULL;
+
+  SELECT id INTO v_id
+  FROM expertise_service
+  WHERE slug = p_slug AND status = 'published'
+  LIMIT 1;
+
+  SELECT
+    s.slug, s.title, s.tagline, s.problem,
+    s.related_case_slug, s.cta_title,
+    f.slug AS family_slug, f.label AS family_label, f.halo AS family_halo,
+    s.published_at, s.updated_at
+  FROM expertise_service s
+  JOIN expertise_family f ON f.id = s.family_id
+  WHERE s.id = v_id;
+
+  SELECT title, text FROM expertise_deliverable
+  WHERE service_id = v_id ORDER BY position ASC;
+
+  SELECT title, text FROM expertise_tech_choice
+  WHERE service_id = v_id ORDER BY position ASC;
+
+  SELECT question, answer FROM expertise_faq
+  WHERE service_id = v_id ORDER BY position ASC;
+END$$
+
+/** Les slugs publiés, pour `generateStaticParams` et le plan du site. */
+DROP PROCEDURE IF EXISTS pub_list_expertise_slugs$$
+CREATE PROCEDURE pub_list_expertise_slugs()
+SQL SECURITY DEFINER
+BEGIN
+  SELECT slug, updated_at
+  FROM expertise_service
+  WHERE status = 'published'
+  ORDER BY position ASC;
+END$$
+
 DELIMITER ;

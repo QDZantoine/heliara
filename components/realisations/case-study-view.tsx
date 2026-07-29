@@ -5,6 +5,7 @@ import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
+import { RichHtml } from "@/components/primitives/rich-html"
 import { Section } from "@/components/primitives/section"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
@@ -144,9 +145,13 @@ function CaseStudyView({
                     {chapter.title}
                   </h2>
                 </div>
-                <p className="text-[0.97rem] leading-[1.7] text-body">
-                  {chapter.text}
-                </p>
+                {/* Le corps vient de l'éditeur riche, donc c'est du HTML - validé à
+                    l'écriture par `lib/rich-text.ts`. L'afficher comme du texte
+                    montrerait les balises, ce qui a été constaté en production. */}
+                <RichHtml
+                  html={chapter.text}
+                  className="text-[0.97rem] leading-[1.7] text-body"
+                />
                 {chapter.callout ? (
                   <p className="mt-4.5 rounded-md border border-l-[3px] border-line border-l-brand bg-surface px-5 py-4.5 text-sm leading-relaxed text-body">
                     {chapter.callout}

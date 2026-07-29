@@ -9,7 +9,7 @@ import { caseStudies } from "@/lib/content/cases"
 import { expertiseServices } from "@/lib/content/expertises"
 import {
   cta,
-  expertiseNav,
+  expertiseNavFallback,
   footerNav,
   group,
   legalNav,
@@ -81,7 +81,7 @@ function routeExists(href: string) {
 /** Tous les liens internes déclarés dans lib/site.ts, aplatis. */
 const internalLinks = [
   ...mainNav.map((item) => item.href),
-  ...expertiseNav.map((item) => item.href),
+  ...expertiseNavFallback.map((item) => item.href),
   ...footerNav.flatMap((column) => column.links.map((link) => link.href)),
   ...legalNav.map((item) => item.href),
   cta.primary.href,
@@ -131,13 +131,13 @@ describe("navigation", () => {
   })
 
   it("libelle chaque entrée de nav", () => {
-    for (const item of [...mainNav, ...expertiseNav, ...legalNav]) {
+    for (const item of [...mainNav, ...expertiseNavFallback, ...legalNav]) {
       expect(item.label).not.toBe("")
     }
   })
 
   it("reprend les trois familles d'expertise dans le sous-menu", () => {
-    expect(expertiseNav).toHaveLength(3)
+    expect(expertiseNavFallback).toHaveLength(3)
   })
 })
 

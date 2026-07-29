@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { Container } from "@/components/primitives/container"
 import { Reveal } from "@/components/primitives/reveal"
+import { RichHtml } from "@/components/primitives/rich-html"
 import { Section } from "@/components/primitives/section"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
@@ -47,10 +48,12 @@ function Block({ block }: { block: ArticleBlock }) {
 
   if (block.kind === "callout") {
     return (
-      <p className="mb-6 rounded-md border border-l-[3px] border-line border-l-brand bg-surface px-6 py-5.5 text-[0.94rem] leading-relaxed text-body">
-        <strong className="font-semibold text-ink">{block.lead}</strong>{" "}
-        {block.text}
-      </p>
+      <div className="mb-6 rounded-md border border-l-[3px] border-line border-l-brand bg-surface px-6 py-5.5 text-[0.94rem] leading-relaxed text-body">
+        {/* Le chapô est un champ simple, le corps vient de l'éditeur riche : le
+            premier est du texte, le second du HTML validé. */}
+        <p className="mb-1.5 font-semibold text-ink">{block.lead}</p>
+        <RichHtml html={block.text} />
+      </div>
     )
   }
 
@@ -75,10 +78,13 @@ function Block({ block }: { block: ArticleBlock }) {
     )
   }
 
+  // Paragraphe : le corps vient de l'éditeur riche, donc du HTML validé à
+  // l'écriture. L'afficher comme du texte montrerait les balises.
   return (
-    <p className="mb-6 text-[1.0625rem] leading-[1.75] text-body">
-      {block.text}
-    </p>
+    <RichHtml
+      html={block.text}
+      className="mb-6 text-[1.0625rem] leading-[1.75] text-body"
+    />
   )
 }
 

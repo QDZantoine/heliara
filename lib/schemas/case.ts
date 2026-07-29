@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { requiredRichTextSchema } from "@/lib/rich-text"
+
 /**
  * Schémas des réalisations, partagés par le formulaire d'administration et les
  * actions serveur qui les rejouent.
@@ -57,8 +59,16 @@ export const chapterSchema = z.object({
     .trim()
     .min(1, "Un chapitre a besoin d'un titre.")
     .max(200, "Ce titre est trop long."),
-  text: z.string().trim().min(1, "Un chapitre a besoin d'un corps."),
-  /** Encadré de décision structurante, filet orange à gauche. Facultatif. */
+  /**
+   * Le corps, saisi dans l'éditeur riche donc stocké en HTML. Le schéma **valide**
+   * ce HTML contre la liste de ce que l'éditeur sait produire : c'est ce qui rend
+   * son affichage sûr côté page publique. Voir `lib/rich-text.ts`.
+   */
+  text: requiredRichTextSchema,
+  /**
+   * Encadré de décision structurante, filet orange à gauche. Facultatif, et en
+   * texte simple : il est saisi dans une zone de texte, pas dans l'éditeur.
+   */
   callout: z.string().trim().max(2000, "Cet encadré est trop long.").optional(),
 })
 

@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { requiredRichTextSchema } from "@/lib/rich-text"
 import { slugSchema } from "@/lib/schemas/case"
 
 /**
@@ -31,7 +32,9 @@ export const categorySchema = z.enum(articleCategories)
 export const blockSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("paragraph"),
-    text: z.string().trim().min(1, "Ce paragraphe est vide."),
+    // Saisi dans l'éditeur riche, donc du HTML - validé contre la liste de ce que
+    // l'éditeur sait produire. Voir `lib/rich-text.ts`.
+    text: requiredRichTextSchema,
   }),
   z.object({
     kind: z.literal("heading"),
@@ -48,7 +51,8 @@ export const blockSchema = z.discriminatedUnion("kind", [
       .trim()
       .min(1, "Un encadré a besoin de sa phrase mise en exergue.")
       .max(300, "Cette phrase est trop longue."),
-    text: z.string().trim().min(1, "Expliquez l'encadré."),
+    // L'explication passe par l'éditeur riche, le chapô ci-dessus est un champ simple.
+    text: requiredRichTextSchema,
   }),
   z.object({
     kind: z.literal("numbered"),

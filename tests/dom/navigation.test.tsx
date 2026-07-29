@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 
 import { MobileMenu } from "@/components/layout/mobile-menu"
 import { NavLink } from "@/components/layout/nav-link"
-import { cta, group, legalNav, mainNav } from "@/lib/site"
+import { cta, expertiseNavFallback, group, legalNav, mainNav } from "@/lib/site"
 import { navigation } from "@/tests/setup-dom"
 
 describe("NavLink", () => {
@@ -60,7 +60,7 @@ describe("NavLink", () => {
 
 describe("MobileMenu", () => {
   it("n'affiche qu'un déclencheur au repos", () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     expect(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     ).toBeInTheDocument()
@@ -68,7 +68,7 @@ describe("MobileMenu", () => {
   })
 
   it("ouvre un dialogue modal, ce que Base UI fournit avec son piège à focus", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -76,7 +76,7 @@ describe("MobileMenu", () => {
   })
 
   it("reprend les cinq entrées principales, numérotées", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -92,7 +92,7 @@ describe("MobileMenu", () => {
   })
 
   it("porte le CTA primaire et l'endossement de groupe, sans nommer le holding", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -111,7 +111,7 @@ describe("MobileMenu", () => {
 
   it("marque l'entrée courante", async () => {
     navigation.pathname = "/realisations/pilotage-production"
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -127,7 +127,7 @@ describe("MobileMenu", () => {
   })
 
   it("se referme au clic sur un lien : la transition de page reste lisible", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -138,7 +138,7 @@ describe("MobileMenu", () => {
   })
 
   it("se referme par le bouton dédié", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -151,7 +151,7 @@ describe("MobileMenu", () => {
   })
 
   it("se referme par Échap, sans une ligne de code de notre côté", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )
@@ -162,7 +162,7 @@ describe("MobileMenu", () => {
   })
 
   it("propose un rebond vers toutes les expertises : aucune impasse", async () => {
-    render(<MobileMenu />)
+    render(<MobileMenu expertiseNav={expertiseNavFallback} />)
     await userEvent.click(
       screen.getByRole("button", { name: "Ouvrir le menu" })
     )

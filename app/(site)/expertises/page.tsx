@@ -8,7 +8,8 @@ import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
-import { expertiseHref, servicesByFamily } from "@/lib/content/expertises"
+import { expertiseHref } from "@/lib/content/expertises"
+import { publicServicesByFamily } from "@/lib/db/public-expertises"
 
 export const metadata: Metadata = {
   title: "Expertises",
@@ -16,7 +17,17 @@ export const metadata: Metadata = {
     "Neuf savoir-faire regroupés en trois familles : plateformes et SaaS, sites et e-commerce, IA et API.",
 }
 
-export default function ExpertisesPage() {
+/**
+ * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next
+ * analyse cet export statiquement.
+ */
+export const revalidate = 60
+
+export default async function ExpertisesPage() {
+  // Les familles sans service publié sont écartées : elles restent dans la nav, où
+  // elles mènent au hub, mais un groupe vide sur le hub n'a rien à montrer.
+  const groups = await publicServicesByFamily()
+
   return (
     <>
       <PageHero
@@ -25,7 +36,7 @@ export default function ExpertisesPage() {
         lead="Chaque page dit le problème qu’elle résout, ce que nous livrons, et les choix techniques que nous assumons."
       />
 
-      {servicesByFamily.map(({ family, services }, familyIndex) => (
+      {groups.map(({ family, services }, familyIndex) => (
         <Section
           key={family.slug}
           space="sm"

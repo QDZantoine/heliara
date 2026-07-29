@@ -13,8 +13,34 @@ import { footerNav, group, legalNav, site } from "@/lib/site"
  * Ordre mobile imposé par les Responsive Guidelines : marque, Contact,
  * Expertises, Studio, puis ligne légale et endossement en dernier.
  */
-function SiteFooter() {
+function SiteFooter({
+  expertiseNav,
+}: {
+  expertiseNav: readonly { label: string; href: string }[]
+}) {
   const year = new Date().getFullYear()
+
+  /*
+    La colonne « Expertises » est reconstruite à partir des familles lues en base ;
+    les deux autres restent celles de `lib/site.ts`.
+
+    `footerNav[0]` conserve son dernier lien - « Maintenance évolutive » - qui pointe
+    un service et non une famille : il n'a pas d'entrée de nav, mais il mérite sa place
+    dans le pied de page.
+  */
+  const columns = footerNav.map((column, index) =>
+    index === 0
+      ? {
+          ...column,
+          links: [
+            ...expertiseNav,
+            ...column.links.filter(
+              (link) => !expertiseNav.some((one) => one.href === link.href)
+            ),
+          ],
+        }
+      : column
+  )
 
   return (
     <footer className="border-t border-inverse-line bg-inverse">
@@ -27,7 +53,10 @@ function SiteFooter() {
             </p>
           </div>
 
-          {footerNav.map((column, index) => (
+          {/* La colonne « Expertises » vient de la base : ses entrées sont les
+              familles administrables. Les deux autres sont statiques - elles
+              pointent des pages, pas du contenu. */}
+          {columns.map((column, index) => (
             <div
               key={column.title}
               className={index === 2 ? "max-md:order-1" : "max-md:order-2"}
@@ -37,7 +66,7 @@ function SiteFooter() {
               </p>
               <ul className="grid gap-1">
                 {column.links.map((link) => (
-                  <li key={`${column.title}-${link.href}`}>
+                  <li key={`${column.title}-${link.label}-${link.href}`}>
                     <Link
                       href={link.href}
                       className="inline-flex min-h-11 items-center text-sm text-inverse-fg-muted transition-colors duration-100 hover:text-inverse-fg md:min-h-0 md:py-1"

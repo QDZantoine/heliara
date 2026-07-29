@@ -3,6 +3,7 @@ import {
   ExternalLink,
   FolderOpen,
   LayoutDashboard,
+  Layers,
   LogOut,
   Users,
 } from "lucide-react"
@@ -26,6 +27,7 @@ const nav = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/admin/realisations", label: "Réalisations", icon: FolderOpen },
   { href: "/admin/articles", label: "Articles", icon: BookOpen },
+  { href: "/admin/expertises", label: "Expertises", icon: Layers },
   { href: "/admin/comptes", label: "Comptes", icon: Users, soon: true },
 ] as const
 

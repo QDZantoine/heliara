@@ -30,6 +30,7 @@ import { stdout } from "node:process"
 import { hashPassword } from "@/lib/auth/password"
 import { articles } from "@/lib/content/articles"
 import { caseStudies } from "@/lib/content/cases"
+import { expertiseFamilies, expertiseServices } from "@/lib/content/expertises"
 import { blocksToJson } from "@/lib/db/articles"
 import { BusinessError, write } from "@/lib/db/call"
 import { closePool } from "@/lib/db/pool"
@@ -247,6 +248,147 @@ async function seedArticles(actor: Buffer) {
   return { created, skipped }
 }
 
+/**
+ * Importe les familles et les services d'expertise.
+ *
+ * Les familles d'abord : un service sans famille est refusé par la base. La cible de
+ * nav de chaque famille est posée **après** ses services, puisqu'elle doit désigner un
+ * service qui existe - et elle reprend la coïncidence du contenu statique, où le
+ * service porte le même slug que sa famille. C'est précisément cette coïncidence que
+ * `nav_service_slug` rend explicite.
+ */
+async function seedExpertises(actor: Buffer) {
+  const existingFamilies = new Map(
+    (
+      await write.rows<{ id: Buffer; slug: string }>("list_expertise_families")
+    ).map((row) => [row.slug, row.id])
+  )
+  const existingServices = new Set(
+    (await write.rows<{ slug: string }>("list_expertise_services", [null])).map(
+      (row) => row.slug
+    )
+  )
+
+  let families = 0
+  let services = 0
+  let skipped = 0
+
+  for (const family of expertiseFamilies) {
+    let id = existingFamilies.get(family.slug)
+
+    if (!id) {
+      const row = await write.rowStrict<{ id: Buffer }>(
+        "create_expertise_family",
+        [family.slug, family.label, actor, null]
+      )
+      id = row.id
+      existingFamilies.set(family.slug, id)
+      families += 1
+      stdout.write(`  + famille ${family.slug}\n`)
+    }
+
+    // La cible de nav est laissée vide à cette étape : elle est posée plus bas,
+    // quand les services existent.
+    await write.void("update_expertise_family", [
+      id,
+      family.slug,
+      family.label,
+      family.title,
+      family.summary,
+      family.tag,
+      family.halo,
+      family.lines[0],
+      family.lines[1],
+      family.lines[2],
+      "",
+      actor,
+      null,
+    ])
+  }
+
+  for (const service of expertiseServices) {
+    if (existingServices.has(service.slug)) {
+      skipped += 1
+      continue
+    }
+
+    const familyId = existingFamilies.get(service.family)
+    if (!familyId) {
+      stdout.write(`  ! ${service.slug} : famille ${service.family} absente\n`)
+      continue
+    }
+
+    const row = await write.rowStrict<{ id: Buffer }>(
+      "create_expertise_service",
+      [service.slug, service.title, familyId, actor, null]
+    )
+
+    await write.void("update_expertise_service", [
+      row.id,
+      service.slug,
+      familyId,
+      service.title,
+      service.tagline,
+      service.problem,
+      service.relatedCase,
+      service.ctaTitle,
+      actor,
+      null,
+    ])
+
+    await write.void("set_expertise_deliverables", [
+      row.id,
+      JSON.stringify(service.deliverables),
+      actor,
+      null,
+    ])
+    await write.void("set_expertise_tech_choices", [
+      row.id,
+      JSON.stringify(service.techChoices),
+      actor,
+      null,
+    ])
+    await write.void("set_expertise_faq", [
+      row.id,
+      JSON.stringify(service.faq),
+      actor,
+      null,
+    ])
+
+    await write.void("publish_expertise_service", [row.id, 1, actor, null])
+
+    services += 1
+    stdout.write(`  + ${service.slug}\n`)
+  }
+
+  // La cible de nav, maintenant que les services existent.
+  for (const family of expertiseFamilies) {
+    const id = existingFamilies.get(family.slug)
+    const hasTwin = expertiseServices.some(
+      (service) => service.slug === family.slug
+    )
+    if (id && hasTwin) {
+      await write.void("update_expertise_family", [
+        id,
+        family.slug,
+        family.label,
+        family.title,
+        family.summary,
+        family.tag,
+        family.halo,
+        family.lines[0],
+        family.lines[1],
+        family.lines[2],
+        family.slug,
+        actor,
+        null,
+      ])
+    }
+  }
+
+  return { families, services, skipped }
+}
+
 async function main() {
   stdout.write("\nAmorçage de la base depuis le contenu statique.\n\n")
 
@@ -261,6 +403,15 @@ async function main() {
   const posts = await seedArticles(actor)
   stdout.write(`  ${posts.created} créé(s)`)
   stdout.write(posts.skipped ? `, ${posts.skipped} déjà présent(s).\n` : ".\n")
+
+  stdout.write("\nExpertises\n")
+  const skills = await seedExpertises(actor)
+  stdout.write(
+    `  ${skills.families} famille(s), ${skills.services} service(s) créé(s)`
+  )
+  stdout.write(
+    skills.skipped ? `, ${skills.skipped} déjà présent(s).\n` : ".\n"
+  )
   stdout.write(
     "\nLe site public lit désormais la base. Le contenu statique reste en secours.\n\n"
   )

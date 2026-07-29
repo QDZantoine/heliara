@@ -2,7 +2,12 @@ import { Plus } from "lucide-react"
 
 type FaqProps = {
   title?: string
-  items: { question: string; answer: string }[]
+  /**
+   * `readonly` : le composant ne fait que lire. Sans cela, un appelant qui détient
+   * une liste immuable - c'est le cas des vues partagées avec l'aperçu - devrait la
+   * recopier pour la passer.
+   */
+  items: readonly { question: string; answer: string }[]
 }
 
 /**

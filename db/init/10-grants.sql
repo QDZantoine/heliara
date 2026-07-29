@@ -51,6 +51,11 @@ GRANT EXECUTE ON PROCEDURE heliara.pub_list_article_slugs TO 'app_read'@'%';
 -- tout ouvert d'un coup.
 GRANT EXECUTE ON PROCEDURE heliara.pub_count_article_view TO 'app_read'@'%';
 
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_families TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_services TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_get_expertise_service   TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_slugs    TO 'app_read'@'%';
+
 -- Les fonctions utilitaires sont sans effet de bord et ne touchent aucune table.
 GRANT EXECUTE ON FUNCTION heliara.Bin2Uuid TO 'app_read'@'%';
 GRANT EXECUTE ON FUNCTION heliara.Uuid2Bin TO 'app_read'@'%';
@@ -111,6 +116,27 @@ GRANT EXECUTE ON PROCEDURE heliara.publish_article       TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.delete_article        TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_article_featured  TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.get_article_views     TO 'app_write'@'%';
+
+-- Expertises.
+GRANT EXECUTE ON PROCEDURE heliara.list_expertise_families      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.create_expertise_family      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.update_expertise_family      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_expertise_family      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.reorder_expertise_families   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.list_expertise_services      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.get_expertise_service_full   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.create_expertise_service     TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.update_expertise_service     TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.publish_expertise_service    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_expertise_service     TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.reorder_expertise_services   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_expertise_deliverables   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_expertise_tech_choices   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_expertise_faq            TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_families  TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_services  TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_get_expertise_service    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_slugs     TO 'app_write'@'%';
 
 -- Médias. Aucune n'est accordée à `app_read` : le site public lit les images par
 -- leur URL publique dans MinIO, il n'a jamais besoin d'interroger la table.

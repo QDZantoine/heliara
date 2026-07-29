@@ -56,8 +56,15 @@ export const cta = {
   },
 } as const
 
-/** Sous-liens Expertises repris dans le menu mobile et le footer. */
-export const expertiseNav = expertiseFamilies.map((family) => ({
+/**
+ * Sous-liens Expertises, **en secours seulement**.
+ *
+ * Les familles sont administrables : la nav est donc lue en base par
+ * `publicExpertiseNav()` et passée au chrome du site. Cette liste sert de repli quand
+ * la base ne répond pas - et le repli compte double ici, puisque ces entrées sont
+ * présentes sur chaque page : une base muette ne doit pas vider le menu.
+ */
+export const expertiseNavFallback = expertiseFamilies.map((family) => ({
   label: family.label,
   href: expertiseHref(family.slug),
 }))
@@ -66,7 +73,7 @@ export const footerNav = [
   {
     title: "Expertises",
     links: [
-      ...expertiseNav,
+      ...expertiseNavFallback,
       {
         label: "Maintenance évolutive",
         href: "/expertises/maintenance-evolutive",

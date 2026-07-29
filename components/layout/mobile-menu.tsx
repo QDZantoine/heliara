@@ -9,7 +9,7 @@ import { Menu, X } from "lucide-react"
 import { Logo } from "@/components/layout/logo"
 import { Halo } from "@/components/primitives/halo"
 import { buttonVariants } from "@/components/ui/button"
-import { cta, expertiseNav, group, legalNav, mainNav } from "@/lib/site"
+import { cta, group, legalNav, mainNav } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
 const iconButton =
@@ -20,7 +20,16 @@ const iconButton =
  * `Dialog` de Base UI fournit role=dialog, aria-modal, le piège à focus,
  * la fermeture par Échap et le verrou de scroll (Responsive Guidelines 04).
  */
-function MobileMenu() {
+/**
+ * Les entrées d'expertise arrivent en prop : elles sont lues en base par le layout du
+ * site. Le composant reste ignorant de leur provenance, et le menu fonctionne
+ * identiquement sous repli.
+ */
+function MobileMenu({
+  expertiseNav,
+}: {
+  expertiseNav: readonly { label: string; href: string }[]
+}) {
   const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
   const close = () => setOpen(false)

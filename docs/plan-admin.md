@@ -24,9 +24,8 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
 | 7 - Articles                                | **fait**, comptage de vues compris             |
 | 8 - Le reste des contenus                   | à faire                                        |
 
-Restent dans `lib/content/*.ts`, sans administration : expertises, équipe,
-témoignages, clients, chiffres, méthode, groupe et marques, sections légales, et les
-textes de pages. Le moule est établi - schéma, procédures, grants, couche d'accès,
+Restent dans `lib/content/*.ts`, sans administration : équipe, témoignages, clients,
+chiffres, méthode, groupe et marques, sections légales, et les textes de pages. Le moule est établi - schéma, procédures, grants, couche d'accès,
 actions, écrans, seed, tests - il n'y a plus qu'à le reproduire.
 
 Ce qui a été vérifié contre la base en marche, et n'a pas à l'être deux fois :
