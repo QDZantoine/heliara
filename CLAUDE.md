@@ -124,6 +124,23 @@ Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer
 
 Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grotesk élargissent la virgule décimale, ce qui transforme « 99,98 % » en « 99 , 98 % ». `[data-numeric]` est donc réservé aux colonnes de chiffres à aligner, jamais aux valeurs isolées.
 
+## Formulaires
+
+`zod` + `react-hook-form`. Le schéma vit dans `lib/schemas/`, **partagé par le client et l'action serveur** : un seul schéma, donc aucun risque de voir les deux validations divergentes. Les messages y sont rédigés pour être affichés tels quels, en français, sans jargon de validation.
+
+- **Le serveur rejoue toujours le schéma.** Une action serveur est une route publique : elle ne peut pas faire confiance à son appelant. La validation du navigateur n'est qu'un confort.
+- **Résolveur `standardSchemaResolver`**, pas `zodResolver` : zod 4 implémente Standard Schema, et c'est la voie recommandée depuis `@hookform/resolvers` v5.
+- **Les erreurs que seul le serveur connaît sont réinjectées** par `form.setError`, pour qu'elles s'affichent au même endroit que les autres.
+- **On ne vide jamais un formulaire qu'on refuse** : `react-hook-form` conserve les valeurs saisies.
+- **Ne jamais prétendre avoir envoyé.** En l'absence de configuration d'envoi, l'action renvoie une erreur explicite qui redirige vers l'adresse e-mail publique.
+- Champ leurre anti-robot en `sr-only`, accepté par le schéma mais traité par l'action : rempli, elle renvoie un succès et n'envoie rien — un robot ne doit pas apprendre qu'il a été détecté.
+- Labels visibles au-dessus des champs, messages d'erreur en clair en dessous, `aria-invalid` et `aria-describedby` sur le champ concerné, cibles à 44 px.
+- **Limite assumée** : un formulaire sous `react-hook-form` exige JavaScript. La page de contact affiche l'e-mail et le téléphone en alternative, et le reste du site fonctionne sans.
+
+### Envoi des e-mails
+
+`resend`, configuré par variables d'environnement (voir `.env.example`) : `RESEND_API_KEY`, `CONTACT_FROM` — qui doit appartenir à un domaine vérifié chez Resend, sinon l'API refuse l'envoi — et `CONTACT_TO`, facultatif. `replyTo` porte l'adresse du prospect : répondre au message suffit.
+
 ## Illustrations Lottie
 
 Deux illustrations, un seul lecteur. `lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère le tout avec repli sur un délai pour Safari, qui n'implémente pas `requestIdleCallback`.
