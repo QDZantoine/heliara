@@ -307,20 +307,22 @@
 }
 
 /* ==========================================================================
-   Transition de page — voile encre + départ / arrivée de la page
+   Transition de page — voile encre, illustration Lottie, arrivée de la page
 
-   Volontairement minimale : deux éléments seulement — le voile et `main` — et
-   deux propriétés, `opacity` et `transform`, toutes deux composées par le GPU.
-   Aucune mise en page ni peinture pendant l'animation, donc rien qui puisse
-   saccader. Les tentatives précédentes (traits en lentille balayant en
-   diagonale, six couches de grande taille) sont restées sèches malgré un profil
-   d'images propre à la mesure : ne pas y revenir sans raison forte.
+   Volontairement peu de pièces : le voile (`opacity`), l'illustration centrée
+   (`opacity`) et `main` (`opacity` + `transform`). Tout est composé par le GPU,
+   il n'y a ni mise en page ni peinture pendant l'animation. Les tentatives
+   précédentes — voile à crêtes arrondies, puis traits en lentille balayant en
+   diagonale sur six couches de grande taille — sont restées perçues comme
+   sèches malgré un profil d'images propre à la mesure : ne pas y revenir sans
+   raison forte.
 
-   Le geste : la page sortante s'efface en reculant légèrement, le voile encre la
-   recouvre, la navigation a lieu à couvert, puis la page entrante monte se
-   mettre en place pendant que le voile se lève. La montée dure plus longtemps
-   que le voile, si bien que la page finit de se poser à découvert — c'est ce
-   décalage qui donne l'impression d'arrivée plutôt que d'apparition.
+   Le geste : le voile encre recouvre l'écran, l'illustration apparaît une fois
+   le voile opaque, la navigation a lieu à couvert, puis le voile se lève
+   pendant que la page entrante monte se mettre en place. La montée dure plus
+   longtemps que le lever du voile, si bien que la page finit de se poser à
+   découvert — c'est ce décalage qui donne une impression d'arrivée plutôt que
+   d'apparition.
    ========================================================================== */
 
 @keyframes hel-curtain-in {
@@ -368,6 +370,36 @@
 
 [data-phase="reveal"] .hel-curtain {
   animation: hel-curtain-out 400ms var(--hel-ease-inout) forwards;
+}
+
+/* Illustration centrée dans le voile. Enfant du voile, donc son opacité se
+   multiplie à la sienne : elle s'efface avec lui au lever, sans règle dédiée.
+   Le retard d'apparition attend que le voile soit franchement opaque. */
+.hel-curtain-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+/* lottie-web pose `width: 100%` en style inline sur le SVG qu'il crée : la
+   taille doit donc être portée par son conteneur, pas par le SVG. */
+.hel-curtain-lottie {
+  width: 6rem;
+  height: 6rem;
+}
+
+@media (min-width: 768px) {
+  .hel-curtain-lottie {
+    width: 7rem;
+    height: 7rem;
+  }
+}
+
+[data-phase="cover"] .hel-curtain-mark {
+  animation: hel-curtain-in 220ms var(--hel-ease-inout) 180ms forwards;
 }
 
 /* `data-curtain` porte la phase sur <html> : la page peut ainsi réagir sans

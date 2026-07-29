@@ -2,21 +2,26 @@
 
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
+import type { AnimationItem } from "lottie-web"
 
-/**
- * Durées miroir de celles déclarées dans globals.css. `REVEAL_MS` doit couvrir
- * la plus longue des deux animations de la phase — la montée de `main`, 560 ms,
- * et non le lever du voile — sinon elle serait retirée en plein vol.
- */
+/** Fondu d'apparition du voile. */
 const COVER_MS = 300
-const REVEAL_MS = 580
 /**
- * Répit accordé au navigateur entre l'affichage de la nouvelle page et le lever
- * du voile. Sans lui, le voile se lève pile pendant le premier rendu de la page
- * entrante — mise en page, peinture, hydratation. Ce répit se passe écran
- * couvert : invisible.
+ * Temps minimum écran couvert avant de lever le voile. Il sert deux fins :
+ * laisser le navigateur peindre et hydrater la page entrante — sinon ce travail
+ * tomberait sur les premières images du lever — et laisser l'illustration se
+ * dérouler assez pour être lisible. C'est le réglage à toucher pour rendre la
+ * transition plus vive ou plus posée.
  */
-const SETTLE_MS = 140
+const COVERED_MS = 520
+/**
+ * `REVEAL_MS` doit couvrir la plus longue des deux animations de la phase — la
+ * montée de `main`, 560 ms, et non le lever du voile — sinon elle serait
+ * retirée en plein vol.
+ */
+const REVEAL_MS = 580
+/** L'illustration fait 1,9 s par cycle : accélérée, on en voit environ la moitié. */
+const LOTTIE_SPEED = 1.6
 /** Filet de sécurité : si la navigation n’aboutit pas, on rouvre quand même. */
 const STUCK_MS = 2500
 
@@ -49,39 +54,46 @@ function internalTarget(event: MouseEvent) {
 }
 
 /**
- * Transition de page : un voile encre apparaît en fondu, la navigation a lieu
- * écran couvert, puis le voile disparaît sur la nouvelle page.
- *
- * Volontairement minimale : un seul élément, une seule propriété animée
- * (`opacity`), composée par le GPU. Rien à synchroniser, aucune mise en page ni
- * peinture pendant l'animation — c'est ce qui la rend fluide par construction.
+ * Transition de page : un voile encre apparaît en fondu avec l'illustration de
+ * chargement en son centre, la navigation a lieu écran couvert, puis le voile
+ * se lève pendant que la page entrante monte se mettre en place.
  *
  * Le voile est piloté par un attribut sur le nœud plutôt que par un état
  * React : aucun rendu pendant l'animation, et la règle
- * `react-hooks/set-state-in-effect` reste satisfaite.
+ * `react-hooks/set-state-in-effect` reste satisfaite. La phase est aussi portée
+ * par `<html data-curtain>`, ce qui permet au CSS d'animer `main` sans qu'aucun
+ * composant de page ait à le savoir.
+ *
+ * Le lecteur Lottie (~168 ko) est chargé à la demande, quand le navigateur est
+ * inoccupé et jamais avant : il ne pèse pas sur le premier rendu. S'il n'est pas
+ * encore prêt, la transition se joue sans illustration.
  *
  * Dégradations assumées : sans JavaScript, ou avec `prefers-reduced-motion`,
- * les liens naviguent normalement et le voile ne se déclenche jamais. Le voile
- * est `aria-hidden` et ne capte jamais le pointeur.
+ * les liens naviguent normalement, le voile ne se déclenche jamais et le lecteur
+ * n'est même pas téléchargé.
  */
 function PageCurtain() {
   const router = useRouter()
   const pathname = usePathname()
   const rootRef = React.useRef<HTMLDivElement>(null)
+  const markRef = React.useRef<HTMLDivElement>(null)
+  const animationRef = React.useRef<AnimationItem | null>(null)
   const coveringRef = React.useRef(false)
   const timersRef = React.useRef<ReturnType<typeof setTimeout>[]>([])
 
   const setPhase = React.useCallback((phase: Phase) => {
     rootRef.current?.setAttribute("data-phase", phase)
-    // La phase est aussi portée par <html> : le CSS y anime le départ et
-    // l'arrivée de `main` sans qu'aucun composant de page ait à le savoir, et
-    // `Reveal` s'en sert pour ne pas superposer trente fondus de 600 ms
-    // par-dessus la transition.
+
     const root = document.documentElement
     if (phase === "idle") {
       root.removeAttribute("data-curtain")
+      animationRef.current?.pause()
     } else {
       root.setAttribute("data-curtain", phase)
+    }
+
+    if (phase === "cover") {
+      animationRef.current?.goToAndPlay(0, true)
     }
   }, [])
 
@@ -93,6 +105,54 @@ function PageCurtain() {
     () => () => timersRef.current.forEach((timer) => clearTimeout(timer)),
     []
   )
+
+  // Préchargement du lecteur Lottie hors du chemin critique.
+  React.useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return
+    }
+
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const [{ default: lottie }, data] = await Promise.all([
+          import("lottie-web/build/player/lottie_light"),
+          fetch("/loading-animation-white.json").then((res) => res.json()),
+        ])
+        if (cancelled || !markRef.current) {
+          return
+        }
+        const animation = lottie.loadAnimation({
+          container: markRef.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: false,
+          animationData: data,
+        })
+        animation.setSpeed(LOTTIE_SPEED)
+        animationRef.current = animation
+      } catch {
+        // Le lecteur ou l'illustration n'a pas pu être chargé : la transition
+        // se joue sans, ce qui est un défaut acceptable.
+      }
+    }
+
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(load, { timeout: 3000 })
+      : window.setTimeout(load, 1200)
+
+    return () => {
+      cancelled = true
+      if (window.cancelIdleCallback) {
+        window.cancelIdleCallback(idle)
+      } else {
+        clearTimeout(idle)
+      }
+      animationRef.current?.destroy()
+      animationRef.current = null
+    }
+  }, [])
 
   React.useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -138,9 +198,9 @@ function PageCurtain() {
     return () => document.removeEventListener("click", onClick, true)
   }, [after, router, setPhase])
 
-  // Nouvelle page affichée : on lève le voile, après avoir laissé le navigateur
-  // la peindre. Une navigation qui ne vient pas d’un clic intercepté (retour
-  // arrière, lien externe) n’anime rien.
+  // Nouvelle page affichée : on lève le voile, après le temps couvert minimum.
+  // Une navigation qui ne vient pas d’un clic intercepté (retour arrière, lien
+  // externe) n’anime rien.
   React.useEffect(() => {
     if (!coveringRef.current) {
       return
@@ -149,15 +209,15 @@ function PageCurtain() {
 
     let frame = 0
     let done: ReturnType<typeof setTimeout> | undefined
-    const settle = setTimeout(() => {
+    const covered = setTimeout(() => {
       frame = requestAnimationFrame(() => {
         setPhase("reveal")
         done = setTimeout(() => setPhase("idle"), REVEAL_MS)
       })
-    }, SETTLE_MS)
+    }, COVERED_MS)
 
     return () => {
-      clearTimeout(settle)
+      clearTimeout(covered)
       clearTimeout(done)
       if (frame) {
         cancelAnimationFrame(frame)
@@ -167,7 +227,11 @@ function PageCurtain() {
 
   return (
     <div ref={rootRef} data-phase="idle" aria-hidden="true">
-      <div className="hel-curtain" />
+      <div className="hel-curtain">
+        <div className="hel-curtain-mark">
+          <div ref={markRef} className="hel-curtain-lottie" />
+        </div>
+      </div>
     </div>
   )
 }
