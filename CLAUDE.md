@@ -75,20 +75,24 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 ## Transition de page
 
-`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, fait apparaître un voile encre en fondu, navigue écran couvert, puis fait disparaître le voile sur la nouvelle page. 300 ms à la couverture, 360 ms au lever.
+`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, fait apparaître un voile encre en fondu, navigue écran couvert, puis lève le voile pendant que la page entrante monte se mettre en place.
 
-**Volontairement minimale : un seul élément, une seule propriété animée (`opacity`).** C'est un choix, pas une facilité. Un `opacity` sur un élément unique est composé par le GPU : il n'y a ni mise en page, ni peinture, ni plusieurs couches à synchroniser pendant l'animation, donc rien qui puisse saccader. Les versions précédentes — un voile à crêtes arrondies, puis des traits en lentille balayant en diagonale — demandaient jusqu'à six couches de grande taille et sont restées perçues comme sèches malgré un profil d'images propre à la mesure. **Ne pas y revenir sans une raison forte.**
+**Deux éléments, deux propriétés.** Le voile (`opacity`) et `main` (`opacity` + `transform`) : rien d'autre. Les deux sont composés par le GPU, il n'y a ni mise en page ni peinture pendant l'animation, donc rien qui puisse saccader. Les versions précédentes — voile à crêtes arrondies, puis traits en lentille balayant en diagonale sur six couches de grande taille — sont restées perçues comme sèches malgré un profil d'images propre à la mesure. **Ne pas y revenir sans une raison forte.**
+
+Le détail qui fait l'élégance : la montée de la page (560 ms) dure plus longtemps que le lever du voile (400 ms), si bien qu'elle finit de se poser à découvert. C'est ce décalage qui donne une impression d'arrivée plutôt que d'apparition. `REVEAL_MS` doit donc couvrir la plus longue des deux animations, sinon elle serait retirée en plein vol.
+
+**Seule l'arrivée est animée, pas le départ.** Animer aussi la page sortante obligeait le navigateur à promouvoir `main` — plusieurs milliers de pixels de haut — au moment même du clic : 140 ms de blocage mesurés, précisément là où la réactivité compte le plus. Sur l'arrivée, cette promotion tombe pendant le répit, écran couvert, donc invisible. Et on ne perd presque rien : la page sortante est recouverte aussitôt.
 
 Quatre points la maintiennent propre :
 
 1. **Interception en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le voile ne se déclenche jamais. La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).
 2. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le voile. Next l'annonce en clair dans le log de dev.
 3. **Un répit avant le lever** (`SETTLE_MS`, 140 ms). Le voile ne doit pas se lever au moment où React commite la page entrante : sa mise en page, sa peinture et son hydratation tomberaient sur les premières images de l'animation. Ce répit se passe écran couvert, donc invisible.
-4. **Le contenu entrant n'anime pas par-dessus le voile.** `PageCurtain` pose `data-curtain` sur `<html>` pendant la transition ; `Reveal` le lit **au moment où il révèle** — pas au montage, sinon les blocs sous la ligne de flottaison perdraient leur apparition au scroll — et pose `data-reveal-now`, qui coupe le fondu. Le voile est la transition ; empiler trente fondus de 600 ms par-dessus rend l'arrivée confuse.
+4. **Le contenu entrant n'anime pas par-dessus le voile.** `PageCurtain` pose la phase dans `data-curtain` sur `<html>` — c'est ce qui permet au CSS d'animer `main` sans qu'aucun composant de page ait à le savoir. `Reveal` lit ce drapeau **au moment où il révèle** — pas au montage, sinon les blocs sous la ligne de flottaison perdraient leur apparition au scroll — et pose `data-reveal-now`, qui coupe le fondu. Le geste de page est la transition ; empiler trente fondus de 600 ms par-dessus rend l'arrivée confuse.
 
 Un filet de sécurité rouvre le voile si la navigation n'aboutit pas. Sans JavaScript et sous `prefers-reduced-motion`, les liens naviguent normalement.
 
-Pas de `framer-motion` : l'animation porte sur `opacity`, déjà composée par le GPU. La bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
+Pas de `framer-motion` : tout porte sur `opacity` et `transform`, déjà composés par le GPU. La bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
 
 ### Mesurer la fluidité, ne pas la juger à l'œil
 

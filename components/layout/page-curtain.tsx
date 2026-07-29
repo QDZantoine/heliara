@@ -3,9 +3,13 @@
 import * as React from "react"
 import { usePathname, useRouter } from "next/navigation"
 
-/** Durées miroir de celles déclarées dans globals.css. */
+/**
+ * Durées miroir de celles déclarées dans globals.css. `REVEAL_MS` doit couvrir
+ * la plus longue des deux animations de la phase — la montée de `main`, 560 ms,
+ * et non le lever du voile — sinon elle serait retirée en plein vol.
+ */
 const COVER_MS = 300
-const REVEAL_MS = 360
+const REVEAL_MS = 580
 /**
  * Répit accordé au navigateur entre l'affichage de la nouvelle page et le lever
  * du voile. Sans lui, le voile se lève pile pendant le premier rendu de la page
@@ -69,10 +73,16 @@ function PageCurtain() {
 
   const setPhase = React.useCallback((phase: Phase) => {
     rootRef.current?.setAttribute("data-phase", phase)
-    // Drapeau lu par `Reveal` : pendant la transition, un bloc qui entre dans le
-    // champ apparaît sans fondu. Le voile est la transition ; superposer trente
-    // fondus de 600 ms par-dessus rend l'arrivée confuse.
-    document.documentElement.toggleAttribute("data-curtain", phase !== "idle")
+    // La phase est aussi portée par <html> : le CSS y anime le départ et
+    // l'arrivée de `main` sans qu'aucun composant de page ait à le savoir, et
+    // `Reveal` s'en sert pour ne pas superposer trente fondus de 600 ms
+    // par-dessus la transition.
+    const root = document.documentElement
+    if (phase === "idle") {
+      root.removeAttribute("data-curtain")
+    } else {
+      root.setAttribute("data-curtain", phase)
+    }
   }, [])
 
   const after = React.useCallback((ms: number, fn: () => void) => {
