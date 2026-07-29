@@ -67,6 +67,7 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 ## Composants
 
+- `components/visuals/` — illustrations. `HeroLottie` pour le hero, et des maquettes d'interface en CSS pur ailleurs (`case-sketch`, `case-card-sketch`, `case-hero-sketch`, `expertise-sketch`) : toujours `aria-hidden`, aucun asset à charger.
 - `components/primitives/` — `Container` (1240 / 760 px, marges 20/32/40), `Section` (`space` sm/md/lg pour le rythme binaire, `tone` page/surface/inverse), `Eyebrow`, `Halo`, `Reveal`.
 - `components/layout/` — `SiteHeader`, `MobileMenu` (Dialog de Base UI : focus trap, Échap, verrou de scroll fournis), `SiteFooter`, `NavLink` (lit le pathname pour `aria-current`), `ThemeToggle`, `SkipLink`, `Logo`.
 - `components/ui/button.tsx` — `Button` (action, primitive Base UI), `ButtonLink` (navigation, `next/link`), `buttonVariants` pour habiller un `Link` ad hoc. **Échelle de tailles tactile d'abord** : `md` = 44 px et c'est le défaut, `lg` = 48, `xl` = 52, `block` = pleine largeur ; `sm` = 36 px est réservé aux zones denses non tactiles. Variantes : `brand`, `secondary`, `ghost`, `link`, `outline`, `destructive`, plus `inverse` et `inverse-ghost` pour les fonds encre.
@@ -135,6 +136,18 @@ Deux illustrations, un seul lecteur. `lib/lottie.ts` centralise le chargement : 
 ### `public/loading-animation-white.json` — transition de page
 
 7,3 ko, quatre calques, 1,9 s par cycle. Centrée dans le voile, en boucle, jouée à 1,6× pour qu'on en voie environ la moitié. Enfant du voile, donc son opacité se multiplie à la sienne et elle s'efface avec lui sans règle dédiée. Mise en pause au retour au repos.
+
+### `public/hero-product.json` — illustration du hero
+
+48 ko, trois calques nommés `wireframe`, `code`, `hi-fidelity` : les trois fenêtres s'empilent en boucle sur 3,5 s. C'est le propos du studio montré plutôt qu'écrit, et cela reste dans la règle de la DA — illustration abstraite, volumes simples, jamais de photo ni de 3D gadget. Elle a remplacé la fenêtre produit en CSS pur et ses trois cartes flottantes (`hero-stage`, `product-window`, `parallax`, supprimés).
+
+- **Seul usage chargé sans attendre l'inoccupation** : l'illustration est au-dessus de la ligne de flottaison. Le chargement reste posté après le premier rendu, et le LCP est le titre rendu côté serveur, donc il n'est pas retardé.
+- **La boîte est dimensionnée avant le chargement** : aucun décalage de mise en page à l'arrivée de l'illustration.
+- **La lecture se met en pause hors du champ** (`IntersectionObserver`) : rien n'occupe le processeur pendant le reste du défilement.
+- **Sous `prefers-reduced-motion`, l'illustration est figée sur sa dernière image** plutôt qu'absente : on garde le visuel, on retire le mouvement.
+- **La mise à l'échelle est un `transform`**, pas une largeur : l'artboard porte de larges marges internes, et un transform leur fait rendre l'espace sans toucher à la mise en page ni provoquer de débordement horizontal.
+- Les 11 expressions du fichier sont deux formules de **rebond élastique**, que `lottie_light` n'évalue pas. C'est voulu : la DA interdit le rebond. Le rendu a été comparé image par image contre le build complet — identique par ailleurs.
+- Le fichier fonctionne tel quel sur les deux thèmes : sur l'encre, ses panneaux clairs se lisent comme des écrans allumés. Aucune recoloration.
 
 ### `public/theme-toggle.json` — sélecteur de thème
 

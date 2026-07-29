@@ -2,7 +2,7 @@ import { Container } from "@/components/primitives/container"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { ButtonLink } from "@/components/ui/button"
-import { HeroStage } from "@/components/visuals/hero-stage"
+import { HeroLottie } from "@/components/visuals/hero-lottie"
 import { cta } from "@/lib/site"
 
 /**
@@ -59,7 +59,7 @@ function Hero() {
           </Reveal>
         </div>
 
-        <HeroStage />
+        <HeroLottie />
       </Container>
     </section>
   )
