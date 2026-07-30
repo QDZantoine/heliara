@@ -136,19 +136,34 @@ Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grote
 
 ## Le bandeau de logos clients
 
-**Les logos sont montrés sans aucun filtre, dans les deux thèmes.** Deux traitements ont
-été essayés et abandonnés, mesurés à l'écran : la désaturation avec opacité réduite
-effaçait les logos clairs - Yoginette, Luundi, MyDigitalSchool devenaient illisibles ; et
-`brightness-0 invert` en sombre écrasait les formes internes de ceux qui en dépendent,
-transformant Hexceos en carré gris uni. Un plateau clair maintenu en thème sombre a aussi
-été essayé : il garantissait la lisibilité des huit fichiers, au prix d'une bande blanche
-dans une page encre, et une section qui ignore le thème se remarque plus qu'un logo un peu
-moins contrasté.
+**Le traitement des logos n'est pas symétrique entre les thèmes**, et ce n'est pas un
+oubli : les deux fonds ne posent pas le même problème.
 
-La couleur des marques se tient sur les deux fonds, et c'est de toute façon ce qu'on doit
-à une marque qu'on affiche. **La conséquence à connaître** : un fichier à fond opaque
-foncé se fond dans la bande en thème sombre. Cela se corrige dans le fichier, pas en CSS -
-d'où l'exigence de fond transparent ci-dessous.
+- **En clair, désaturés à 70 % d'opacité**, couleur au survol. Huit logos à pleine couleur
+  sur le plateau clair - un violet, un bleu, un rose, un turquoise, un vert acide - font de
+  la bande la zone la plus criarde de la page et volent le seul geste orange de l'écran,
+  qui est le point du titre du hero juste au-dessus.
+- **En sombre, tels quels.** Les mêmes couleurs y ressortent sans crier, et le gris y
+  ferait des taches ternes.
+
+Deux traitements ont été essayés et abandonnés, mesurés à l'écran : `brightness-0 invert`
+en sombre écrasait les formes internes des logos qui en dépendent et transformait un fond
+opaque en carré gris uni ; et un plateau clair maintenu en thème sombre garantissait la
+lisibilité des huit fichiers au prix d'une bande blanche dans une page encre.
+
+**Une marque monochrome fournit ses deux variantes**, déclarées en `{ light, dark }` sur
+`Client.logo`. Ne pas fabriquer la seconde en inversant la première : `invert` produit une
+couleur que la marque n'a pas. Les deux images sont rendues et le CSS en masque une, comme
+pour les portraits d'équipe - le thème est une classe sur `<html>`, donc échanger la source
+demanderait du JavaScript.
+
+**`shape` suit le fichier, pas la marque.** Hexceos est passé de `square` à `wide` en
+changeant de fichier : le PNG était un carré de 96 px, le SVG fait 774 x 242.
+
+**Vérifier le mot-symbole en grand avant d'intégrer un logo.** Une première version des SVG
+d'Hexceos écrivait « Hexeceos », avec un « e » de trop. Le texte étant vectorisé, la faute
+est invisible à la lecture du source et illisible à 28 px dans la bande : elle ne se voit
+qu'en affichant le fichier à une centaine de pixels de haut.
 
 **`shape` décide de la hauteur, pas une valeur unique.** Un logotype à 28 px de haut
 couvre 140 px de large ; un carré n'en couvre que 28, soit quatre fois moins de surface

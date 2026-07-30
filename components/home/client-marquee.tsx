@@ -112,11 +112,22 @@ function LogoRow({ hidden = false }: { hidden?: boolean }) {
  * Les carrés reçoivent donc plus de hauteur, ce qui est la seule façon de les faire peser
  * pareil sans mesurer chaque fichier à la main.
  *
- * **Aucun filtre.** Deux traitements ont été essayés et abandonnés, mesurés à l'écran : la
- * désaturation à opacité réduite effaçait les logos clairs, et `brightness-0 invert` en
- * thème sombre écrasait les formes internes de ceux qui en dépendent. Les logos sont
- * montrés tels que leurs propriétaires les ont dessinés, ce qu'on doit de toute façon à
- * une marque qu'on affiche.
+ * **Désaturés en thème clair, en couleur en thème sombre.** Le traitement n'est pas
+ * symétrique parce que les deux fonds ne posent pas le même problème.
+ *
+ * Sur le plateau clair, huit logos à pleine couleur - un violet, un bleu, un rose, un
+ * turquoise, un vert acide - font de la bande la zone la plus criarde de la page et
+ * volent le seul geste orange de l'écran, qui est le point du titre du hero juste
+ * au-dessus. Le gris les ramène à ce qu'ils sont : une liste de références. La couleur
+ * revient au survol, pour qui s'y intéresse.
+ *
+ * Sur l'encre, l'inverse : les mêmes couleurs y ressortent sans crier, et le gris y
+ * ferait des taches ternes. `dark:grayscale-0` et `dark:opacity-100` rendent donc les
+ * fichiers tels quels.
+ *
+ * **`brightness-0 invert` a été essayé et abandonné** : il écrasait les formes internes
+ * des logos qui en dépendent et transformait un fond opaque en carré gris uni. Ne pas y
+ * revenir - une marque monochrome fournit ses deux variantes, voir `Client.logo`.
  *
  * **Une marque monochrome fournit ses deux variantes**, et l'on rend les deux images en
  * masquant l'une par le CSS. Le thème du site est porté par une classe sur `<html>` et non
@@ -127,9 +138,17 @@ function LogoRow({ hidden = false }: { hidden?: boolean }) {
 function ClientLogo({ client }: { client: (typeof clients)[number] }) {
   const taille =
     client.shape === "square" ? "h-10 w-auto md:h-11" : "h-7 w-auto md:h-8"
+  const rendu =
+    "opacity-70 grayscale transition-[opacity,filter] duration-[200ms] ease-expo hover:opacity-100 hover:grayscale-0 dark:opacity-100 dark:grayscale-0"
 
   if (typeof client.logo === "string") {
-    return <Logo src={client.logo} alt={client.name} className={taille} />
+    return (
+      <Logo
+        src={client.logo}
+        alt={client.name}
+        className={`${taille} ${rendu}`}
+      />
+    )
   }
 
   return (
@@ -137,7 +156,7 @@ function ClientLogo({ client }: { client: (typeof clients)[number] }) {
       <Logo
         src={client.logo.light}
         alt={client.name}
-        className={`${taille} dark:hidden`}
+        className={`${taille} ${rendu} dark:hidden`}
       />
       {/*
         La seconde variante est décorative : le nom est déjà porté par la première, qui
