@@ -103,7 +103,8 @@ async function seedActor(): Promise<Buffer> {
  * silencieusement ferait disparaître le rappel - mais ils sont comptés et affichés,
  * parce qu'une fiche qui en contient n'est pas prête à publier.
  */
-const GABARIT = /\[?\s*(à compléter|à confirmer|ajoute un résultat)/i
+const GABARIT =
+  /\[?\s*(à compléter|à confirmer|à définir|ajoute un résultat)|^20XX$/i
 
 function gabaritsDe(fiche: Imported): string[] {
   const champs: string[] = []
@@ -112,6 +113,11 @@ function gabaritsDe(fiche: Imported): string[] {
       champs.push(nom)
     }
   }
+  /*
+    `year` est un VARCHAR(9) et la publication l'exige : un « [À COMPLÉTER] » n'y tient
+    pas. Un fichier de reprise y porte donc un gabarit court, `20XX`, que l'expression
+    reconnaît en entier - une année réelle ne peut pas le contenir par accident.
+  */
   voir("year", fiche.year)
   voir("title", fiche.title)
   voir("heroTitle", fiche.heroTitle)
@@ -119,6 +125,9 @@ function gabaritsDe(fiche: Imported): string[] {
   voir("badge", fiche.badge)
   voir("summary", fiche.summary)
   voir("teaser", fiche.teaser)
+  voir("figure", fiche.figure)
+  voir("measure", fiche.measure)
+  voir("resultsLabel", fiche.resultsLabel)
   fiche.chapters.forEach((chapitre, index) => {
     voir(`chapters.${index}.title`, chapitre.title)
     voir(`chapters.${index}.text`, chapitre.text)
