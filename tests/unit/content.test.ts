@@ -44,6 +44,13 @@ import { testimonials } from "@/lib/content/testimonials"
 /** Un slug d'URL : minuscules, chiffres, tirets simples, ni début ni fin en tiret. */
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
+/** Les fichiers d'un logo : un seul, ou les deux variantes de thème. */
+function fichiersDe(client: (typeof clients)[number]): string[] {
+  return typeof client.logo === "string"
+    ? [client.logo]
+    : [client.logo.light, client.logo.dark]
+}
+
 function duplicates(values: string[]) {
   const seen = new Set<string>()
   return values.filter((value) => (seen.has(value) ? true : !seen.add(value)))
@@ -438,8 +445,11 @@ describe("preuve sociale", () => {
     expect(duplicates(noms)).toEqual([])
     for (const client of clients) {
       expect(client.name).not.toBe("")
-      expect(client.logo, client.name).toMatch(/^\/trusts-logos\//)
       expect(client.site, client.name).toMatch(/^https:\/\//)
+      // Une chaîne, ou une paire de variantes par thème pour une marque monochrome.
+      for (const fichier of fichiersDe(client)) {
+        expect(fichier, client.name).toMatch(/^\/trusts-logos\//)
+      }
     }
   })
 
@@ -452,7 +462,9 @@ describe("preuve sociale", () => {
    */
   it("n'accepte aucun logo dans un format sans transparence", () => {
     for (const client of clients) {
-      expect(client.logo, client.name).not.toMatch(/\.(jpe?g)$/i)
+      for (const fichier of fichiersDe(client)) {
+        expect(fichier, client.name).not.toMatch(/\.(jpe?g)$/i)
+      }
     }
   })
 

@@ -27,14 +27,21 @@ export type Client = {
   /**
    * Le logo, dans `public/trusts-logos/`.
    *
-   * SVG de préférence - net à toutes les tailles, plus léger, et il se désature
-   * proprement. À défaut, un PNG à **fond transparent** d'au moins 80 px de haut : la
-   * bande l'affiche à 28 px, et un écran à deux fois la densité en réclame 56.
+   * SVG de préférence - net à toutes les tailles et plus léger. À défaut, un PNG à **fond
+   * transparent** d'au moins 80 px de haut : la bande l'affiche à 28 px, et un écran à
+   * deux fois la densité en réclame 56.
    *
-   * Le fond transparent n'est pas une préférence esthétique : la bande pose les logos
-   * sur la surface de la page, donc un fichier opaque y dessine un rectangle.
+   * Le fond transparent n'est pas une préférence esthétique : la bande pose les logos sur
+   * la surface de la page, donc un fichier opaque y dessine un rectangle.
+   *
+   * **Une chaîne quand un seul fichier tient sur les deux thèmes**, ce qui est le cas de
+   * la plupart : un logo en couleur se lit sur le clair comme sur l'encre. Une paire
+   * `{ light, dark }` quand la marque est monochrome - un logo noir disparaît sur
+   * l'encre, un logo blanc sur le blanc - et que son propriétaire fournit les deux
+   * variantes. Ne pas inventer la seconde en inversant la première : `invert` écrase les
+   * formes internes et fabrique une couleur que la marque n'a pas.
    */
-  logo: string
+  logo: string | { light: string; dark: string }
   /**
    * La forme du logo, qui décide de sa hauteur d'affichage.
    *
@@ -113,8 +120,14 @@ export const clients: readonly Client[] = [
   */
   {
     name: "Hexceos",
-    shape: "square",
-    logo: "/trusts-logos/logo-hexceos.png",
+    // `wide` depuis le passage aux SVG : le nouveau fichier fait 774 x 242, soit un
+    // logotype horizontal. L'ancien PNG etait un carre de 96 px, d'ou la classe
+    // precedente - la forme suit le fichier, pas la marque.
+    shape: "wide",
+    logo: {
+      light: "/trusts-logos/logo-hexceos-black.svg",
+      dark: "/trusts-logos/logo-hexceos-white.svg",
+    },
     site: "https://hexceos.fr",
   },
   {

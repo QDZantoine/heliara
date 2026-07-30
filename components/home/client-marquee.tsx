@@ -112,23 +112,71 @@ function LogoRow({ hidden = false }: { hidden?: boolean }) {
  * Les carrés reçoivent donc plus de hauteur, ce qui est la seule façon de les faire peser
  * pareil sans mesurer chaque fichier à la main.
  *
- * **Aucun filtre.** Une première version désaturait les logos et réduisait leur opacité,
- * pour éviter que huit marques à pleine couleur ne volent le seul geste orange de l'écran.
- * L'intention était juste, le résultat non : les logos clairs s'effaçaient, et
- * `brightness-0 invert` en thème sombre écrasait les formes internes de ceux qui en
- * dépendent. C'est le plateau clair de la bande qui tient désormais la cohérence, pas un
- * filtre appliqué aux marques des autres.
+ * **Aucun filtre.** Deux traitements ont été essayés et abandonnés, mesurés à l'écran : la
+ * désaturation à opacité réduite effaçait les logos clairs, et `brightness-0 invert` en
+ * thème sombre écrasait les formes internes de ceux qui en dépendent. Les logos sont
+ * montrés tels que leurs propriétaires les ont dessinés, ce qu'on doit de toute façon à
+ * une marque qu'on affiche.
+ *
+ * **Une marque monochrome fournit ses deux variantes**, et l'on rend les deux images en
+ * masquant l'une par le CSS. Le thème du site est porté par une classe sur `<html>` et non
+ * par la seule préférence système, puisque le sélecteur permet de le forcer : échanger la
+ * source demanderait du JavaScript, et un `<picture media>` se désynchroniserait d'un
+ * choix manuel. Même mécanique que les portraits d'équipe.
  */
 function ClientLogo({ client }: { client: (typeof clients)[number] }) {
+  const taille =
+    client.shape === "square" ? "h-10 w-auto md:h-11" : "h-7 w-auto md:h-8"
+
+  if (typeof client.logo === "string") {
+    return <Logo src={client.logo} alt={client.name} className={taille} />
+  }
+
+  return (
+    <>
+      <Logo
+        src={client.logo.light}
+        alt={client.name}
+        className={`${taille} dark:hidden`}
+      />
+      {/*
+        La seconde variante est décorative : le nom est déjà porté par la première, qui
+        reste dans l'arbre d'accessibilité même masquée en CSS. L'annoncer ferait lire la
+        référence en double.
+      */}
+      <Logo
+        src={client.logo.dark}
+        alt=""
+        className={`hidden ${taille} dark:block`}
+      />
+    </>
+  )
+}
+
+/**
+ * L'image elle-même.
+ *
+ * `unoptimized` sur un SVG : l'optimiseur de Next n'a rien à y gagner, et il le refuse de
+ * toute façon tant que `dangerouslyAllowSVG` n'est pas activé - c'est la règle du projet
+ * pour `public/illustrations`, et elle vaut ici.
+ */
+function Logo({
+  src,
+  alt,
+  className,
+}: {
+  src: string
+  alt: string
+  className: string
+}) {
   return (
     <Image
-      src={client.logo}
-      alt={client.name}
+      src={src}
+      alt={alt}
       width={240}
       height={240}
-      className={
-        client.shape === "square" ? "h-10 w-auto md:h-11" : "h-7 w-auto md:h-8"
-      }
+      unoptimized={src.endsWith(".svg")}
+      className={className}
     />
   )
 }
