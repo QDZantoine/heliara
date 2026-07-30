@@ -6,6 +6,7 @@ import { RichHtml } from "@/components/primitives/rich-html"
 import { Section } from "@/components/primitives/section"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
+import { CtaIcon } from "@/components/ui/cta-icon"
 import {
   articleHref,
   categoryTone,
@@ -257,6 +258,7 @@ function ArticleReadingView({
               honnête, y compris si la réponse est « achetez ».
             </p>
             <ButtonLink href={cta.primary.href} size="md">
+              <CtaIcon />
               Parlons-en
             </ButtonLink>
           </Reveal>

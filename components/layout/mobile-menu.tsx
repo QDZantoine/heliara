@@ -11,6 +11,7 @@ import { Halo } from "@/components/primitives/halo"
 import { buttonVariants } from "@/components/ui/button"
 import { cta, group, legalNav, mainNav } from "@/lib/site"
 import { cn } from "@/lib/utils"
+import { CtaIcon } from "@/components/ui/cta-icon"
 
 const iconButton =
   "inline-flex size-11 items-center justify-center rounded-sm border border-line-strong bg-surface text-ink transition-colors duration-100 hover:bg-inset"
@@ -109,6 +110,7 @@ function MobileMenu({
               onClick={close}
               className={cn(buttonVariants({ size: "block" }), "mb-4")}
             >
+              <CtaIcon />
               {cta.primary.label}
             </Link>
             <div className="flex flex-wrap justify-between gap-3 text-xs text-label">

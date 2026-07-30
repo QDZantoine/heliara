@@ -5,6 +5,7 @@ import { Container } from "@/components/primitives/container"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { ButtonLink } from "@/components/ui/button"
+import { CtaIcon } from "@/components/ui/cta-icon"
 import { cta } from "@/lib/site"
 
 type CtaBandProps = {
@@ -49,6 +50,7 @@ function CtaBand({
           className="flex flex-col items-center gap-4 max-sm:w-full sm:flex-row sm:gap-5"
         >
           <ButtonLink href={href} size="lg" className="max-sm:w-full">
+            <CtaIcon />
             {action}
           </ButtonLink>
           {secondary ? (

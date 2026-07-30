@@ -3,6 +3,7 @@ import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { ButtonLink } from "@/components/ui/button"
+import { CtaIcon } from "@/components/ui/cta-icon"
 import { cta, site } from "@/lib/site"
 
 type FinalCtaProps = {
@@ -61,6 +62,7 @@ function FinalCta({
             size="xl"
             className="max-sm:w-full"
           >
+            <CtaIcon />
             {action}
           </ButtonLink>
           <a

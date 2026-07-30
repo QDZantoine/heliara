@@ -2,6 +2,7 @@ import { Container } from "@/components/primitives/container"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { ButtonLink } from "@/components/ui/button"
+import { CtaIcon } from "@/components/ui/cta-icon"
 import { HeroLottie } from "@/components/visuals/hero-lottie"
 import { cta } from "@/lib/site"
 
@@ -47,6 +48,7 @@ function Hero() {
               size="lg"
               className="max-sm:w-full"
             >
+              <CtaIcon />
               {cta.primary.label}
             </ButtonLink>
             <ButtonLink

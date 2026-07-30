@@ -9,6 +9,7 @@ import { RichHtml } from "@/components/primitives/rich-html"
 import { Section } from "@/components/primitives/section"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
+import { CtaIcon } from "@/components/ui/cta-icon"
 import { CaseHeroSketch } from "@/components/visuals/case-hero-sketch"
 import { caseHref } from "@/lib/content/cases"
 import { cta } from "@/lib/site"
@@ -128,6 +129,7 @@ function CaseStudyView({
               size="md"
               className="mt-4 w-full"
             >
+              <CtaIcon />
               Un projet similaire ?
             </ButtonLink>
           </aside>

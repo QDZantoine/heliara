@@ -4,6 +4,7 @@ import { Logo } from "@/components/layout/logo"
 import { MobileMenu } from "@/components/layout/mobile-menu"
 import { NavLink } from "@/components/layout/nav-link"
 import { ButtonLink } from "@/components/ui/button"
+import { CtaIcon } from "@/components/ui/cta-icon"
 import { cta, mainNav } from "@/lib/site"
 
 /**
@@ -48,6 +49,7 @@ function SiteHeader({
 
         <div className="flex items-center gap-2.5">
           <ButtonLink href={cta.primary.href} variant="brand" size="md">
+            <CtaIcon />
             <span className="hidden menu:inline">{cta.primary.label}</span>
             <span className="menu:hidden">{cta.primary.shortLabel}</span>
           </ButtonLink>

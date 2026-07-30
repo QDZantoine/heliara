@@ -21,10 +21,11 @@
  * slogan qui défile.
  */
 export const guarantees: readonly string[] = [
-  "Dépôt Git à votre nom dès le premier jour",
-  "Documentation livrée avec le code",
-  "Réversibilité documentée",
-  "Accessibilité AA vérifiée à chaque livraison",
-  "Jalons datés au cadrage",
+  "Code documenté, et 100 % à vous",
+  "Réversibilité garantie",
+  "Accessibilité AA à chaque livraison",
+  "Jalons datés dès le cadrage",
   "Budget ferme par phase",
+  "Hébergement souverain en France",
+  "Sécurité auditée par des pentesters",
 ]
