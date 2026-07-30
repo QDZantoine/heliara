@@ -2,13 +2,15 @@ import type { Metadata } from "next"
 
 import { LegalArticle } from "@/components/sections/legal-article"
 import { legalNotice } from "@/lib/content/legal"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mentions légales",
   description:
     "Éditeur, rattachement au groupe, hébergement, propriété intellectuelle et accessibilité.",
-  robots: { index: false, follow: true },
-}
+  path: "/mentions-legales",
+  noIndex: true,
+})
 
 export default function MentionsLegalesPage() {
   return (

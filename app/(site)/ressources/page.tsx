@@ -14,12 +14,14 @@ import {
   publicArticleCategories,
 } from "@/lib/db/public-articles"
 import { cn } from "@/lib/utils"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Ressources",
   description:
     "Guides, analyses et retours d’expérience : ce que nous apprenons en construisant des produits numériques.",
-}
+  path: "/ressources",
+})
 
 /**
  * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next

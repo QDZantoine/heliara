@@ -8,12 +8,14 @@ import { PageHero } from "@/components/sections/page-hero"
 import { MethodGaugeCard } from "@/components/visuals/method-gauge"
 import { commitments, methodPhases } from "@/lib/content/method"
 import { cn } from "@/lib/utils"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Méthode",
   description:
     "Huit temps, des livrables nommés, des jalons courts : ce qui se passe exactement quand vous travaillez avec nous.",
-}
+  path: "/methode",
+})
 
 export default function MethodePage() {
   return (

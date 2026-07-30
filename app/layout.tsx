@@ -42,6 +42,42 @@ export const metadata: Metadata = {
     l'ordre des suffixes. Les redéclarer ici les dupliquerait.
   */
   appleWebApp: { title: site.name },
+  authors: [{ name: site.name, url: site.url }],
+  creator: site.name,
+  publisher: site.name,
+  /*
+    Ce que les robots ont le droit de faire par défaut, pour tout le site.
+
+    `max-image-preview: large` est le réglage qui compte : sans lui, Google n'affiche
+    aucune vignette pour les pages de ce site dans Discover et sur mobile, et une
+    fiche de réalisation sans image y perd l'essentiel de son attrait. `max-snippet`
+    et `max-video-preview` à -1 lèvent les plafonds par défaut.
+  */
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  /*
+    Les codes de vérification des consoles de moteurs, par variable
+    d'environnement : ils sont propres à un compte et n'ont rien à faire dans le
+    dépôt. Absents, la propriété est omise - `undefined` ne produit aucune balise.
+  */
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+      : undefined,
+  },
+  // Le numéro de téléphone est un gabarit dans `lib/site.ts` : laisser iOS le
+  // détecter transformerait une valeur fausse en lien appelable.
+  formatDetection: { telephone: false },
 }
 
 /**

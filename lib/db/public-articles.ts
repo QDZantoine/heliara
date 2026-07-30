@@ -55,6 +55,15 @@ export type PublicArticle = Article & {
     width: number | null
     height: number | null
   }
+  /**
+   * Dernière modification, en ISO complet.
+   *
+   * Sert le `dateModified` des données structurées, qui distingue un contenu tenu à
+   * jour d'un contenu abandonné - pour un moteur comme pour un modèle qui décide s'il
+   * cite la page. La procédure rendait déjà `updated_at` ; seule la couche d'accès
+   * le jetait. Absent pour un article venu du repli statique, qui n'a pas d'horodatage.
+   */
+  updatedAt?: string
 }
 
 const text = (value: unknown) => (typeof value === "string" ? value : "")
@@ -70,6 +79,9 @@ function toArticle(row: ArticleRow, body: ArticleBlock[]): PublicArticle {
     authorInitials: text(row.author_initials),
     date: text(row.date_label),
     publishedAt: isoDay(row.published_on),
+    updatedAt: row.updated_at
+      ? new Date(row.updated_at * 1000).toISOString()
+      : undefined,
     readingTime: text(row.reading_time),
     featured: row.featured === 1,
     relatedCase: row.related_case_slug ?? undefined,

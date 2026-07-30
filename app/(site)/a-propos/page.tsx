@@ -9,14 +9,16 @@ import { Section } from "@/components/primitives/section"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
 import { convictions, manifesto, team } from "@/lib/content/team"
+import { pageMetadata } from "@/lib/seo"
 import { group } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "À propos",
   description:
     "Un studio à taille humaine, une exigence de niveau international : qui nous sommes et ce que nous pensons de la conception de produits.",
-}
+  path: "/a-propos",
+})
 
 export default function AProposPage() {
   return (

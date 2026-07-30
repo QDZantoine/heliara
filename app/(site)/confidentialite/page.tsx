@@ -2,13 +2,15 @@ import type { Metadata } from "next"
 
 import { LegalArticle } from "@/components/sections/legal-article"
 import { privacyPolicy } from "@/lib/content/legal"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Confidentialité",
   description:
     "Données collectées, finalités, durées de conservation, sous-traitants, vos droits et cookies.",
-  robots: { index: false, follow: true },
-}
+  path: "/confidentialite",
+  noIndex: true,
+})
 
 export default function ConfidentialitePage() {
   return (

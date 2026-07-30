@@ -19,6 +19,24 @@ export const site = {
 } as const
 
 /**
+ * Les profils publics du studio, pour le `sameAs` des données structurées.
+ *
+ * **C'est ce qui relie « Heliara » à une entité et non à un mot.** Un moteur - et
+ * plus encore un moteur générateur de réponses - a besoin de recouper le nom avec des
+ * comptes existants pour être sûr de parler de la bonne organisation. Sans `sameAs`,
+ * rien ne distingue ce studio d'un homonyme.
+ *
+ * **La liste est vide, et elle doit le rester tant que les URL ne sont pas
+ * vérifiées.** Un `sameAs` vers un compte qui n'est pas le nôtre relie l'entité à
+ * quelqu'un d'autre, et c'est plus dommageable que l'absence. Les schémas omettent la
+ * propriété quand la liste est vide.
+ *
+ * À compléter : page LinkedIn de l'entreprise en priorité, puis tout profil que le
+ * studio tient réellement à jour.
+ */
+export const socialProfiles: readonly string[] = []
+
+/**
  * Endossement de groupe. **Le nom du holding n’apparaît nulle part sur le site
  * public** : il ne vit que dans les mentions légales. Hexceos et LessonSharing
  * sont des marques sœurs, pas une maison mère, et /le-groupe met en avant les

@@ -10,12 +10,14 @@ import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
 import { expertiseHref } from "@/lib/content/expertises"
 import { publicServicesByFamily } from "@/lib/db/public-expertises"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Expertises",
   description:
     "Neuf savoir-faire regroupés en trois familles : plateformes et SaaS, sites et e-commerce, IA et API.",
-}
+  path: "/expertises",
+})
 
 /**
  * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next

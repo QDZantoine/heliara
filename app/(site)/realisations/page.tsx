@@ -6,12 +6,14 @@ import { CaseGrid } from "@/components/realisations/case-grid"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
 import { listPublicCases, listPublicSectors } from "@/lib/db/public-cases"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Réalisations",
   description:
     "Des produits en production, pas un portfolio : contexte, décisions et résultats mesurés pour chaque étude de cas.",
-}
+  path: "/realisations",
+})
 
 /**
  * Fraîcheur du contenu public : une minute.

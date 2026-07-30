@@ -2,7 +2,9 @@ import { PageCurtain } from "@/components/layout/page-curtain"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SkipLink } from "@/components/layout/skip-link"
+import { JsonLd } from "@/components/seo/json-ld"
 import { publicExpertiseNav } from "@/lib/db/public-expertises"
+import { graph, organizationNode, websiteNode } from "@/lib/schema"
 
 /**
  * Le chrome du site public : en-tête, pied de page, lien d'évitement et voile de
@@ -26,6 +28,21 @@ export default async function SiteLayout({
 
   return (
     <>
+      {/*
+        L'organisation et le site, sur **toutes** les pages publiques et sur aucune
+        page d'administration. Les nœuds des pages les référencent par leur `@id` au
+        lieu de les recopier, ce qui suppose qu'ils soient présents partout.
+
+        `knowsAbout` est alimenté par les familles d'expertise réellement publiées,
+        déjà lues ici pour la navigation : le signal décrit ce que le studio fait, et
+        il suit le contenu au lieu d'être une liste de mots-clés figée.
+      */}
+      <JsonLd
+        data={graph([
+          organizationNode(expertiseNav.map((entry) => entry.label)),
+          websiteNode(),
+        ])}
+      />
       <PageCurtain />
       <SkipLink />
       <SiteHeader expertiseNav={expertiseNav} />

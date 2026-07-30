@@ -7,6 +7,26 @@ import { SocialProof } from "@/components/home/social-proof"
 import { Testimonials } from "@/components/home/testimonials"
 import { FinalCta } from "@/components/sections/final-cta"
 import { listPublicCases } from "@/lib/db/public-cases"
+import { pageMetadata } from "@/lib/seo"
+import { site } from "@/lib/site"
+
+import type { Metadata } from "next"
+
+/**
+ * L'accueil n'avait aucune métadonnée propre : il héritait du titre et de la
+ * description du layout racine, ce qui était juste, mais sans canonique ni
+ * OpenGraph. Le titre reprend donc ici la même formulation, et rien n'est perdu.
+ *
+ * La canonique de la racine compte plus qu'ailleurs : c'est la page qui reçoit le
+ * plus de variantes d'adresse - avec `www`, avec une barre finale, avec un paramètre
+ * de campagne - et chacune se présenterait sinon comme une page distincte.
+ */
+export const metadata: Metadata = pageMetadata({
+  title: `${site.name} - ${site.baseline.replace(/\.$/, "")}`,
+  description: site.description,
+  path: "/",
+  absoluteTitle: true,
+})
 
 /**
  * Accueil - une conversation en dix temps (Architecture UX, 05).

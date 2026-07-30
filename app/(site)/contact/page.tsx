@@ -6,14 +6,16 @@ import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { contactSteps, partners } from "@/lib/content/team"
+import { pageMetadata } from "@/lib/seo"
 import { site } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact",
   description:
     "Décrivez votre besoin avec vos mots. Un associé vous répond personnellement sous 48 heures ouvrées.",
-}
+  path: "/contact",
+})
 
 export default function ContactPage() {
   return (

@@ -29,12 +29,14 @@ import {
   valueChainClosing,
 } from "@/lib/content/group"
 import { cn } from "@/lib/utils"
+import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Le groupe - formation, développement web & cybersécurité",
   description:
     "Heliara fait partie d'un groupe de trois marques sœurs : LessonSharing (formation IT), Heliara (développement web) et Hexceos (cybersécurité, infogérance, hébergement souverain). Tout le cycle du numérique, en France.",
-}
+  path: "/le-groupe",
+})
 
 const benefitIcons = {
   "user-round": UserRound,
