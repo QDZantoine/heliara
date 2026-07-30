@@ -930,6 +930,15 @@ instant que son détail.
   `Date.parse` ne suffit pas non plus - il accepte 2026-02-30 en le reportant au 2
   mars, d'où le contrôle par aller-retour.
 
+### Rédiger une fiche : le brief à donner
+
+`docs/brief-realisation.md` liste tous les champs d'une réalisation, ce que la
+publication exige et ce qu'elle n'exige pas, avec les limites de longueur reprises des
+colonnes. Il est écrit pour être donné tel quel à un assistant qui rédige une fiche, et
+il porte les deux contraintes qu'on oublie : le corps des chapitres est du HTML validé
+contre une liste fermée de treize balises, et les images ne se fournissent pas par écrit
+puisqu'un identifiant de média vient du dépôt de fichiers.
+
 ### Ce qui est facultatif dans une fiche
 
 Le chiffre, le témoignage, l'étiquette de hero, la fiche technique, les résultats
