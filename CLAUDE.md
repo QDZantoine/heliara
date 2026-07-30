@@ -667,7 +667,26 @@ pnpm admin:create   # premier compte, mot de passe saisi sans écho
 pnpm db:migrate     # rejoue schéma, procédures ET privilèges
 pnpm db:seed        # amorce la base depuis le contenu statique
 pnpm db:resync-expertises <slug>...   # repousse en base la fiche d'un service
+pnpm db:import-cases <fichier.json>   # importe des réalisations rédigées hors de l'outil
 ```
+
+**`pnpm db:import-cases` existe pour la reprise de contenu, pas pour l'usage courant.**
+Des fiches rédigées ailleurs - le format est spécifié dans `docs/brief-realisation.md` -
+entrent en une commande plutôt qu'en une heure de recopie, et une heure de recopie fait
+toujours une faute de frappe quelque part. Il importe **en brouillon uniquement**,
+est idempotent par slug, et **rejoue le schéma zod de l'administration** : `caseFields`
+et ses collections, la même validation que l'écran, y compris la liste fermée de balises
+HTML. Un import plus permissif que l'éditeur créerait des fiches impossibles à modifier
+ensuite, et le défaut ne se verrait qu'au premier enregistrement.
+
+C'est ce partage qui a fait éclater `caseSchema` en deux : zod 4 refuse `.omit()` sur un
+schéma affiné, et l'import doit retirer quatre réglages d'affichage pour leur donner une
+valeur par défaut. D'où `caseFields` pour la forme et `withTestimonialRule()` pour la
+règle du tout ou rien, appliquée des deux côtés. Redéclarer la forme dans le script
+aurait donné deux définitions à tenir d'accord, ce qu'un schéma partagé sert à éviter.
+
+Les marqueurs du genre `[À COMPLÉTER]` sont **importés tels quels et signalés en fin
+d'exécution**. Les effacer ferait disparaître la question qu'ils posent.
 
 Trois collections sont administrables : **Réalisations**, **Articles** et
 **Expertises**. Les autres contenus vivent encore dans `lib/content/*.ts`.

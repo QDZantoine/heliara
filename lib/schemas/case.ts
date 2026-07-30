@@ -112,80 +112,96 @@ export const gallerySchema = z.object({
 })
 
 /**
- * Fiche complète.
+ * Les champs d'une fiche, sans l'affinement.
  *
- * Le témoignage est facultatif **en bloc** : soit les quatre champs sont remplis,
- * soit aucun. Un verbatim sans nom ne s'afficherait pas correctement, et un nom
- * sans verbatim n'a rien à dire.
+ * **Exporté séparément parce que zod 4 refuse `.omit()` sur un schéma affiné**, et que
+ * l'import en masse (`scripts/db-import-cases.ts`) a justement besoin de retirer quatre
+ * réglages d'affichage pour leur donner une valeur par défaut. Sans cette séparation, il
+ * aurait fallu redéclarer la forme entière ailleurs - deux définitions à tenir d'accord,
+ * exactement ce qu'un schéma partagé sert à éviter.
+ *
+ * Ne pas valider avec ceci directement : `caseSchema` est la fiche complète.
  */
-export const caseSchema = z
-  .object({
-    slug: slugSchema,
-    title: z
-      .string()
-      .trim()
-      .min(1, "Indiquez un titre.")
-      .max(200, "Ce titre est trop long."),
-    heroTitle: z.string().trim().max(300, "Ce titre est trop long.").optional(),
-    sector: z
-      .string()
-      .trim()
-      .min(1, "Indiquez un secteur.")
-      .max(80, "Ce secteur est trop long."),
-    year: z
-      .string()
-      .trim()
-      .min(1, "Indiquez une année.")
-      .max(9, "Cette année est trop longue."),
-    badge: z
-      .string()
-      .trim()
-      .max(160, "Cette étiquette est trop longue.")
-      .optional(),
-    teaser: z.string().trim().max(1200, "Ce résumé est trop long.").optional(),
-    summary: z.string().trim().max(600, "Ce résumé est trop long.").optional(),
-    figure: z.string().trim().max(40, "Ce chiffre est trop long.").optional(),
-    measure: z
-      .string()
-      .trim()
-      .max(160, "Cette mesure est trop longue.")
-      .optional(),
-    halo: z.enum(["warm", "cool"]),
-    accent: z.enum(["brand", "info"]),
-    featured: z.boolean(),
-    wide: z.boolean(),
-    resultsLabel: z
-      .string()
-      .trim()
-      .max(160, "Ce libellé est trop long.")
-      .optional(),
-    testimonialQuote: z
-      .string()
-      .trim()
-      .max(1200, "Ce verbatim est trop long.")
-      .optional(),
-    testimonialName: z
-      .string()
-      .trim()
-      .max(120, "Ce nom est trop long.")
-      .optional(),
-    testimonialRole: z
-      .string()
-      .trim()
-      .max(160, "Ce rôle est trop long.")
-      .optional(),
-    testimonialInitials: z
-      .string()
-      .trim()
-      .max(4, "Deux lettres suffisent.")
-      .optional(),
-    heroMediaId: z
-      .string()
-      .regex(/^[0-9a-f]{32}$/, "Média inconnu.")
-      .nullable()
-      .optional(),
-  })
-  .refine(
+export const caseFields = z.object({
+  slug: slugSchema,
+  title: z
+    .string()
+    .trim()
+    .min(1, "Indiquez un titre.")
+    .max(200, "Ce titre est trop long."),
+  heroTitle: z.string().trim().max(300, "Ce titre est trop long.").optional(),
+  sector: z
+    .string()
+    .trim()
+    .min(1, "Indiquez un secteur.")
+    .max(80, "Ce secteur est trop long."),
+  year: z
+    .string()
+    .trim()
+    .min(1, "Indiquez une année.")
+    .max(9, "Cette année est trop longue."),
+  badge: z
+    .string()
+    .trim()
+    .max(160, "Cette étiquette est trop longue.")
+    .optional(),
+  teaser: z.string().trim().max(1200, "Ce résumé est trop long.").optional(),
+  summary: z.string().trim().max(600, "Ce résumé est trop long.").optional(),
+  figure: z.string().trim().max(40, "Ce chiffre est trop long.").optional(),
+  measure: z
+    .string()
+    .trim()
+    .max(160, "Cette mesure est trop longue.")
+    .optional(),
+  halo: z.enum(["warm", "cool"]),
+  accent: z.enum(["brand", "info"]),
+  featured: z.boolean(),
+  wide: z.boolean(),
+  resultsLabel: z
+    .string()
+    .trim()
+    .max(160, "Ce libellé est trop long.")
+    .optional(),
+  testimonialQuote: z
+    .string()
+    .trim()
+    .max(1200, "Ce verbatim est trop long.")
+    .optional(),
+  testimonialName: z
+    .string()
+    .trim()
+    .max(120, "Ce nom est trop long.")
+    .optional(),
+  testimonialRole: z
+    .string()
+    .trim()
+    .max(160, "Ce rôle est trop long.")
+    .optional(),
+  testimonialInitials: z
+    .string()
+    .trim()
+    .max(4, "Deux lettres suffisent.")
+    .optional(),
+  heroMediaId: z
+    .string()
+    .regex(/^[0-9a-f]{32}$/, "Média inconnu.")
+    .nullable()
+    .optional(),
+})
+
+/**
+ * Le témoignage est facultatif **en bloc** : soit les trois champs sont remplis, soit
+ * aucun. Un verbatim sans nom ne s'afficherait pas correctement, et un nom sans verbatim
+ * n'a rien à dire.
+ *
+ * Écrit comme une fonction applicable, et non posé une fois sur `caseSchema`, pour que
+ * l'import en masse pose **la même** règle sur sa propre forme. Une seconde
+ * implémentation de « tout ou rien » divergerait au premier ajustement.
+ */
+export function withTestimonialRule<T extends z.ZodType<TestimonialParts>>(
+  schema: T
+) {
+  return schema.refine(
     (values) => {
       const parts = [
         values.testimonialQuote,
@@ -201,6 +217,16 @@ export const caseSchema = z
         "Un témoignage a besoin de son verbatim, de son auteur et de son rôle.",
     }
   )
+}
+
+type TestimonialParts = {
+  testimonialQuote?: string
+  testimonialName?: string
+  testimonialRole?: string
+}
+
+/** Fiche complète : la forme, plus la règle du témoignage. */
+export const caseSchema = withTestimonialRule(caseFields)
 
 export type CaseInput = z.infer<typeof caseSchema>
 

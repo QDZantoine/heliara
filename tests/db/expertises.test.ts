@@ -402,14 +402,38 @@ describeDb("services", () => {
       null,
     ])
 
+    /*
+      Un seul payload pour les trois pièces, et non trois paramètres : la procédure les
+      écrit dans la même transaction, parce qu'un chapô sans ses signes ou des signes
+      sans leur conclusion ne forment pas la section. Les signes sont des chaînes nues,
+      pas des objets - ils n'ont ni identité ni autre champ.
+    */
+    await write.void("set_expertise_why_custom", [
+      service.id,
+      JSON.stringify({
+        lead: "Pourquoi du sur-mesure.",
+        signals: ["Un signe."],
+        closing: "En conclusion.",
+      }),
+      actor,
+      null,
+    ])
+
     const sets = await write.sets("get_expertise_service_full", [
       service.id,
       null,
     ])
-    expect(sets).toHaveLength(4)
+    /*
+      Cinq jeux : le service, les livrables, les choix techniques, la FAQ, puis les
+      signes de la section sur-mesure. Le cinquième est arrivé après les quatre autres,
+      et ce test l'a signalé en échouant sur le compte - c'est exactement ce qu'on lui
+      demande, une procédure à plusieurs jeux se lit par position.
+    */
+    expect(sets).toHaveLength(5)
     expect(sets[1]).toHaveLength(2)
     expect(sets[2]).toHaveLength(1)
     expect(sets[3]).toHaveLength(1)
+    expect(sets[4]).toHaveLength(1)
   })
 
   it("écarte une entrée sans titre plutôt que d'échouer sur la liste", async () => {
@@ -587,15 +611,18 @@ describeDb("surface publique des expertises", () => {
     ).toHaveLength(0)
   })
 
-  it("rend quatre jeux pour un service publié", async () => {
+  it("rend cinq jeux pour un service publié", async () => {
     const family = await makeFamily()
     const service = await makeService(family.id)
     await fillForPublication(service.id, service.slug, family.id)
     await write.void("publish_expertise_service", [service.id, 1, actor, null])
 
     const sets = await write.sets("pub_get_expertise_service", [service.slug])
-    expect(sets).toHaveLength(4)
+    // Le cinquième jeu porte les signes de la section sur-mesure, vides ici : la vue
+    // publique conditionne le bloc à son contenu, un service sans signe n'en montre pas.
+    expect(sets).toHaveLength(5)
     expect(sets[0]).toHaveLength(1)
     expect(sets[1]).toHaveLength(1)
+    expect(sets[4]).toHaveLength(0)
   })
 })

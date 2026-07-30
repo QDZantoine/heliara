@@ -15,13 +15,13 @@ mieux qu'une valeur approximative.
 
 Cinq choses, et rien de plus. Sans elles la base refuse la publication.
 
-| Champ      | Limite      | Ce que c'est                                                                 |
-| ---------- | ----------- | ---------------------------------------------------------------------------- |
-| `title`    | 200 car.    | Le nom du projet sur toutes les cartes de listing. Court.                     |
-| `sector`   | 80 car.     | Sert de filtre sur `/realisations`. Reprendre un secteur existant si possible. |
-| `summary`  | 600 car.    | Résumé **court** : deux lignes sous le titre, sur les cartes du hub.          |
-| `teaser`   | 1200 car.   | Résumé **long** : carte de l'accueil, et sous le titre du hero de la fiche.   |
-| `chapters` | 1 minimum   | Au moins un chapitre de récit. Voir la structure plus bas.                    |
+| Champ      | Limite    | Ce que c'est                                                                   |
+| ---------- | --------- | ------------------------------------------------------------------------------ |
+| `title`    | 200 car.  | Le nom du projet sur toutes les cartes de listing. Court.                      |
+| `sector`   | 80 car.   | Sert de filtre sur `/realisations`. Reprendre un secteur existant si possible. |
+| `summary`  | 600 car.  | Résumé **court** : deux lignes sous le titre, sur les cartes du hub.           |
+| `teaser`   | 1200 car. | Résumé **long** : carte de l'accueil, et sous le titre du hero de la fiche.    |
+| `chapters` | 1 minimum | Au moins un chapitre de récit. Voir la structure plus bas.                     |
 
 `year` est également exigé à la création (max 9 caractères, par exemple `2026`).
 
@@ -34,30 +34,30 @@ remplir par défaut.
 
 ### Identité et accroche
 
-| Champ       | Limite    | Ce que c'est                                                                                    |
-| ----------- | --------- | ----------------------------------------------------------------------------------------------- |
-| `slug`      | 120 car.  | L'identifiant d'URL. Minuscules, chiffres, tirets simples, sans accent. Déduit du titre si omis. |
-| `heroTitle` | 300 car.  | Le grand titre en haut de la fiche. Une phrase, **avec le résultat dedans**.                     |
-| `badge`     | 160 car.  | La petite ligne au-dessus du titre du hero. Par exemple `Industrie · Plateforme métier`.         |
+| Champ       | Limite   | Ce que c'est                                                                                     |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------ |
+| `slug`      | 120 car. | L'identifiant d'URL. Minuscules, chiffres, tirets simples, sans accent. Déduit du titre si omis. |
+| `heroTitle` | 300 car. | Le grand titre en haut de la fiche. Une phrase, **avec le résultat dedans**.                     |
+| `badge`     | 160 car. | La petite ligne au-dessus du titre du hero. Par exemple `Industrie · Plateforme métier`.         |
 
 ### Le chiffre d'accroche
 
 Le couple s'affiche sur les cartes de listing. Les deux ou aucun.
 
-| Champ     | Limite   | Ce que c'est                                                     |
-| --------- | -------- | ---------------------------------------------------------------- |
-| `figure`  | 40 car.  | La valeur seule. Par exemple `-38 %`, `×3`, `11 min`.            |
+| Champ     | Limite   | Ce que c'est                                                          |
+| --------- | -------- | --------------------------------------------------------------------- |
+| `figure`  | 40 car.  | La valeur seule. Par exemple `-38 %`, `×3`, `11 min`.                 |
 | `measure` | 160 car. | Ce qu'elle mesure. Par exemple `de temps administratif par commande`. |
 
 ### Le récit - `chapters`
 
 Une liste ordonnée. C'est le cœur de la fiche, et le seul bloc obligatoire.
 
-| Champ     | Obligatoire | Limite    | Ce que c'est                                                 |
-| --------- | ----------- | --------- | ------------------------------------------------------------ |
-| `title`   | oui         | 200 car.  | Le titre du chapitre. Par exemple `Contexte`, `Difficultés`. |
+| Champ     | Obligatoire | Limite    | Ce que c'est                                                     |
+| --------- | ----------- | --------- | ---------------------------------------------------------------- |
+| `title`   | oui         | 200 car.  | Le titre du chapitre. Par exemple `Contexte`, `Difficultés`.     |
 | `text`    | oui         | -         | Le corps, en **HTML restreint** - voir la contrainte ci-dessous. |
-| `callout` | non         | 2000 car. | Encadré de décision structurante, en **texte simple**.       |
+| `callout` | non         | 2000 car. | Encadré de décision structurante, en **texte simple**.           |
 
 Ne pas fournir de numéro : la numérotation est refaite à l'enregistrement, dans
 l'ordre de la liste.
@@ -77,10 +77,10 @@ rejeter l'enregistrement, il n'y a aucune réparation automatique.
 
 Une liste. Quatre valeurs se lisent bien, huit ne se lisent plus.
 
-| Champ   | Obligatoire | Limite   | Ce que c'est                                    |
-| ------- | ----------- | -------- | ----------------------------------------------- |
-| `value` | oui         | 40 car.  | La valeur. Par exemple `-61 %`, `0`, `4,6/5`.   |
-| `label` | oui         | 200 car. | Ce qu'elle mesure.                              |
+| Champ   | Obligatoire | Limite   | Ce que c'est                                  |
+| ------- | ----------- | -------- | --------------------------------------------- |
+| `value` | oui         | 40 car.  | La valeur. Par exemple `-61 %`, `0`, `4,6/5`. |
+| `label` | oui         | 200 car. | Ce qu'elle mesure.                            |
 
 `resultsLabel` (160 car.) remplace le titre du bloc, « Résultats » par défaut.
 
@@ -89,12 +89,12 @@ Une liste. Quatre valeurs se lisent bien, huit ne se lisent plus.
 **Tout ou rien** : les trois premiers champs remplis, ou aucun. Un verbatim sans nom
 ne s'affiche pas, un nom sans verbatim n'a rien à dire.
 
-| Champ                 | Limite    | Ce que c'est                        |
-| --------------------- | --------- | ----------------------------------- |
-| `testimonialQuote`    | 1200 car. | Le verbatim, tel que dit.           |
-| `testimonialName`     | 120 car.  | Le nom de la personne.              |
-| `testimonialRole`     | 160 car.  | Sa fonction et son employeur.       |
-| `testimonialInitials` | 4 car.    | Ses initiales, pour la pastille.    |
+| Champ                 | Limite    | Ce que c'est                     |
+| --------------------- | --------- | -------------------------------- |
+| `testimonialQuote`    | 1200 car. | Le verbatim, tel que dit.        |
+| `testimonialName`     | 120 car.  | Le nom de la personne.           |
+| `testimonialRole`     | 160 car.  | Sa fonction et son employeur.    |
+| `testimonialInitials` | 4 car.    | Ses initiales, pour la pastille. |
 
 **Ne jamais rédiger un témoignage.** Il se demande à son auteur, se relit et se fait
 valider par écrit. Un verbatim inventé attribué à une personne nommée est le contenu
@@ -147,30 +147,54 @@ section qui sonne le plus juste quand elle admet une limite.
 
 ## Le format attendu en retour
 
-Un bloc par projet, les champs nommés comme ci-dessus. Le YAML ou le JSON conviennent
-tous les deux, et le texte structuré aussi du moment que chaque champ est identifiable.
+**Un fichier JSON, un tableau d'objets, un objet par fiche.** À déposer dans
+`docs/realisations-source.json`, puis :
 
-```yaml
-- slug: refonte-site-mairie-silligny
-  title: Refonte du site de la mairie de Silligny
-  sector: Public
-  year: "2026"
-  heroTitle: ...
-  badge: ...
-  summary: ...
-  teaser: ...
-  figure: ...
-  measure: ...
-  chapters:
-    - title: Contexte
-      text: "<p>...</p><p>...</p>"
-      callout: ...
-  results:
-    - value: ...
-      label: ...
-  meta:
-    - label: Durée
-      value: ...
-  lessons:
-    - ...
+```text
+pnpm db:import-cases docs/realisations-source.json
 ```
+
+**Du JSON et pas du YAML**, pour deux raisons. Le lire ne demande aucune dépendance,
+`JSON.parse` étant natif. Et l'indentation du YAML ne survit pas toujours à un
+copier-coller : une clé avalée par un retour à la ligne change le sens du document sans
+que rien ne le signale, alors qu'un JSON abîmé refuse simplement de se lire.
+
+```json
+[
+  {
+    "slug": "refonte-site-mairie-silligny",
+    "title": "Refonte du site de la mairie de Silligny",
+    "sector": "Public",
+    "year": "2026",
+    "heroTitle": "...",
+    "badge": "...",
+    "summary": "...",
+    "teaser": "...",
+    "figure": "...",
+    "measure": "...",
+    "chapters": [
+      { "title": "Contexte", "text": "<p>...</p><p>...</p>", "callout": "..." }
+    ],
+    "results": [{ "value": "...", "label": "..." }],
+    "meta": [{ "label": "Durée", "value": "..." }],
+    "lessons": ["..."]
+  }
+]
+```
+
+Ce que fait l'import, et qu'il ne faut donc pas anticiper :
+
+- **Les fiches arrivent en brouillon**, toujours. L'image de tête se dépose ensuite dans
+  l'administration, et la publication se décide devant l'aperçu.
+- **`halo`, `accent`, `featured` et `wide` prennent une valeur par défaut** : ce sont des
+  réglages d'affichage, à ajuster à l'écran. Les fournir est possible mais inutile.
+- **Il est idempotent par slug** : une fiche dont le slug existe déjà est laissée intacte.
+  Rejouer l'import ne défait donc pas une correction faite dans l'administration - mais
+  il ne la met pas à jour non plus, il faut supprimer la fiche pour la réimporter.
+- **Les gabarits laissés en place sont signalés, pas effacés.** Une valeur comme
+  `[À COMPLÉTER]` est importée telle quelle et la fiche est listée en fin d'exécution
+  comme n'étant pas prête à publier. C'est le rappel qui compte : effacer le marqueur
+  ferait disparaître la question.
+- **Il rejoue la validation de l'administration**, la même, y compris la liste fermée de
+  balises HTML. Un écart est refusé champ par champ, avec son chemin - rien n'est écrit
+  tant que le fichier entier n'est pas accepté.
