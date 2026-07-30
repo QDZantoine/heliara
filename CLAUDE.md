@@ -6,6 +6,7 @@ Next.js 16 App Router · TypeScript · Tailwind CSS v4 · shadcn/ui (style `base
 ## Sources de vérité
 
 - `reference/claude-design/*.html` - maquettes « Claude Design » exportées. **Source de vérité pour le design et le contenu uniquement.** Le framework `<x-dc>` n'est jamais repris : tout est réimplémenté en Next/Tailwind idiomatique.
+  **Hors du dépôt** (`.gitignore`) : 284 ko de HTML généré, qu'aucun code n'importe et qu'on ne lit qu'au moment de transcrire un écran. Conséquence à connaître : un clone frais ne les a pas, il faut les réexporter depuis Claude Design ou les récupérer auprès de l'auteur. Ce qu'elles ont appris est consigné ici et dans `docs/`, ce fichier restant la référence opposable.
 - `Heliara - Direction Artistique v2.dc.html` - la DA à suivre (« Lumière d'écran »).
 - `Heliara - Architecture UX.dc.html` - routes, parcours, fiches de pages, principes UX.
 - `Heliara - Responsive Guidelines.dc.html` - règles de transformation desktop → tablette → mobile.
@@ -307,7 +308,8 @@ lib/
 db/init/                  monté dans /docker-entrypoint-initdb.d, exécuté une
                           seule fois sur volume vierge
 docs/plan-admin.md        plan de l'administration des contenus, avancement inclus
-reference/claude-design/  maquettes exportées. Lecture seule, jamais de code repris
+reference/claude-design/  maquettes exportées. Hors du dépôt, lecture seule,
+                          jamais de code repris
 public/                   logos, illustrations SVG, fichiers Lottie
 ```
 

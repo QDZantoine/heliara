@@ -40,3 +40,19 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Outillage local, propre a la machine et non au projet.
+# `.claude/settings.local.json` n'etait ignore que par le gitignore global de la
+# machine : il aurait ete commite depuis n'importe quel autre poste.
+/.serena/
+/.claude/settings.local.json
+/.vscode/
+/.idea/
+
+# Maquettes « Claude Design » exportees, hors du depot : 284 ko de HTML genere,
+# jamais importe par le code, et lu par une personne seulement au moment de
+# transcrire un ecran. Voir la section « Sources de verite » de CLAUDE.md.
+/reference/
+
+# Journaux et brouillons
+*.log
