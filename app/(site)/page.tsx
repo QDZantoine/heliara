@@ -1,9 +1,9 @@
 import { CaseList } from "@/components/home/case-list"
 import { ExpertiseGrid } from "@/components/home/expertise-grid"
 import { Hero } from "@/components/home/hero"
+import { CommitmentsMarquee } from "@/components/home/commitments-marquee"
 import { KpiBand } from "@/components/home/kpi-band"
 import { MethodPreview } from "@/components/home/method-preview"
-import { SocialProof } from "@/components/home/social-proof"
 import { Testimonials } from "@/components/home/testimonials"
 import { FinalCta } from "@/components/sections/final-cta"
 import { listPublicCases } from "@/lib/db/public-cases"
@@ -49,7 +49,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <SocialProof />
+      <CommitmentsMarquee />
       <ExpertiseGrid />
       <MethodPreview />
       <CaseList cases={featured} />

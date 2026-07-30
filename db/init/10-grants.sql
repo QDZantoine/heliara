@@ -133,6 +133,7 @@ GRANT EXECUTE ON PROCEDURE heliara.reorder_expertise_services   TO 'app_write'@'
 GRANT EXECUTE ON PROCEDURE heliara.set_expertise_deliverables   TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_expertise_tech_choices   TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.set_expertise_faq            TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_expertise_why_custom     TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_families  TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_expertise_services  TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_get_expertise_service    TO 'app_write'@'%';

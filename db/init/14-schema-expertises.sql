@@ -147,3 +147,36 @@ CREATE TABLE IF NOT EXISTS expertise_faq (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_uca1400_ai_ci;
+
+-- ------------------------------------------------------------
+-- « Pourquoi du sur-mesure ? »
+--
+-- La section qui qualifie le visiteur plutôt que de lui vendre la prestation :
+-- les signes qui indiquent qu'une plateforme spécifique se justifie, et la phrase
+-- qui admet le cas contraire.
+--
+-- Deux colonnes de texte sur le service portent le chapô et la conclusion, parce
+-- qu'il n'y en a qu'un de chaque et qu'une table pour une ligne unique ne
+-- s'ordonne ni ne se requête. Les signes, eux, sont une liste ordonnée : ils ont
+-- leur table, comme les livrables et les objections.
+--
+-- `ALTER TABLE` échoue si les colonnes existent déjà, et c'est sans conséquence :
+-- `db/migrate.sh` signale l'erreur et poursuit, comme pour `08-schema-media.sql`.
+-- ------------------------------------------------------------
+
+ALTER TABLE expertise_service
+  ADD COLUMN why_custom_lead    TEXT NOT NULL DEFAULT '' AFTER problem,
+  ADD COLUMN why_custom_closing TEXT NOT NULL DEFAULT '' AFTER why_custom_lead;
+
+CREATE TABLE IF NOT EXISTS expertise_why_custom (
+  id         BINARY(16)   NOT NULL,
+  service_id BINARY(16)   NOT NULL,
+  text       VARCHAR(300) NOT NULL,
+  position   INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  KEY ix_why_service (service_id, position),
+  CONSTRAINT fk_why_service
+    FOREIGN KEY (service_id) REFERENCES expertise_service (id) ON DELETE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_uca1400_ai_ci;

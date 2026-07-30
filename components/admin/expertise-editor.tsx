@@ -8,13 +8,16 @@ import {
   setDeliverables,
   setFaq,
   setTechChoices,
+  setWhyCustom,
   updateService,
 } from "@/app/admin/(protected)/expertises/actions"
 import { EditorHeader } from "@/components/admin/editor-header"
 import {
   useCollection,
   useFieldSet,
+  withId,
   type Collection,
+  type Row,
 } from "@/components/admin/editor-state"
 import {
   AddButton,
@@ -92,6 +95,55 @@ function ExpertiseEditor({
   const faq = useCollection("Les objections", item.faq, (items) =>
     setFaq(item.id, item.slug, { items })
   )
+
+  /**
+   * « Pourquoi du sur-mesure ? » : **un seul enregistrable pour trois pièces**.
+   *
+   * Une première version tenait le chapô dans un `useFieldSet` et les signes dans un
+   * `useCollection`, chacun avec son `commit`. Cela ne compilait pas, et l'erreur
+   * disait quelque chose de juste : chaque `commit` devait lire l'état de l'autre pour
+   * reconstituer l'envoi complet, donc les deux se référençaient en cercle.
+   *
+   * Le défaut était de conception, pas de typage. `set_expertise_why_custom` écrit les
+   * trois pièces dans une seule transaction : il n'y a **qu'un** enregistrable, et les
+   * signes sont un champ de ce jeu comme les deux autres. Ils portent tout de même une
+   * clé de session, parce que dnd-kit et React en ont besoin pour suivre une ligne
+   * pendant qu'on la déplace - voir `editor-state.ts`.
+   */
+  const why = useFieldSet(
+    "La section sur-mesure",
+    {
+      lead: item.whyCustom.lead,
+      closing: item.whyCustom.closing,
+      signals: item.whyCustom.signals.map((text) => withId({ text })),
+    },
+    (values) =>
+      setWhyCustom(item.id, item.slug, {
+        lead: values.lead,
+        closing: values.closing,
+        signals: values.signals.map((row) => row.text),
+      })
+  )
+
+  /** Les trois gestes de la liste, sur le champ `signals` du jeu ci-dessus. */
+  const signals = {
+    rows: why.values.signals,
+    add: () =>
+      why.set("signals", [...why.values.signals, withId({ text: "" })]),
+    update: (id: string, text: string) =>
+      why.set(
+        "signals",
+        why.values.signals.map((row) =>
+          row.id === id ? { ...row, text } : row
+        )
+      ),
+    remove: (id: string) =>
+      why.set(
+        "signals",
+        why.values.signals.filter((row) => row.id !== id)
+      ),
+    replace: (next: Row<{ text: string }>[]) => why.set("signals", next),
+  }
 
   /** Ce qu'exige la publication, repris un à un de `publish_expertise_service`. */
   const requirements: Requirement[] = [
@@ -293,6 +345,85 @@ function ExpertiseEditor({
           addLabel="Ajouter un choix"
           emptyLabel="Aucun choix technique."
         />
+      ),
+    },
+
+    {
+      id: "sur-mesure",
+      label: "Sur-mesure",
+      count: signals.rows.length,
+      purpose:
+        "La section qui qualifie le visiteur au lieu de lui vendre la prestation : les signes qui montrent qu'il a besoin de sur-mesure, et la phrase qui admet le cas contraire. Elle ne s'affiche que complète - un chapô sans signe annoncerait une liste vide.",
+      state: "optional",
+      savers: [why.saveable],
+      render: () => (
+        <Fieldset className="max-w-prose">
+          <Field
+            label="Ce qui introduit les signes"
+            hint="Une phrase qui se termine par deux points : la liste enchaîne dessus."
+            example="Une plateforme spécifique se justifie quand un logiciel du marché :"
+            error={why.fieldErrors.lead}
+          >
+            <textarea
+              rows={2}
+              className={area}
+              value={why.values.lead}
+              onChange={(event) => why.set("lead", event.target.value)}
+            />
+          </Field>
+
+          <Fieldset
+            title="Les signes"
+            hint="Des symptômes que le visiteur reconnaît, pas des arguments. Chacun commence par un verbe et se lit à la suite du chapô."
+          >
+            {signals.rows.length > 0 ? (
+              <SortableList
+                id="why-custom"
+                items={signals.rows}
+                onReorder={signals.replace}
+              >
+                {(row, index) => (
+                  <div className="grid gap-1.5">
+                    <div className="flex items-center gap-3">
+                      <input
+                        aria-label={`Signe ${index + 1}`}
+                        placeholder="oblige vos équipes à contourner ses limites"
+                        className={cn(input, "h-10 flex-1")}
+                        value={row.text}
+                        onChange={(event) =>
+                          signals.update(row.id, event.target.value)
+                        }
+                      />
+                      <RemoveButton
+                        label={`Retirer le signe ${index + 1}`}
+                        onClick={() => signals.remove(row.id)}
+                      />
+                    </div>
+                    <RowError message={why.fieldErrors[`signals.${index}`]} />
+                  </div>
+                )}
+              </SortableList>
+            ) : (
+              <Empty>
+                Aucun signe. Sans eux la section ne s&apos;affiche pas.
+              </Empty>
+            )}
+            <AddButton label="Ajouter un signe" onClick={signals.add} />
+          </Fieldset>
+
+          <Field
+            label="La conclusion"
+            hint="Le basculement, et l'honnêteté du cas contraire. C'est cette dernière phrase qui rend crédible tout ce qui précède."
+            error={why.fieldErrors.closing}
+          >
+            <textarea
+              rows={4}
+              className={area}
+              value={why.values.closing}
+              onChange={(event) => why.set("closing", event.target.value)}
+            />
+          </Field>
+        </Fieldset>
       ),
     },
 

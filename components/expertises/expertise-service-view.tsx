@@ -28,6 +28,12 @@ export type ExpertiseServiceView = {
   deliverables: readonly { title: string; text: string }[]
   techChoices: readonly { title: string; text: string }[]
   faq: readonly { question: string; answer: string }[]
+  /** « Pourquoi du sur-mesure ? ». Absente, la section n'est pas rendue. */
+  whyCustom?: {
+    lead: string
+    signals: readonly string[]
+    closing: string
+  }
 }
 
 /**
@@ -135,15 +141,28 @@ function ExpertiseServiceView({
         <Container className="grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
           <Reveal>
             <Eyebrow className="mb-3">Comment nous le faisons</Eyebrow>
+            {/*
+              « Une technologie au service de votre projet », et non « des choix
+              techniques assumés ».
+
+              Le titre précédent, comme les cartes qu'il coiffait, nommait des outils -
+              TypeScript, PostgreSQL. Deux effets, tous deux mauvais : le décideur non
+              technique décrochait, et celui qui lisait comprenait qu'on lui imposait
+              une pile. Le contenu dit désormais ce que ces choix lui apportent. La
+              pile réelle est en FAQ, où elle répond à « suis-je enfermé ? » au lieu
+              d'annoncer une contrainte.
+            */}
             <h2
               id="stack"
               className="mb-5 text-[clamp(1.5rem,5.5vw,2.25rem)] font-bold"
             >
-              Des choix techniques assumés.
+              Une technologie au service de votre projet.
             </h2>
             <p className="mb-6 text-[0.97rem] leading-relaxed text-body">
-              Le déroulé complet - cadrage, conception, construction, mise en
-              production, suivi - vit sur la page méthode.
+              Nous ne choisissons jamais une technologie par habitude. Nous
+              retenons celle qui répond le mieux à vos contraintes métier, à
+              votre budget et à vos objectifs d&apos;évolution. Le déroulé
+              complet vit sur la page méthode.
             </p>
             <Link
               href={cta.method.href}
@@ -225,6 +244,55 @@ function ExpertiseServiceView({
                   />
                 </div>
               </Link>
+            </Reveal>
+          </Container>
+        </Section>
+      ) : null}
+
+      {/*
+        « Pourquoi du sur-mesure ? » - la section qui qualifie, juste avant la FAQ.
+
+        Elle ne décrit pas la prestation : elle donne au visiteur les signes qui
+        indiquent qu'il en a besoin, puis, dans sa dernière phrase, admet le cas
+        contraire. C'est ce renoncement qui rend crédible tout ce qui précède, et il
+        arrive au bon endroit - après la preuve, avant les objections.
+
+        `tone="surface"` : la section précédente et la FAQ sont sur le fond de page,
+        celle-ci s'en détache pour marquer le changement de registre.
+      */}
+      {service.whyCustom ? (
+        <Section tone="surface" space="md" aria-labelledby="sur-mesure">
+          <Container width="reading">
+            <Reveal>
+              <Eyebrow className="mb-3">La bonne question</Eyebrow>
+              <h2
+                id="sur-mesure"
+                className="mb-5 text-[clamp(1.5rem,5.5vw,2.25rem)] font-bold"
+              >
+                Pourquoi du sur-mesure&nbsp;?
+              </h2>
+              <p className="mb-5 text-[0.97rem] leading-relaxed text-body">
+                {service.whyCustom.lead}
+              </p>
+              <ul className="mb-6 grid gap-3">
+                {service.whyCustom.signals.map((signal) => (
+                  <li
+                    key={signal}
+                    className="flex items-start gap-3 text-[0.97rem] leading-relaxed text-body"
+                  >
+                    {/* Un filet court plutôt qu'une puce ronde : la liste se lit
+                        comme un relevé de symptômes, pas comme un argumentaire. */}
+                    <span
+                      aria-hidden="true"
+                      className="mt-3 h-px w-3 shrink-0 bg-line-strong"
+                    />
+                    {signal}
+                  </li>
+                ))}
+              </ul>
+              <p className="border-l-2 border-brand pl-5 text-[1.0625rem] leading-relaxed font-medium text-ink">
+                {service.whyCustom.closing}
+              </p>
             </Reveal>
           </Container>
         </Section>

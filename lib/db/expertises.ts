@@ -52,6 +52,14 @@ export type ServiceDetail = ServiceSummary & {
   deliverables: { title: string; text: string }[]
   techChoices: { title: string; text: string }[]
   faq: { question: string; answer: string }[]
+  /**
+   * « Pourquoi du sur-mesure ? ».
+   *
+   * Toujours présente ici, contrairement au type public : l'administration doit
+   * pouvoir éditer une section vide pour la créer. C'est la vue publique qui décide
+   * de ne pas l'afficher quand elle est incomplète.
+   */
+  whyCustom: { lead: string; closing: string; signals: string[] }
 }
 
 const text = (value: unknown) => (typeof value === "string" ? value : "")
@@ -99,6 +107,8 @@ type ServiceRow = {
   title: string
   tagline: string
   problem?: string
+  why_custom_lead?: string
+  why_custom_closing?: string
   related_case_slug: string | null
   cta_title: string
   status: "draft" | "published"
@@ -169,5 +179,12 @@ export async function getService(
       question: item.question,
       answer: text(item.answer),
     })),
+    whyCustom: {
+      lead: text(row.why_custom_lead),
+      closing: text(row.why_custom_closing),
+      signals: ((sets[4] as { text: string }[]) ?? []).map((item) =>
+        text(item.text)
+      ),
+    },
   }
 }

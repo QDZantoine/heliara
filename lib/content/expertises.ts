@@ -65,8 +65,35 @@ export type ExpertiseService = {
   problem: string
   /** Ce que nous livrons : des items nommés, pas des promesses. */
   deliverables: { title: string; text: string }[]
-  /** Choix techniques assumés, avec leur raison. */
+  /**
+   * L'approche technique, **en bénéfices et non en noms d'outils**.
+   *
+   * Le nom du champ est resté par continuité avec la base ; ce qu'il porte a changé.
+   * La page ne cite plus de technologie : nommer une pile dans un titre de carte la
+   * fait lire comme une contrainte imposée, et écarte le lecteur non technique - qui
+   * est le décideur. La pile réelle est dite en FAQ, où elle répond à une question
+   * qu'on se pose vraiment (« suis-je enfermé ? ») au lieu d'annoncer un choix subi.
+   */
   techChoices: { title: string; text: string }[]
+  /**
+   * « Pourquoi du sur-mesure ? » : la section qui **qualifie** au lieu de vendre.
+   *
+   * C'est celle qui manquait. Elle ne décrit pas la prestation, elle donne au visiteur
+   * les signes qui indiquent qu'il en a besoin - et, dans sa dernière phrase, ceux qui
+   * indiquent qu'il n'en a pas besoin. Dire à un prospect qu'un logiciel du marché lui
+   * suffirait est ce qui rend crédible tout le reste de la page, et c'est déjà une
+   * conviction affichée du studio.
+   *
+   * Facultative : tous les services ne se décident pas sur cette question.
+   */
+  whyCustom?: {
+    /** La question posée, puis ce qui l'introduit. */
+    lead: string
+    /** Les signes, du plus fréquent au plus coûteux. */
+    signals: string[]
+    /** Le basculement, et l'honnêteté du cas contraire. */
+    closing: string
+  }
   /** Étude de cas illustrant ce service. */
   relatedCase: string
   /** FAQ d’objections : les vraies questions, pas du remplissage. */
@@ -81,62 +108,89 @@ export const expertiseServices: ExpertiseService[] = [
     family: "plateformes-saas",
     title: "Plateformes métiers & SaaS",
     tagline:
-      "Quand votre processus est votre avantage concurrentiel, aucun logiciel du marché ne le portera.",
+      "Quand votre organisation devient un avantage concurrentiel, les logiciels standard montrent leurs limites.",
     problem:
-      "Vous avez essayé les progiciels du marché et votre métier n’entre pas dans leurs cases. Vos équipes contournent l’outil avec des fichiers parallèles, et vos indicateurs ont trois semaines de retard. La question n’est plus de savoir s’il faut un outil sur mesure, mais comment le construire sans y engloutir deux ans.",
+      "Chaque entreprise développe sa propre manière de travailler. Nous concevons des plateformes métiers et des SaaS qui s’adaptent à vos processus, simplifient le quotidien de vos équipes et accompagnent durablement votre croissance.",
     deliverables: [
       {
-        title: "Une plateforme centrée sur les postes de travail",
-        text: "Une interface par métier plutôt qu’un écran générique avec des droits : chaque utilisateur voit ce qu’il doit faire, alimenté par les mêmes données.",
+        title: "Une plateforme pensée pour vos équipes",
+        text: "Chaque personne ne voit que les informations et les actions dont elle a besoin. Un opérateur d’atelier et un responsable de production n’ouvrent pas le même écran, et aucun des deux n’apprend à ignorer ce qui ne le concerne pas.",
       },
       {
-        title: "Une architecture multi-tenant si vous comptez commercialiser",
-        text: "Isolation des données par client, facturation, essai gratuit et autonomie complète à l’inscription. Prévu dès le premier jour, pas ajouté après.",
+        title: "Une architecture qui évolue",
+        text: "Ajouter un site, une équipe ou une activité ne demande pas de repartir de zéro. Nous découpons pour qu’une partie serve avant que le tout soit terminé.",
       },
       {
-        title: "Les intégrations à votre écosystème existant",
-        text: "API documentée, connexion à votre ERP, votre comptabilité, vos transporteurs. Nous remplaçons ce qui doit l’être et branchons le reste.",
+        title: "Une intégration à votre existant",
+        text: "Nous connectons vos outils plutôt que de les remplacer inutilement. Votre comptabilité, votre paie et votre gestion de stock restent où elles sont si elles font leur travail.",
       },
       {
-        title: "La reprise de vos données historiques",
-        text: "Pipeline de nettoyage, arbitrage humain sur les cas ambigus, bascule réversible par vagues. Aucune migration en une nuit.",
+        title: "Une migration maîtrisée",
+        text: "Vos données historiques sont reprises par vagues, avec un retour arrière possible à chaque étape. Aucune bascule en une nuit, aucun lundi matin à risque.",
       },
     ],
     techChoices: [
       {
-        title: "TypeScript de bout en bout",
-        text: "Un seul langage du navigateur à la base de données : moins de surface d’erreur, et des compétences disponibles dans dix ans.",
+        title: "Technologies éprouvées",
+        text: "Nous retenons des outils largement adoptés et activement maintenus, pour qu’une autre équipe que la nôtre sache reprendre votre plateforme. La nouveauté technique est un risque que le client paie, pas un argument de vente.",
       },
       {
-        title: "PostgreSQL, pas un choix exotique",
-        text: "Les bases de données de niche coûtent cher en recrutement et en exploitation. PostgreSQL couvre l’essentiel des besoins métiers, y compris le relationnel complexe.",
+        title: "Architecture durable",
+        text: "Des fondations qui supportent dix ans d’évolutions plutôt que la démonstration la plus rapide. C’est ce choix qui décide du coût de votre troisième année, pas de la première.",
       },
       {
-        title: "Mise en production continue",
-        text: "Chaque itération est déployable. Une plateforme qui n’atteint la production qu’au dernier mois est une plateforme dont on ignore les vrais problèmes.",
+        title: "Performances mesurées sur vos usages",
+        text: "Sur vos volumes et vos écrans réels, pas sur un jeu de données de démonstration. Une plateforme métier reste ouverte toute la journée : deux secondes de trop par écran se comptent en heures sur un mois.",
+      },
+      {
+        title: "Maintenance facilitée",
+        text: "Un code documenté et des environnements reproductibles à l’identique. Vous pouvez confier la suite à une autre équipe, ou la reprendre en interne, sans archéologie.",
       },
     ],
+    whyCustom: {
+      lead: "Une plateforme spécifique se justifie quand un logiciel du marché :",
+      signals: [
+        "oblige vos équipes à contourner ses limites pour faire leur travail",
+        "fait proliférer les fichiers Excel en parallèle de l’outil officiel",
+        "impose de ressaisir la même information d’une application à l’autre",
+        "ne suit plus votre croissance, ou la freine",
+        "vous coûte chaque semaine un temps que personne ne compte",
+      ],
+      closing:
+        "C’est à ce moment qu’une plateforme sur mesure devient un investissement plutôt qu’un coût. Si aucun de ces points ne vous parle, un logiciel du marché est probablement la bonne réponse - et nous vous le dirons plutôt que de vous vendre autre chose.",
+    },
     relatedCase: "pilotage-production",
     faq: [
       {
-        question: "Combien de temps avant d’avoir quelque chose d’utilisable ?",
+        question: "Pourquoi ne pas utiliser un logiciel existant ?",
         answer:
-          "Un premier flux métier en production entre le troisième et le cinquième mois, selon le périmètre. Nous découpons pour qu’une partie serve avant que le tout soit terminé.",
+          "Souvent, c’est la bonne réponse, et nous le disons quand c’est le cas. Le sur-mesure se justifie quand votre façon de travailler est précisément ce qui vous différencie : un logiciel standard encode alors les pratiques moyennes d’un secteur, et vous demande d’y renoncer.",
       },
       {
-        question: "Que se passe-t-il si nous voulons changer de prestataire ?",
+        question:
+          "Combien de temps avant d’avoir une première version utilisable ?",
         answer:
-          "Le code, la documentation et les environnements vous appartiennent dès le premier commit. Nous produisons un dossier de réversibilité qui permet à une autre équipe de reprendre sans nous.",
+          "Un premier usage réel en production entre le troisième et le cinquième mois, selon le périmètre. Nous découpons pour qu’une partie serve avant que le tout soit terminé, plutôt que de livrer un ensemble complet dans deux ans.",
       },
       {
-        question: "Un progiciel du marché ne serait-il pas moins cher ?",
+        question: "Que se passe-t-il si nos besoins évoluent ?",
         answer:
-          "Souvent oui, si votre processus est standard - et nous le disons quand c’est le cas. Le sur-mesure se justifie quand le processus est justement ce qui vous différencie.",
+          "C’est prévu, parce que cela arrive toujours. La plateforme est découpée pour qu’une évolution touche une partie et non l’ensemble, et les arbitrages de périmètre se décident avec vous, chiffres en main, à chaque phase.",
       },
       {
-        question: "Qui maintient la plateforme ensuite ?",
+        question: "Sommes-nous propriétaires de la plateforme ?",
         answer:
-          "Nous, par contrat de maintenance évolutive, ou votre équipe interne que nous formons. Les deux options sont prévues au cadrage, pas subies après.",
+          "Oui, entièrement. Le code, la documentation et les environnements sont à votre nom dès le premier jour. Nous produisons un dossier de réversibilité qui permet à une autre équipe de reprendre sans nous.",
+      },
+      {
+        question: "Comment se déroule la maintenance ?",
+        answer:
+          "Par contrat d’évolution avec nous, ou par votre équipe interne que nous formons. Les deux options sont chiffrées au cadrage plutôt que subies après la livraison.",
+      },
+      {
+        question: "Quelles technologies utilisez-vous ?",
+        answer:
+          "Vous n’avez pas à choisir, et vous ne serez pas enfermé. Nos choix par défaut sont TypeScript, Next.js et MariaDB : des outils largement répandus, donc faciles à reprendre et à recruter. Nous en changeons quand votre contexte l’exige - une contrainte d’un système que vous gardez, une compétence que votre équipe possède déjà, un besoin que ces outils servent mal - et nous l’expliquons avant de commencer, pas après.",
       },
     ],
     ctaTitle: "Parlons de votre plateforme",
@@ -268,12 +322,16 @@ export const expertiseServices: ExpertiseService[] = [
     ],
     techChoices: [
       {
-        title: "Rendu serveur et pages pré-calculées",
-        text: "Les pages catalogue sont servies statiques : rapides pour l’acheteur, lisibles pour les moteurs de recherche.",
+        title: "Shopify, avec un thème sur mesure",
+        text: "Nous préconisons Shopify plutôt qu’une boutique développée de zéro : le paiement, la fiscalité, la fraude et la disponibilité sont déjà résolus, et mieux que nous ne le ferions. Ce que nous construisons, c’est le thème - entièrement sur mesure, à votre charte et à votre parcours d’achat. Vous gardez une plateforme que d’autres savent reprendre.",
+      },
+      {
+        title: "Ce que nous ne développons pas",
+        text: "Un moteur de paiement, un calcul de TVA, une gestion de fraude. Réécrire ce qu’une plateforme éprouvée fait déjà se paie deux fois : à la construction, puis à chaque évolution réglementaire.",
       },
       {
         title: "Paiement délégué",
-        text: "Nous n’hébergeons jamais de données de carte : le paiement passe par un prestataire certifié, ce qui sort votre site du périmètre PCI le plus lourd.",
+        text: "Nous n’hébergeons jamais de données de carte : le paiement passe par un prestataire certifié, ce qui sort votre boutique du périmètre PCI le plus lourd.",
       },
     ],
     relatedCase: "boutique-b2b",
@@ -281,7 +339,12 @@ export const expertiseServices: ExpertiseService[] = [
       {
         question: "Faut-il quitter notre plateforme e-commerce actuelle ?",
         answer:
-          "Pas forcément. Si le blocage est la recherche ou la tarification, nous pouvons intervenir dessus sans tout remplacer. Nous le disons après audit, pas avant.",
+          "Pas forcément. Si le blocage est la recherche, la tarification ou le thème, nous pouvons intervenir dessus sans tout remplacer. Nous le disons après audit, pas avant.",
+      },
+      {
+        question: "Pourquoi Shopify et pas un développement sur mesure ?",
+        answer:
+          "Parce qu’une boutique développée de zéro vous fait payer deux fois ce qui est déjà résolu : paiement, fiscalité, fraude, disponibilité. Notre valeur est dans le thème et dans ce qui vous est propre - votre catalogue, vos tarifs négociés, votre parcours de réassort - pas dans un moteur de commande de plus. Si votre besoin sort vraiment de ce que Shopify sait faire, nous le disons et nous proposons autre chose.",
       },
       {
         question: "Et le référencement pendant la refonte ?",
@@ -319,6 +382,10 @@ export const expertiseServices: ExpertiseService[] = [
       },
     ],
     techChoices: [
+      {
+        title: "Entièrement sur mesure",
+        text: "Pas de thème acheté ni de constructeur de pages : le site est développé pour votre argumentaire et votre charte. C’est le seul domaine où nous ne partons pas d’une plateforme du marché - un site institutionnel n’a rien de générique à réutiliser, et un gabarit se reconnaît toujours.",
+      },
       {
         title: "Pages statiques par défaut",
         text: "Un site institutionnel n’a presque jamais besoin d’être calculé à chaque visite. Statique signifie rapide, robuste et peu coûteux à héberger.",

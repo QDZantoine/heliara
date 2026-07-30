@@ -19,7 +19,7 @@ function Hero() {
         <div>
           <Reveal className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.78rem] font-medium text-body shadow-1">
             <span className="size-1.5 rounded-full bg-brand" />
-            Studio de conception & développement de produits numériques
+            Studio de conception de plateformes numériques
           </Reveal>
 
           <Reveal delay={60}>
@@ -33,8 +33,9 @@ function Hero() {
             delay={120}
             className="mb-9 max-w-[28.75rem] text-[1.0625rem] leading-relaxed text-body md:text-lg"
           >
-            Plateformes métiers, SaaS, applications et IA conçus avec la rigueur
-            d’un atelier, pour des dirigeants qui pensent à dix ans.
+            Nous concevons des plateformes numériques sur mesure qui deviennent
+            de véritables outils de travail. Pensées pour durer, évoluer et
+            accompagner la croissance de votre entreprise.
           </Reveal>
 
           <Reveal

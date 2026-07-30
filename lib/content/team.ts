@@ -86,8 +86,8 @@ export const convictions = [
     text: "Un produit qui couvre 60 % du besoin et qui est utilisé vaut mieux qu'un produit complet livré dans deux ans. Nous découpons pour qu'une partie serve avant que le tout soit terminé.",
   },
   {
-    title: "Une stack ennuyeuse",
-    text: "TypeScript, React, Node, PostgreSQL. Des choix disponibles sur le marché du recrutement dans dix ans. La nouveauté technique est un risque que le client paie, pas un argument.",
+    title: "La technologie suit le besoin",
+    text: "TypeScript, Next.js et MariaDB sont nos choix par défaut : ennuyeux, documentés, et recrutables dans dix ans. Ce ne sont pas des passages obligés. Quand votre contexte demande autre chose - une contrainte d'un système existant, un besoin que ces outils servent mal, une plateforme du marché qui fait déjà le travail - nous en changeons, et nous vous disons pourquoi avant de commencer.",
   },
   {
     title: "L'accessibilité au cadrage, pas en audit",

@@ -327,6 +327,7 @@ BEGIN
 
   SELECT
     s.slug, s.title, s.tagline, s.problem,
+    s.why_custom_lead, s.why_custom_closing,
     s.related_case_slug, s.cta_title,
     f.slug AS family_slug, f.label AS family_label, f.halo AS family_halo,
     s.published_at, s.updated_at
@@ -341,6 +342,11 @@ BEGIN
   WHERE service_id = v_id ORDER BY position ASC;
 
   SELECT question, answer FROM expertise_faq
+  WHERE service_id = v_id ORDER BY position ASC;
+
+  -- Les signes de « Pourquoi du sur-mesure ? ». Le chapo et la conclusion sont sur
+  -- la ligne du service, ci-dessus : ils n'ont pas d'ordre, donc pas de table.
+  SELECT text FROM expertise_why_custom
   WHERE service_id = v_id ORDER BY position ASC;
 END$$
 

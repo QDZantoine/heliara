@@ -120,6 +120,34 @@ export const faqListSchema = z.object({
   items: z.array(faqSchema).max(20, "Vingt objections suffisent."),
 })
 
+/**
+ * « Pourquoi du sur-mesure ? », les trois pièces en un seul envoi.
+ *
+ * **Aucune n'est exigée séparément, et c'est volontaire** : la section est
+ * facultative, donc tout vide est valide - c'est ainsi qu'on la retire. La règle
+ * « tout ou rien » est appliquée à l'affichage, par la couche de lecture publique,
+ * plutôt qu'ici : refuser un enregistrement partiel empêcherait de sauvegarder un
+ * brouillon en cours de rédaction, ce qui est exactement le moment où l'on
+ * enregistre.
+ */
+export const whyCustomSchema = z.object({
+  lead: z
+    .string()
+    .trim()
+    .max(300, "Ce chapô est trop long.")
+    .optional()
+    .or(z.literal("")),
+  closing: z
+    .string()
+    .trim()
+    .max(600, "Cette conclusion est trop longue.")
+    .optional()
+    .or(z.literal("")),
+  signals: z
+    .array(z.string().trim().max(300, "Ce signe est trop long."))
+    .max(10, "Dix signes suffisent, au-delà on ne les lit plus."),
+})
+
 /** Réordonnancement, commun aux familles et aux services. */
 export const orderSchema = z.object({
   order: z

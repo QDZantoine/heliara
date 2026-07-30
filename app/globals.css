@@ -281,7 +281,7 @@
   --breakpoint-menu: 900px;
 
   /* --- Animations ------------------------------------------------------- */
-  --animate-marquee: hel-marquee 36s linear infinite;
+  --animate-marquee: hel-marquee 42s linear infinite;
   --animate-float: hel-float 7s var(--hel-ease-io) infinite;
   --animate-float-mid: hel-float 8s var(--hel-ease-io) infinite;
   --animate-float-slow: hel-float 9s var(--hel-ease-io) infinite reverse;
@@ -516,6 +516,17 @@
   transform: translateY(14px);
 }
 
+.hel-principle-card[data-reveal] {
+  transition:
+    opacity 500ms var(--hel-ease-expo),
+    transform 500ms var(--hel-ease-expo);
+}
+
+[data-reveal-ready] .hel-principle-card[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
 /* Bloc révélé pendant une transition de page : il apparaît sans fondu, pour ne
    pas empiler des dizaines de transitions au moment où le rideau se lève. */
 [data-reveal-now] {
@@ -538,6 +549,19 @@
   [data-reveal-ready] [data-reveal="pending"] {
     opacity: 1;
     transform: none;
+  }
+
+  .hel-commitments-viewport {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .hel-commitments-track {
+    animation: none !important;
+  }
+
+  .hel-commitments-track > [aria-hidden="true"] {
+    display: none;
   }
 }
 

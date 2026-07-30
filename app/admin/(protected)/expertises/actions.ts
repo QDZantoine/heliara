@@ -15,6 +15,7 @@ import {
   orderSchema,
   pairsSchema,
   serviceSchema,
+  whyCustomSchema,
 } from "@/lib/schemas/expertise"
 
 /**
@@ -420,5 +421,31 @@ export async function setFaq(
       }
     }
     return setCollection("set_expertise_faq", id, slug, parsed.data.items)
+  })
+}
+
+/**
+ * Enregistre « Pourquoi du sur-mesure ? ».
+ *
+ * `setCollection` sérialise ce qu'on lui donne et convient donc tel quel : la
+ * procédure attend ici un objet et non un tableau, ce qui ne change rien à son
+ * appelant. Un seul appel pour les trois pièces, parce que la procédure les écrit
+ * dans une même transaction - un chapô enregistré sans ses signes annoncerait une
+ * liste vide.
+ */
+export async function setWhyCustom(
+  id: string,
+  slug: string,
+  input: unknown
+): Promise<ActionResult> {
+  return run(async () => {
+    const parsed = whyCustomSchema.safeParse(input)
+    if (!parsed.success) {
+      return {
+        status: "error",
+        fieldErrors: fieldErrorsOf(parsed.error.issues),
+      }
+    }
+    return setCollection("set_expertise_why_custom", id, slug, parsed.data)
   })
 }

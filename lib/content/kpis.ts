@@ -1,16 +1,35 @@
 export type Kpi = {
   value: string
   label: string
+  description: string
 }
 
 /**
- * Respiration chiffrée (S7). Des valeurs exactes et vérifiables uniquement :
- * la crédibilité du ton de voix s’applique aussi aux données. À confirmer
- * avant mise en ligne.
+ * Principes de conception (S7). Pas de statistiques marketing : des engagements
+ * lisibles, stables et vérifiables dans la manière de travailler.
  */
 export const kpis: Kpi[] = [
-  { value: "47", label: "produits livrés en production" },
-  { value: "9 ans", label: "d’ancienneté moyenne de nos équipes" },
-  { value: "87 %", label: "de clients qui reviennent" },
-  { value: "99,9 %", label: "de disponibilité constatée" },
+  {
+    value: "100 %",
+    label: "Développement sur mesure",
+    description:
+      "Chaque solution est conçue pour répondre à vos besoins métiers.",
+  },
+  {
+    value: "1",
+    label: "Interlocuteur dédié",
+    description: "Un seul contact, du cadrage jusqu'à la mise en production.",
+  },
+  {
+    value: "0",
+    label: "Verrou fournisseur",
+    description:
+      "Vous restez libre de votre hébergement, de vos données et de votre code.",
+  },
+  {
+    value: "∞",
+    label: "Pensé pour évoluer",
+    description:
+      "Une architecture conçue pour accompagner durablement la croissance de votre entreprise.",
+  },
 ]

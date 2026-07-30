@@ -298,6 +298,7 @@ BEGIN
 
   SELECT
     s.id, s.slug, s.title, s.tagline, s.problem,
+    s.why_custom_lead, s.why_custom_closing,
     s.related_case_slug, s.cta_title,
     s.position, s.status, s.published_at, s.updated_at,
     f.id AS family_id, f.slug AS family_slug, f.label AS family_label
@@ -312,6 +313,9 @@ BEGIN
   WHERE service_id = v_id ORDER BY position ASC;
 
   SELECT question, answer FROM expertise_faq
+  WHERE service_id = v_id ORDER BY position ASC;
+
+  SELECT text FROM expertise_why_custom
   WHERE service_id = v_id ORDER BY position ASC;
 END$$
 
@@ -706,6 +710,69 @@ BEGIN
   CALL write_audit(
     p_actor_id, 'expertise_service.set_tech', 'expertise_service',
     p_service_id, NULL, p_items, p_ip
+  );
+
+  COMMIT;
+END$$
+
+/**
+ * Remplace la section « Pourquoi du sur-mesure ? ».
+ *
+ * Un seul appel pour les trois pièces - le chapô, les signes, la conclusion - parce
+ * qu'elles n'ont aucun sens séparément : un chapô sans signe annonce une liste vide,
+ * et des signes sans conclusion laissent le visiteur sans réponse. Les enregistrer en
+ * deux procédures aurait permis un état intermédiaire affichable et faux.
+ *
+ * JSON attendu : `{"lead": "...", "closing": "...", "signals": ["...", "..."]}`.
+ * Une liste vide efface la section, qui est facultative.
+ */
+DROP PROCEDURE IF EXISTS set_expertise_why_custom$$
+CREATE PROCEDURE set_expertise_why_custom(
+  IN p_service_id BINARY(16),
+  IN p_payload    LONGTEXT,
+  IN p_actor_id   BINARY(16),
+  IN p_ip         VARCHAR(45)
+)
+SQL SECURITY DEFINER
+BEGIN
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  IF p_payload IS NULL OR NOT JSON_VALID(p_payload) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'INVALID_JSON';
+  END IF;
+
+  START TRANSACTION;
+
+  IF NOT EXISTS (SELECT 1 FROM expertise_service WHERE id = p_service_id) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'SERVICE_NOT_FOUND';
+  END IF;
+
+  UPDATE expertise_service
+  SET why_custom_lead    = IFNULL(JSON_UNQUOTE(JSON_EXTRACT(p_payload, '$.lead')), ''),
+      why_custom_closing = IFNULL(JSON_UNQUOTE(JSON_EXTRACT(p_payload, '$.closing')), ''),
+      updated_at         = UNIX_TIMESTAMP(),
+      updated_by         = p_actor_id
+  WHERE id = p_service_id;
+
+  DELETE FROM expertise_why_custom WHERE service_id = p_service_id;
+
+  INSERT INTO expertise_why_custom (id, service_id, text, position)
+  SELECT GenerateKey(), p_service_id, j.text, (j.rank - 1) * 10
+  FROM JSON_TABLE(
+    JSON_EXTRACT(p_payload, '$.signals'), '$[*]' COLUMNS (
+      `rank` FOR ORDINALITY,
+      text   VARCHAR(300) PATH '$'
+    )
+  ) AS j
+  WHERE j.text IS NOT NULL AND j.text <> '';
+
+  CALL write_audit(
+    p_actor_id, 'expertise_service.set_why_custom', 'expertise_service',
+    p_service_id, NULL, p_payload, p_ip
   );
 
   COMMIT;

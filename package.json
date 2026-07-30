@@ -25,7 +25,8 @@
     "start:write": "HELIARA_ROLE=write next start --port 3001",
     "db:migrate": "bash db/migrate.sh",
     "dev:both": "bash scripts/dev-both.sh",
-    "db:seed": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-seed.ts"
+    "db:seed": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-seed.ts",
+    "db:resync-expertises": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-resync-expertises.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1097.0",

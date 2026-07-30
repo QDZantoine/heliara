@@ -18,7 +18,7 @@ import {
   getCase,
   getNextCase,
 } from "@/lib/content/cases"
-import { clients } from "@/lib/content/clients"
+import { guarantees } from "@/lib/content/guarantees"
 import {
   expertiseFamilies,
   expertiseHref,
@@ -420,16 +420,66 @@ describe("preuve sociale", () => {
     }
   })
 
-  it("chiffre chaque indicateur avec son libellé", () => {
+  it("énonce chaque principe avec sa valeur et son explication", () => {
     expect(kpis.length).toBeGreaterThan(0)
     for (const kpi of kpis) {
       expect(kpi.value, kpi.label).not.toBe("")
       expect(kpi.label).not.toBe("")
+      // La description porte ce que la valeur seule ne dit pas : « 0 » n'a de sens
+      // qu'accompagné de « verrou fournisseur » et de sa phrase.
+      expect(kpi.description, kpi.label).not.toBe("")
     }
   })
 
-  it("alimente le bandeau clients", () => {
-    expect(clients.length).toBeGreaterThan(0)
+  it("garantit des artefacts non vides dans le bandeau de l'accueil", () => {
+    expect(guarantees.length).toBeGreaterThan(0)
+    for (const guarantee of guarantees) {
+      expect(guarantee).not.toBe("")
+    }
+  })
+
+  /**
+   * Les deux bandes de l'accueil ne doivent pas dire la même chose.
+   *
+   * Le défaut est arrivé une fois : quatre des sept lignes du bandeau reprenaient mot
+   * pour mot les quatre principes de la section suivante - « développement sur
+   * mesure », « pensé pour évoluer », « aucune dépendance fournisseur ». Le visiteur
+   * lisait deux fois la même promesse sur une page, ce qui affaiblit les deux
+   * sections.
+   *
+   * Le contrôle porte sur les mots pleins partagés plutôt que sur l'égalité des
+   * chaînes : c'est la reformulation qui pose problème, pas la copie exacte, et une
+   * copie exacte ne serait jamais écrite.
+   */
+  it("ne fait pas redire aux garanties ce que les principes affirment déjà", () => {
+    const banal = new Set([
+      "pour",
+      "dans",
+      "avec",
+      "chaque",
+      "votre",
+      "vos",
+      "vous",
+      "une",
+      "des",
+      "les",
+      "aucun",
+      "aucune",
+    ])
+    const words = (text: string) =>
+      text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .split(/[^a-z0-9]+/)
+        .filter((word) => word.length > 3 && !banal.has(word))
+
+    const principles = new Set(kpis.flatMap((kpi) => words(kpi.label)))
+
+    for (const guarantee of guarantees) {
+      const shared = words(guarantee).filter((word) => principles.has(word))
+      expect(shared, `« ${guarantee} » reprend un principe de S7`).toEqual([])
+    }
   })
 })
 

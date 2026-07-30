@@ -130,7 +130,7 @@ Trois pièges de méthode, tous rencontrés :
 
 `pnpm build` ne dit rien de la mise en page. Pour contrôler une section, piloter Chrome en CDP (`--headless=new --remote-debugging-port`), émuler le viewport avec `Emulation.setDeviceMetricsOverride`, `prefers-color-scheme` avec `Emulation.setEmulatedMedia`, scroller en `behavior:"instant"` puis `Page.captureScreenshot`. Le mode `--headless --screenshot` de la CLI donne des captures fausses (blocs `Reveal` figés à l'état masqué, viewport non émulé) : ne pas s'y fier.
 
-Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer `document.documentElement.scrollWidth` à `clientWidth`, puis lister les éléments non absolus dont le `right` dépasse le viewport. Le ticker de la preuve sociale dépasse volontairement (il est masqué par `overflow-hidden`).
+Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer `document.documentElement.scrollWidth` à `clientWidth`, puis lister les éléments non absolus dont le `right` dépasse le viewport. Le marquee d'engagements de l'accueil dépasse volontairement (il est masqué par `overflow-hidden`).
 
 Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grotesk élargissent la virgule décimale, ce qui transforme « 99,98 % » en « 99 , 98 % ». `[data-numeric]` est donc réservé aux colonnes de chiffres à aligner, jamais aux valeurs isolées.
 
@@ -300,7 +300,8 @@ components/
 lib/
   content/                contenu éditorial, données statiques typées. Une source
                           par domaine : cases, expertises, articles, group, team,
-                          method, testimonials, clients, kpis, legal
+                          method, testimonials, clients, guarantees,
+                          kpis, legal
   schemas/                schémas zod partagés client / serveur
   site.ts                 nav, CTA, coordonnées, endossement de groupe
   lottie.ts utils.ts
@@ -398,7 +399,7 @@ Issues de la DA et de l'Architecture UX, à vérifier sur chaque écran :
 - Profondeur par les couches (cartes flottantes + ombres), jamais par des filets.
 - Pas de photo stock, pas de 3D gadget, pas de dégradé saturé. Illustration = UI produit abstraite en CSS (`components/visuals/`, toujours `aria-hidden`).
 - Une idée par section · rythme binaire dense/respirante · arc affirmation → preuve → action · **le CTA n'arrive jamais avant la preuve**.
-- Conversion à 3 niveaux : primaire « Parlons de votre projet » (1 par page + nav permanente) · secondaire « Voir nos réalisations » · tertiaire capture douce (fin d'article, footer).
+- Conversion à 3 niveaux : primaire « Parlons de votre projet » (1 par page + nav permanente) · secondaire « Découvrir nos réalisations » · tertiaire capture douce (fin d'article, footer).
 - Aucune impasse : chaque page finit par une action ou un rebond. Le footer est le seul terminus.
 - Endossement de groupe : footer + `/le-groupe` + une ligne sur `/a-propos`. Jamais dans le hero, jamais dans la nav.
 - **Le nom du holding n'apparaît nulle part sur le site public.** Il ne vit que dans les mentions légales. Hexceos et LessonSharing sont des **marques sœurs**, pas une maison mère : `/le-groupe` met en avant les trois marques et leur complémentarité, jamais le holding. Le footer dit « Heliara, une marque du groupe », sans le nommer.
@@ -517,6 +518,57 @@ rendre physiquement absent demanderait deux applications en monorepo.
   segment configuration export ». `CASES_REVALIDATE_SECONDS` n'est que
   documentaire, les deux valeurs doivent rester d'accord.
 
+## Le contenu doit être vrai
+
+Le site est parti d'un contenu de démonstration entièrement fictif, et cela reste la
+première chose à vérifier avant d'écrire quoi que ce soit d'éditorial.
+
+**Ce qui a été retiré, et ne doit pas revenir.** Huit noms de clients inventés dans le
+bandeau de l'accueil, quatre statistiques non vérifiables (« 47 produits livrés »,
+« 87 % de clients qui reviennent »). Restent en place, et restent à traiter : trois
+témoignages signés de personnes nommées avec fonction et employeur, six autres dans les
+fiches de réalisation, six membres d'équipe avec parcours détaillés, et vingt-quatre
+résultats chiffrés.
+
+**Attribuer un verbatim inventé à une personne nommée chez une entreprise nommée est le
+point le plus exposé du site.** Si un homonyme existe, le préjudice est réel. Ce n'est
+pas une question de ton de voix, c'est une question de risque.
+
+**Ne jamais emprunter les références d'une marque sœur.** Les clients de LessonSharing
+ou d'Hexceos ne sont pas ceux de Heliara, et ce sont des marques de tiers réelles : les
+afficher sous « Ils nous font confiance » cumulerait une affirmation fausse et un usage
+de marque sans autorisation. Elles ont leur place sur `/le-groupe`, attribuées à la
+marque qui les sert, et sous réserve que l'autorisation d'usage de logo couvre ce site.
+
+**La caution d'une marque jeune passe par ce qui lui coûte quelque chose.** L'accueil
+porte donc deux registres distincts, et la distinction est ce qui les autorise à
+coexister :
+
+- `lib/content/guarantees.ts` (S3) - des **artefacts** : un dépôt, un document, une
+  date, un chiffre au contrat. Ce qu'on remet.
+- `lib/content/kpis.ts` (S7) - des **principes** : sur mesure, interlocuteur unique,
+  aucun verrou, pensé pour évoluer. Ce qu'on tient.
+
+Une garantie qui se reformule en principe appartient à `kpis.ts`, et l'inverse. Le
+défaut est arrivé : quatre des sept lignes du bandeau redisaient mot pour mot les
+quatre principes, et le visiteur lisait deux fois la même promesse. Un test de
+`tests/unit/content.test.ts` compare désormais les mots pleins des deux listes et
+nomme le terme fautif.
+
+### Les technologies, telles qu'elles sont
+
+Écrit une fois ici parce que le site l'affirmait faux, et que l'erreur se recopie :
+
+- **Par défaut : TypeScript, Next.js, MariaDB.** Ennuyeux, documentés, recrutables. Ce
+  ne sont **pas** des passages obligés : la technologie suit le besoin, et un choix
+  différent se dit avant de commencer. Le site annonçait PostgreSQL, qui n'est pas la
+  base par défaut.
+- **E-commerce : Shopify, avec un thème entièrement sur mesure.** Le studio ne
+  développe pas de moteur de paiement, de calcul de TVA ni de gestion de fraude. Le
+  site décrivait une boutique développée de zéro.
+- **Site institutionnel : entièrement sur mesure**, sans thème acheté ni constructeur
+  de pages. C'est le seul domaine où l'on ne part pas d'une plateforme du marché.
+
 ## Contenu : base d'abord, statique en secours
 
 Les réalisations sont lues en base par `lib/db/public-cases.ts`, **avec repli
@@ -550,10 +602,25 @@ commencent par `requireSession()`, sans exception, et rejouent leur schéma zod.
 pnpm admin:create   # premier compte, mot de passe saisi sans écho
 pnpm db:migrate     # rejoue schéma, procédures ET privilèges
 pnpm db:seed        # amorce la base depuis le contenu statique
+pnpm db:resync-expertises <slug>...   # repousse en base la fiche d'un service
 ```
 
 Trois collections sont administrables : **Réalisations**, **Articles** et
 **Expertises**. Les autres contenus vivent encore dans `lib/content/*.ts`.
+
+**Corriger un contenu administrable dans `lib/content/*.ts` ne change rien au site.**
+Réalisations, articles et expertises sont lus en base ; ces fichiers ne sont plus que le
+repli et la source d'amorçage. Et `pnpm db:seed` ne rattrapera pas la correction : il est
+idempotent et laisse intact tout élément dont le slug existe déjà - ce qui est exactement
+ce qu'on veut de lui, rejouer l'amorçage ne doit pas défaire une saisie.
+
+D'où `pnpm db:resync-expertises <slug>...`, pour une correction de fond relue dans le
+dépôt qu'on ne veut ni ressaisir à la main ni réamorcer en bloc. Il remplace la fiche,
+les livrables, les choix techniques et les objections des **seuls services nommés**, par
+les procédures stockées, sous le compte d'amorçage - donc traçable dans l'audit. Aucun
+slug par défaut, volontairement : lancé sans argument, il n'écrase rien. Il n'existe pas
+d'équivalent pour les réalisations ni les articles : leur correction passe par
+l'administration.
 
 **`pnpm db:migrate` n'est pas un confort.** `DROP PROCEDURE` emporte avec lui les
 privilèges accordés sur cette procédure - ils vivent dans `mysql.procs_priv` et
@@ -701,6 +768,32 @@ Deux niveaux : une **famille** regroupe des services et porte une entrée du men
 navigation, présente sur chaque page - d'où trois garde-fous en base :
 `nav_service_slug` doit désigner un service existant, une famille non vide ne se
 supprime pas, un service cible de nav ne se supprime pas.
+
+**Les pages d'expertise vendent la conception, pas la technologie.** Le titre « Des
+choix techniques assumés » coiffait des cartes qui nommaient des outils. Deux effets,
+tous deux mauvais : le décideur - non technique - décrochait, et celui qui lisait
+comprenait qu'on lui imposait une pile. La section s'appelle désormais « Une technologie
+au service de votre projet » et dit ce que ces choix apportent. La pile réelle vit **en
+FAQ**, où elle répond à « suis-je enfermé ? » au lieu d'annoncer une contrainte - et
+c'est aussi là que la cherche le lecteur technique du comité d'achat.
+
+**`whyCustom` - « Pourquoi du sur-mesure ? »** La section qui **qualifie** au lieu de
+vendre : les signes qui indiquent qu'une plateforme spécifique se justifie, puis une
+dernière phrase qui admet le cas contraire. C'est ce renoncement qui rend crédible tout
+ce qui précède. Trois particularités :
+
+- **Elle ne s'affiche que complète.** Un chapô sans signe annoncerait une liste vide,
+  des signes sans conclusion laisseraient le visiteur sans la réponse qui compte. La
+  couche de lecture publique rend `undefined` dès qu'une pièce manque ; le schéma zod,
+  lui, accepte tout vide - refuser un enregistrement partiel empêcherait de sauvegarder
+  un brouillon en cours de rédaction.
+- **Un seul enregistrable pour trois pièces.** Une première version tenait le chapô dans
+  un `useFieldSet` et les signes dans un `useCollection` : chaque `commit` devait lire
+  l'autre pour reconstituer l'envoi, donc les deux se référençaient en cercle et le
+  typage refusait. Le défaut était de conception - `set_expertise_why_custom` écrit tout
+  dans une transaction, il n'y a qu'un enregistrable, et les signes sont un champ de ce
+  jeu.
+- **Facultative par service.** Tous ne se décident pas sur cette question.
 
 **Un défaut de conception corrigé.** Le contenu statique faisait pointer chaque entrée
 de nav vers `/expertises/<slug de la famille>`, ce qui ne fonctionnait que parce que

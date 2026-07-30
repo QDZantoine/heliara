@@ -65,7 +65,7 @@ export const cta = {
     href: "/contact",
   },
   secondary: {
-    label: "Voir nos réalisations",
+    label: "Découvrir nos réalisations",
     href: "/realisations",
   },
   method: {

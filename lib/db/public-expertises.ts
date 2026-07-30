@@ -62,6 +62,14 @@ export type PublicServiceDetail = PublicService & {
   deliverables: { title: string; text: string }[]
   techChoices: { title: string; text: string }[]
   faq: { question: string; answer: string }[]
+  /**
+   * « Pourquoi du sur-mesure ? », facultative.
+   *
+   * Absente quand la section n'est pas renseignée - ce qui doit rester possible :
+   * tous les services ne se décident pas sur cette question. La vue teste sa présence
+   * plutôt que d'afficher un bloc à trous.
+   */
+  whyCustom?: { lead: string; signals: string[]; closing: string }
 }
 
 const text = (value: unknown) => (typeof value === "string" ? value : "")
@@ -201,8 +209,31 @@ export async function publicServicesByFamily(): Promise<
 
 type DetailRow = ServiceRow & {
   problem: string
+  why_custom_lead: string
+  why_custom_closing: string
   cta_title: string
   family_halo: "warm" | "cool"
+}
+
+/**
+ * La section « Pourquoi du sur-mesure ? », ou rien.
+ *
+ * **Elle n'existe que complète.** Un chapô sans signe annoncerait une liste vide, et
+ * des signes sans conclusion laisseraient le visiteur sans la réponse qui compte -
+ * celle qui dit quand le sur-mesure n'est *pas* la bonne réponse. Plutôt que d'afficher
+ * un bloc à trous, on ne l'affiche pas : le champ est facultatif de bout en bout.
+ */
+function whyCustomOf(
+  row: Pick<DetailRow, "why_custom_lead" | "why_custom_closing">,
+  signals: readonly { text: string }[]
+): PublicServiceDetail["whyCustom"] {
+  const lead = text(row.why_custom_lead).trim()
+  const closing = text(row.why_custom_closing).trim()
+  const items = signals.map((one) => text(one.text)).filter(Boolean)
+  if (!lead || !closing || items.length === 0) {
+    return undefined
+  }
+  return { lead, signals: items, closing }
 }
 
 function staticDetailFallback(slug: string): PublicServiceDetail | null {
@@ -224,6 +255,9 @@ function staticDetailFallback(slug: string): PublicServiceDetail | null {
     deliverables: service.deliverables,
     techChoices: service.techChoices,
     faq: service.faq,
+    // Le repli porte la section aussi : sinon une base injoignable ferait disparaître
+    // la partie de la page qui qualifie le visiteur, et personne ne le remarquerait.
+    whyCustom: service.whyCustom,
   }
 }
 
@@ -261,6 +295,10 @@ export async function getPublicService(
       ),
       faq: ((sets[3] as { question: string; answer: string }[]) ?? []).map(
         (item) => ({ question: item.question, answer: text(item.answer) })
+      ),
+      whyCustom: whyCustomOf(
+        row,
+        (sets[4] as { text: string }[] | undefined) ?? []
       ),
     }
   } catch (error) {
