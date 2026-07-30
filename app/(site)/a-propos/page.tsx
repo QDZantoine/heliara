@@ -8,16 +8,10 @@ import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
-import {
-  convictions,
-  manifesto,
-  pastilleAccent,
-  team,
-  teamSection,
-} from "@/lib/content/team"
+import { TeamPortrait } from "@/components/visuals/team-portrait"
+import { convictions, manifesto, team, teamSection } from "@/lib/content/team"
 import { pageMetadata } from "@/lib/seo"
 import { group } from "@/lib/site"
-import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = pageMetadata({
   title: "À propos",
@@ -75,21 +69,14 @@ export default function AProposPage() {
                   {/* `flex-col` pousse les spécialités en bas de carte : les trois
                       bios n'ont pas la même longueur, et sans cela les listes de puces
                       flotteraient à des hauteurs différentes d'une carte à l'autre. */}
-                  <div className="flex w-full flex-col rounded-lg border border-line bg-page p-6">
-                    <span
-                      aria-hidden="true"
-                      className={cn(
-                        "mb-4 inline-flex size-12 items-center justify-center rounded-full text-[0.94rem] font-semibold",
-                        pastilleAccent[person.accent]
-                      )}
-                    >
-                      {person.initials}
-                    </span>
+                  <div className="group flex w-full flex-col overflow-hidden rounded-lg border border-line bg-page p-3 pb-6">
+                    <TeamPortrait person={person} />
 
-                    <h3 className="font-display text-[1.0625rem] font-bold tracking-[-0.01em] text-ink">
-                      {person.name}
-                    </h3>
-                    {/*
+                    <div className="flex flex-1 flex-col px-3">
+                      <h3 className="font-display text-[1.0625rem] font-bold tracking-[-0.01em] text-ink">
+                        {person.name}
+                      </h3>
+                      {/*
                       Deux lignes réservées au rôle, même quand il n'en occupe qu'une.
 
                       « Fondateur du groupe - stratégie, sécurité & infrastructure »
@@ -104,28 +91,29 @@ export default function AProposPage() {
                       lignes décalerait à nouveau - deux est ce que la plus longue
                       formulation demande aujourd'hui.
                     */}
-                    <p className="mb-2.5 min-h-[2lh] text-[0.82rem] font-medium text-brand-text">
-                      {person.role}
-                    </p>
-                    <p className="mb-5 flex-1 text-[0.845rem] leading-relaxed text-body">
-                      {person.bio}
-                    </p>
+                      <p className="mb-2.5 min-h-[2lh] text-[0.82rem] font-medium text-brand-text">
+                        {person.role}
+                      </p>
+                      <p className="mb-5 flex-1 text-[0.845rem] leading-relaxed text-body">
+                        {person.bio}
+                      </p>
 
-                    <ul className="flex flex-wrap gap-1.5">
-                      {person.skills.map((skill) => (
-                        <li
-                          key={skill}
-                          // `text-body` et non `text-label` : sur `bg-inset` en thème
-                          // sombre, `label` ne donne que 3,98:1 pour du 12 px, sous le
-                          // seuil AA. Le jeton est vérifié contre `page`, pas contre
-                          // `inset`, qui est plus clair - le piège ne se voit qu'en
-                          // mesurant.
-                          className="rounded-xs bg-inset px-2 py-1 text-[0.72rem] font-medium text-body"
-                        >
-                          {skill}
-                        </li>
-                      ))}
-                    </ul>
+                      <ul className="flex flex-wrap gap-1.5">
+                        {person.skills.map((skill) => (
+                          <li
+                            key={skill}
+                            // `text-body` et non `text-label` : sur `bg-inset` en thème
+                            // sombre, `label` ne donne que 3,98:1 pour du 12 px, sous le
+                            // seuil AA. Le jeton est vérifié contre `page`, pas contre
+                            // `inset`, qui est plus clair - le piège ne se voit qu'en
+                            // mesurant.
+                            className="rounded-xs bg-inset px-2 py-1 text-[0.72rem] font-medium text-body"
+                          >
+                            {skill}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </Reveal>
               </li>

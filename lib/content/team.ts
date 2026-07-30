@@ -27,6 +27,18 @@ export type Person = {
    * d'information et l'encre.
    */
   accent: "brand" | "info" | "ink"
+  /**
+   * Le portrait, en deux variantes de fond.
+   *
+   * Les deux existent parce qu'aucune ne tient sur les deux thèmes : un détourage sur
+   * blanc posé sur une carte encre devient un pavé lumineux, et le fond orange sur une
+   * carte claire écrase tout le reste de la page. La carte affiche donc `white` en
+   * clair et `orange` en sombre.
+   *
+   * 800 × 800, tête et épaules, sujet légèrement décentré vers la droite - d'où le
+   * cadrage par le haut plutôt que centré, sinon le crop coupe le front.
+   */
+  photo: { white: string; orange: string }
 }
 
 /**
@@ -41,7 +53,7 @@ export const partners: Person[] = [
     initials: "AQ",
     name: "Antoine Quendez",
     role: "Associé - conception & développement",
-    bio: "Développeur full-stack (Node.js, TypeScript, React, Next.js) et consultant-formateur. Il conçoit et développe les produits Heliara de bout en bout, avec une exigence particulière sur la sécurité applicative et l'intégration d'IA souveraine (LLM auto-hébergés, RAG, agents). Master développeur web full-stack ; passé par la Marine nationale, où il a encadré une équipe de huit personnes.",
+    bio: "Développeur full-stack, consultant-formateur et expert IA, spécialisé en Node.js, TypeScript, React et Next.js. Il conçoit des plateformes web, SaaS et des solutions d’IA souveraine alliant performance, sécurité et évolutivité. Ancien cadre de la Marine nationale, il associe rigueur opérationnelle et expertise technique au service des projets les plus exigeants.",
     skills: [
       "Next.js / TypeScript",
       "Node.js",
@@ -49,6 +61,10 @@ export const partners: Person[] = [
       "IA souveraine (RAG)",
     ],
     accent: "brand",
+    photo: {
+      white: "/team/antoine-white.png",
+      orange: "/team/antoine-orange.png",
+    },
   },
   {
     initials: "GM",
@@ -62,6 +78,10 @@ export const partners: Person[] = [
       "Souveraineté",
     ],
     accent: "info",
+    photo: {
+      white: "/team/gaetan-white.png",
+      orange: "/team/gaetan-orange.png",
+    },
   },
 ]
 
@@ -79,6 +99,10 @@ export const team: Person[] = [
       "Sécurité bas niveau (kernel, eBPF)",
     ],
     accent: "ink",
+    photo: {
+      white: "/team/alexandre-white.png",
+      orange: "/team/alexandre-orange.png",
+    },
   },
 ]
 
