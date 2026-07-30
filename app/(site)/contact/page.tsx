@@ -5,7 +5,7 @@ import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
-import { contactSteps, partners } from "@/lib/content/team"
+import { contactSteps, partners, pastilleAccent } from "@/lib/content/team"
 import { pageMetadata } from "@/lib/seo"
 import { site } from "@/lib/site"
 import { cn } from "@/lib/utils"
@@ -83,9 +83,7 @@ export default function ContactPage() {
                     aria-hidden="true"
                     className={cn(
                       "inline-flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-                      person.accent === "brand"
-                        ? "bg-brand-solid text-brand-on-solid"
-                        : "bg-info text-white"
+                      pastilleAccent[person.accent]
                     )}
                   >
                     {person.initials}

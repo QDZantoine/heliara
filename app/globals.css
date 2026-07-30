@@ -41,6 +41,12 @@
   --hel-info: #2f52c7;
   --hel-info-text: #2f52c7; /* 6.7:1 sur blanc */
   --hel-info-subtle: #eaeffb;
+  /* Fond de pastille bleue, et son texte. Même mécanique que `brand-solid` : les deux
+     valeurs s'inversent ensemble entre les thèmes, ce qui garde le contraste dans les
+     deux sens. `bg-info` ne convient pas pour cet usage - en sombre il devient un bleu
+     clair, et du blanc dessus tombe à 2,67:1. Mesuré, pas supposé. */
+  --hel-info-solid: #2f52c7; /* 6.7:1 avec du blanc */
+  --hel-info-on-solid: #ffffff;
 
   /* --- Sémantiques ------------------------------------------------------- */
   --hel-success: #1f9254;
@@ -137,6 +143,8 @@
   --hel-info: #7e9bf2;
   --hel-info-text: #9bb2f7;
   --hel-info-subtle: #171d33;
+  --hel-info-solid: #7e9bf2; /* 8.9:1 avec de l'encre */
+  --hel-info-on-solid: #151517;
 
   --hel-success: #3fb277;
   --hel-success-text: #6cd09b;
@@ -217,6 +225,8 @@
   --color-brand-subtle: var(--hel-brand-subtle);
 
   --color-info: var(--hel-info);
+  --color-info-solid: var(--hel-info-solid);
+  --color-info-on-solid: var(--hel-info-on-solid);
   --color-info-text: var(--hel-info-text);
   --color-info-subtle: var(--hel-info-subtle);
 
@@ -551,7 +561,7 @@
     transform: none;
   }
 
-  .hel-commitments-viewport {
+  .hel-commitments {
     overflow-x: auto;
     mask-image: none;
   }
@@ -564,6 +574,9 @@
     display: none;
   }
 }
+
+
+
 
 /* ------------------------------------------------------------
    Contenu riche

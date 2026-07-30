@@ -59,8 +59,19 @@ function CommitmentsMarquee() {
       <h2 id="engagements-heliara" className="sr-only">
         Nos engagements
       </h2>
-      <div className="hel-commitments-viewport group overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)]">
-        <div className="hel-commitments-track flex w-max animate-marquee items-center py-5 group-focus-within:[animation-play-state:paused] group-hover:[animation-play-state:paused] max-menu:[animation-duration:52s] menu:py-6">
+      {/*
+        La pause au survol seulement, et c'est un choix assumé - voir la limite
+        consignée dans CLAUDE.md.
+
+        `group-focus-within` a été retiré : il n'y a aucun élément focusable dans la
+        bande, donc il ne pouvait jamais se déclencher. Relevé en comptant les
+        focusables du bloc, pas en relisant le CSS - un `focus-within` sans cible ne
+        produit ni erreur ni avertissement, exactement comme le `data-selected` mort
+        des barres d'onglets de l'administration. Ne pas le remettre sans ajouter en
+        même temps quelque chose à focaliser.
+      */}
+      <div className="hel-commitments group overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)]">
+        <div className="hel-commitments-track flex w-max animate-marquee items-center py-5 group-hover:[animation-play-state:paused] max-menu:[animation-duration:52s] menu:py-6">
           <GuaranteeList />
           <GuaranteeList hidden />
         </div>

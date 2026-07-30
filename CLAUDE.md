@@ -404,6 +404,7 @@ Issues de la DA et de l'Architecture UX, à vérifier sur chaque écran :
 - Endossement de groupe : footer + `/le-groupe` + une ligne sur `/a-propos`. Jamais dans le hero, jamais dans la nav.
 - **Le nom du holding n'apparaît nulle part sur le site public.** Il ne vit que dans les mentions légales. Hexceos et LessonSharing sont des **marques sœurs**, pas une maison mère : `/le-groupe` met en avant les trois marques et leur complémentarité, jamais le holding. Le footer dit « Heliara, une marque du groupe », sans le nommer.
 - Accessibilité AA : contrastes vérifiés, focus visible bleu 2 px, cibles ≥ 44 px, un seul `h1` par page, `prefers-reduced-motion` neutralise tout mouvement, contenu complet sans JS.
+  **Une limite connue et acceptée** : le bandeau d'engagements de l'accueil défile en boucle et ne se met en pause qu'au survol. WCAG 2.2.2 (« Pause, Stop, Hide », niveau A) demande un moyen d'arrêter tout mouvement automatique de plus de cinq secondes, et le survol n'en est pas un au toucher ni au clavier. Une commande de pause a été construite puis retirée, le mouvement étant jugé assez discret pour ne pas gêner la lecture du reste de la page. À rouvrir si le bandeau s'étoffe ou si un audit externe le relève. `prefers-reduced-motion` coupe l'animation, ce qui couvre les personnes qui ont exprimé la préférence au niveau du système.
 - Motion : expo-out `cubic-bezier(0.16, 1, 0.3, 1)`, 100-360 ms. Entrées fondu + translation. Jamais de rebond ni de parallaxe profonde.
 
 ## Responsive
