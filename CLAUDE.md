@@ -143,6 +143,47 @@ Carrières a été retiré du périmètre : la fiche existe dans l'Architecture 
 
 Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec next typegen`. Sans quoi `PageProps<"/ma/[route]">` échoue au typecheck.
 
+## Icônes et manifeste
+
+Conventions de fichier de l'App Router : `app/favicon.ico`, `app/icon0.svg`,
+`app/icon1.png`, `app/apple-icon.png`, `app/manifest.json`, plus les deux PNG du
+manifeste dans `public/`. Next pose les `<link>` correspondants tout seul, dans l'ordre
+des suffixes - **ne rien redéclarer dans `metadata.icons`**, on obtiendrait des liens en
+double. Seuls `appleWebApp.title` et l'export `viewport` sont écrits à la main.
+
+**Deux jeux d'icônes, et c'est le point à ne pas défaire.** Le logo Heliara est un
+pictogramme surmontant le mot « heliara ». En dessous de 48 px - c'est-à-dire dans
+l'onglet du navigateur, l'endroit où l'icône est le plus vue - le mot devient une
+bavure grise et le pictogramme se retrouve écrasé dans la moitié haute du carré.
+Mesuré en rendant les deux versions à 16, 20, 32 et 64 px.
+
+| Fichier                                         | Contenu                          |
+| ----------------------------------------------- | -------------------------------- |
+| `favicon.ico` (16/32/48), `icon0.svg`, `icon1.png` | **pictogramme seul, recentré**   |
+| `apple-icon.png` (180), les deux PNG du manifeste | logo complet, mot-symbole compris |
+
+Le pictogramme seul est dérivé du logo : le mot-symbole est un unique chemin du SVG
+(`M73.9 248.8…`, y 219 → 271), le reste du dessin occupe y 34 → 223. Le retirer puis
+translater le groupe de 40,85 px vers le bas recentre la marque dans son carré. Les
+PNG et l'ICO sont rendus depuis ce SVG, fond transparent - sans quoi les coins arrondis
+seraient blancs, ce qui se verrait sur un onglet sombre.
+
+**Repasser par RealFaviconGenerator régénère les cinq fichiers depuis le logo complet
+et défait ce partage.** Après un tel passage, refaire la dérivation sur les trois
+fichiers de la première ligne.
+
+`theme_color` du manifeste ne peut porter qu'une valeur ; l'export `viewport` en
+déclare deux, une par thème, reprises de `--hel-page`. Sans cela, en thème sombre sur
+Android, la barre du navigateur resterait claire au-dessus d'une page encre.
+
+Les icônes du manifeste sont déclarées `purpose: "maskable"` seulement. Vérifié en
+simulant le rognage d'Android : le mot-symbole survit à la découpe en cercle comme en
+squircle, la zone sûre est respectée.
+
+Les icônes échappent au proxy - son `matcher` exclut `favicon.ico` et toute URL en
+`.svg`, `.png`, `.ico`, `.json` - donc elles sont servies par les **deux**
+déploiements, y compris celui de l'administration où tout le reste répond 404.
+
 ## Formulaires
 
 `zod` + `react-hook-form`. Le schéma vit dans `lib/schemas/`, **partagé par le client et l'action serveur** : un seul schéma, donc aucun risque de voir les deux validations divergentes. Les messages y sont rédigés pour être affichés tels quels, en français, sans jargon de validation.
@@ -240,7 +281,8 @@ app/                      routes App Router. Un dossier par route, `page.tsx` en
   mentions-legales/ confidentialite/
   layout.tsx              polices, ThemeProvider, PageCurtain, header, main, footer
   globals.css             la totalité des tokens et des keyframes
-  sitemap.ts robots.ts icon.svg
+  sitemap.ts robots.ts
+  favicon.ico icon0.svg icon1.png apple-icon.png manifest.json
 
 components/
   layout/                 chrome du site : header, footer, nav, menu mobile,
