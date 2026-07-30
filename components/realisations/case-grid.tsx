@@ -54,7 +54,14 @@ function CaseGrid({ cases, sectors }: CaseGridProps) {
         })}
       </div>
 
+      {/*
+        `role="status"` en plus de `aria-live` : les deux disent la même chose aux
+        technologies d'assistance, mais le rôle donne au décompte une identité qu'un
+        test peut viser. Le chercher par son texte échouait dès qu'une fiche contenait
+        le mot « réalisations » dans son résumé, ce qui est arrivé.
+      */}
       <p
+        role="status"
         aria-live="polite"
         className="mb-6 text-center text-[0.82rem] text-label"
       >

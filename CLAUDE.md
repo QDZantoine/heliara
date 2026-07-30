@@ -643,9 +643,30 @@ visiteur et bruyant dans les journaux : une base injoignable est un incident.
 
 **Le repli est « tout ou rien », et c'est pourquoi `pnpm db:seed` existe.** Dès
 qu'une fiche est publiée en base, le repli cesse de s'appliquer : sans amorçage, la
-première publication ferait disparaître les six fiches statiques de la grille.
+première publication ferait disparaître les fiches statiques de la grille.
 `pnpm db:seed` importe le contenu existant, une fois, de façon idempotente - une
 fiche dont le slug existe déjà n'est jamais écrasée.
+
+**`lib/content/cases.ts` porte donc deux rôles à la fois, et c'est ce qui le rend
+sensible** : il est le repli du site public, et la source de ce que `db:seed` publie à
+l'initialisation d'une production. Une erreur y est publique deux fois, sans qu'aucune
+mise en ligne n'ait été décidée. Ses six fiches de démonstration - Voltéis, CHU
+Rhône-Nord, Kerlon, Nexa Santé - ont été remplacées par les neuf réalisations réelles.
+Deux tests de `tests/unit/content.test.ts` le verrouillent : aucun marqueur de rédaction
+(`[à compléter]`, `20XX`, `ajoute un résultat`) et aucun des noms de clients inventés.
+
+Les neuf fiches sont volontairement **sans chiffre, sans témoignage et sans ligne
+`Stack`** : aucun client n'a communiqué de mesure, un verbatim se fait valider par écrit,
+et une pile technique affichée publiquement est une affirmation vérifiable par le
+lecteur. Chaque bloc est conditionné à son contenu, donc rien ne manque à l'écran - et
+ces trois manques se comblent dans l'administration à mesure que l'information est
+confirmée. `figure` et `measure` vont par deux ou pas du tout, c'est le seul invariant
+que le test conserve.
+
+**L'amorçage ne réenveloppe plus les corps de chapitre.** Les fiches de démonstration
+portaient un paragraphe de texte brut, que `db:seed` entourait d'un `<p>` pour l'égaler
+à ce que produit l'éditeur riche. Les fiches réelles portent déjà leur HTML, deux
+paragraphes par chapitre : les envelopper donnerait un `<p>` contenant deux `<p>`.
 
 Fusionner base et statique à la lecture a été écarté : cela installerait une
 ambiguïté permanente, puisqu'il deviendrait impossible de supprimer une fiche

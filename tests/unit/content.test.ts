@@ -57,6 +57,60 @@ function duplicates(values: string[]) {
 }
 
 describe("réalisations", () => {
+  /*
+    Ce fichier est le repli public : ce qu'il contient s'affiche en ligne le jour où la
+    base est muette, et c'est aussi ce que `pnpm db:seed` publie à l'initialisation.
+    Les deux gardes ci-dessous portent donc sur du contenu qui peut devenir public sans
+    que personne l'ait décidé.
+  */
+
+  /*
+    Les marqueurs de rédaction ont leur place dans un fichier de reprise, jamais ici.
+
+    Ils sont arrivés en base par `db:import-cases`, qui les signale sans les effacer - et
+    ils ont été retirés au moment de rendre les fiches publiables. Ce test empêche qu'un
+    prochain import court-circuite cette étape : un « [ajoute un résultat si tu en as un] »
+    dans un `heroTitle` serait le grand titre d'une fiche en ligne.
+  */
+  it("ne laisse aucun marqueur de rédaction dans le repli public", () => {
+    const marqueurs =
+      /\[à compléter\]|\[à confirmer\]|\(à confirmer\)|ajoute un résultat|20XX/i
+    for (const study of caseStudies) {
+      const champs = [
+        study.title,
+        study.heroTitle,
+        study.badge,
+        study.summary,
+        study.teaser,
+        study.year,
+        study.figure,
+        study.measure,
+        ...study.meta.flatMap((line) => [line.label, line.value]),
+        ...study.chapters.flatMap((chapter) => [
+          chapter.title,
+          chapter.text,
+          chapter.callout ?? "",
+        ]),
+        ...study.lessons,
+      ]
+      for (const champ of champs) {
+        expect(marqueurs.test(champ), `${study.slug} : ${champ}`).toBe(false)
+      }
+    }
+  })
+
+  /*
+    Les six fiches de démonstration nommaient des entreprises qui n'existent pas et leur
+    attribuaient des verbatims signés. Elles ont été remplacées par des réalisations
+    réelles ; ce test nomme les quatre marques inventées pour qu'un copier-coller de
+    gabarit les fasse échouer plutôt que de les remettre en ligne.
+  */
+  it("ne fait pas revenir les clients inventés du contenu de démonstration", () => {
+    const inventes = /Voltéis|Rhône-Nord|Kerlon|Nexa Santé|Ardan/i
+    const tout = JSON.stringify(caseStudies)
+    expect(inventes.test(tout)).toBe(false)
+  })
+
   it("a des slugs uniques et bien formés", () => {
     expect(duplicates(caseStudies.map((study) => study.slug))).toEqual([])
     for (const study of caseStudies) {
@@ -68,11 +122,47 @@ describe("réalisations", () => {
     for (const study of caseStudies) {
       expect(study.title, study.slug).not.toBe("")
       expect(study.summary, study.slug).not.toBe("")
-      expect(study.figure, study.slug).not.toBe("")
-      expect(study.measure, study.slug).not.toBe("")
+      expect(study.teaser, study.slug).not.toBe("")
       expect(study.sector, study.slug).not.toBe("")
+      expect(study.year, study.slug).not.toBe("")
       expect(study.chapters.length, study.slug).toBeGreaterThan(0)
-      expect(study.results.length, study.slug).toBeGreaterThan(0)
+    }
+  })
+
+  /*
+    Le chiffre et sa mesure vont par deux, ou pas du tout.
+
+    Ce test exigeait auparavant les deux sur **chaque** fiche, ce qui encodait la forme
+    du contenu de démonstration : ses six fiches inventées portaient toutes un chiffre,
+    puisqu'on les avait écrites ainsi. Les nouvelles fiches sont réelles et aucun client
+    n'a communiqué de mesure - exiger un chiffre partout pousserait à en inventer un, ce
+    qui est exactement ce que le contenu de démonstration avait de faux.
+
+    L'invariant qui reste vrai est le couplage : `figure` seul afficherait une valeur
+    sans savoir ce qu'elle mesure, `measure` seul une légende sans valeur.
+  */
+  it("porte le chiffre et sa mesure ensemble, ou aucun des deux", () => {
+    for (const study of caseStudies) {
+      expect(Boolean(study.figure), study.slug).toBe(Boolean(study.measure))
+    }
+  })
+
+  /*
+    Un témoignage est tout ou rien, la même règle que `withTestimonialRule` côté schéma.
+    Aucune fiche n'en porte aujourd'hui : les neuf verbatims restent à demander à leurs
+    auteurs et à faire valider par écrit.
+  */
+  it("ne porte un témoignage qu'au complet", () => {
+    for (const study of caseStudies) {
+      const parts = [
+        study.testimonial.quote,
+        study.testimonial.name,
+        study.testimonial.role,
+      ].map(Boolean)
+      expect(
+        parts.every(Boolean) || parts.every((one) => !one),
+        study.slug
+      ).toBe(true)
     }
   })
 

@@ -154,6 +154,13 @@ section qui sonne le plus juste quand elle admet une limite.
 pnpm db:import-cases docs/realisations-source.json
 ```
 
+**Les neuf premières fiches sont passées par là et n'y sont plus.** Une fois relues et
+prêtes à publier, elles ont été transférées dans `lib/content/cases.ts`, qui est le repli
+du site public **et** la source de `pnpm db:seed` : c'est là qu'elles doivent vivre pour
+qu'une initialisation en production les publie. Le fichier d'import a été supprimé,
+sinon il aurait fallu tenir deux définitions d'accord. Cette commande sert donc aux
+**prochaines** reprises de contenu, pas à retrouver l'existant.
+
 **Du JSON et pas du YAML**, pour deux raisons. Le lire ne demande aucune dépendance,
 `JSON.parse` étant natif. Et l'indentation du YAML ne survit pas toujours à un
 copier-coller : une clé avalée par un retour à la ligne change le sens du document sans

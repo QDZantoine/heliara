@@ -119,16 +119,22 @@ async function seedCases(actor: Buffer) {
       null,
     ])
 
-    // Les corps de chapitre sont du texte brut dans le contenu statique ; ils
-    // deviennent du HTML sous l'éditeur riche. Un paragraphe suffit à les rendre
-    // équivalents, et l'éditeur les reprendra tels quels.
+    /*
+      Le corps est repris tel quel, et non plus enveloppé dans un `<p>`.
+
+      Les six fiches de démonstration portaient un paragraphe de texte brut par
+      chapitre, que l'amorçage enveloppait pour le rendre équivalent à ce que produit
+      l'éditeur riche. Les neuf fiches réelles portent déjà leur HTML, deux paragraphes
+      par chapitre : les envelopper donnerait un `<p>` contenant deux `<p>`, du HTML
+      imbriqué à tort que l'éditeur ne saurait pas rouvrir proprement.
+    */
     await write.void("set_case_chapters", [
       row.id,
       JSON.stringify(
         study.chapters.map((chapter) => ({
           num: chapter.num,
           title: chapter.title,
-          text: `<p>${chapter.text}</p>`,
+          text: chapter.text,
           callout: chapter.callout ?? "",
         }))
       ),

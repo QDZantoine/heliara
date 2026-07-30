@@ -52,12 +52,12 @@ describe("CaseGrid", () => {
 
   it("annonce le décompte dans une région vivante, accordé en nombre", async () => {
     setup()
-    const count = screen.getByText(/réalisation/)
+    const count = screen.getByRole("status")
     expect(count).toHaveAttribute("aria-live", "polite")
     expect(count).toHaveTextContent(`${caseStudies.length} réalisations`)
 
     await userEvent.click(screen.getByRole("button", { name: sector }))
-    expect(screen.getByText(/réalisation/)).toHaveTextContent(
+    expect(screen.getByRole("status")).toHaveTextContent(
       inSector.length > 1
         ? `${inSector.length} réalisations · secteur ${sector}`
         : `${inSector.length} réalisation · secteur ${sector}`
@@ -66,7 +66,7 @@ describe("CaseGrid", () => {
 
   it("ne mentionne aucun secteur quand tout est affiché", () => {
     setup()
-    expect(screen.getByText(/réalisation/)).not.toHaveTextContent("secteur")
+    expect(screen.getByRole("status")).not.toHaveTextContent("secteur")
   })
 
   it("donne à chaque carte un lien vers sa fiche", () => {
