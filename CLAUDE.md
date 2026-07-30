@@ -130,9 +130,37 @@ Trois pièges de méthode, tous rencontrés :
 
 `pnpm build` ne dit rien de la mise en page. Pour contrôler une section, piloter Chrome en CDP (`--headless=new --remote-debugging-port`), émuler le viewport avec `Emulation.setDeviceMetricsOverride`, `prefers-color-scheme` avec `Emulation.setEmulatedMedia`, scroller en `behavior:"instant"` puis `Page.captureScreenshot`. Le mode `--headless --screenshot` de la CLI donne des captures fausses (blocs `Reveal` figés à l'état masqué, viewport non émulé) : ne pas s'y fier.
 
-Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer `document.documentElement.scrollWidth` à `clientWidth`, puis lister les éléments non absolus dont le `right` dépasse le viewport. Le marquee d'engagements de l'accueil dépasse volontairement (il est masqué par `overflow-hidden`).
+Pour traquer un débordement horizontal, mesurer plutôt que regarder : comparer `document.documentElement.scrollWidth` à `clientWidth`, puis lister les éléments non absolus dont le `right` dépasse le viewport. Le bandeau de logos clients de l'accueil dépasse volontairement (il est masqué par `overflow-hidden`).
 
 Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grotesk élargissent la virgule décimale, ce qui transforme « 99,98 % » en « 99 , 98 % ». `[data-numeric]` est donc réservé aux colonnes de chiffres à aligner, jamais aux valeurs isolées.
+
+## Le bandeau de logos clients
+
+**Il garde un fond clair dans les deux thèmes**, et c'est le seul endroit du site qui
+ignore le mode sombre. La raison est dans les fichiers, pas dans le goût : huit logos de
+huit marques sont trop hétérogènes pour un traitement commun - logotypes horizontaux et
+carrés, marques foncées et claires, et deux fichiers dont le fond n'est pas transparent.
+
+Ce qui a été essayé et abandonné, mesuré à l'écran : la désaturation avec opacité réduite
+effaçait les logos clairs ; `brightness-0 invert` en sombre écrasait les formes internes
+de ceux qui en dépendent, et transformait Hexceos en carré gris uni. Un plateau clair les
+montre tels que leurs propriétaires les ont dessinés - ce qu'on doit de toute façon à une
+marque qu'on affiche.
+
+**`shape` décide de la hauteur, pas une valeur unique.** Un logotype à 28 px de haut
+couvre 140 px de large ; un carré n'en couvre que 28, soit quatre fois moins de surface
+pour la même consigne. Les carrés reçoivent donc plus de hauteur.
+
+**Ce qu'un fichier doit être** pour entrer dans la bande : fond transparent - la bande
+pose les logos sur une surface, un fichier opaque y dessine un rectangle - au moins 80 px
+de haut, et sans marge interne excessive. Un logo entouré de 30 % de vide paraît deux fois
+plus petit que ses voisins quelle que soit sa classe de forme.
+
+**Les clients d'une marque sœur n'y ont pas leur place.** L'AFORP, le Cnam ou Ingetis sont
+des références de LessonSharing : les afficher sous « Ils nous font confiance » cumulerait
+une affirmation fausse et un usage de marque sans autorisation. Hexceos et LessonSharing
+elles-mêmes y figurent, parce que leurs sites sont des projets Heliara - la nuance tient à
+ce qu'on a fait pour elles, pas à l'appartenance au même groupe.
 
 ## Routes
 
@@ -421,7 +449,7 @@ Issues de la DA et de l'Architecture UX, à vérifier sur chaque écran :
 - Endossement de groupe : footer + `/le-groupe` + une ligne sur `/a-propos`. Jamais dans le hero, jamais dans la nav.
 - **Le nom du holding n'apparaît nulle part sur le site public.** Il ne vit que dans les mentions légales. Hexceos et LessonSharing sont des **marques sœurs**, pas une maison mère : `/le-groupe` met en avant les trois marques et leur complémentarité, jamais le holding. Le footer dit « Heliara, une marque du groupe », sans le nommer.
 - Accessibilité AA : contrastes vérifiés, focus visible bleu 2 px, cibles ≥ 44 px, un seul `h1` par page, `prefers-reduced-motion` neutralise tout mouvement, contenu complet sans JS.
-  **Une limite connue et acceptée** : le bandeau d'engagements de l'accueil défile en boucle et ne se met en pause qu'au survol. WCAG 2.2.2 (« Pause, Stop, Hide », niveau A) demande un moyen d'arrêter tout mouvement automatique de plus de cinq secondes, et le survol n'en est pas un au toucher ni au clavier. Une commande de pause a été construite puis retirée, le mouvement étant jugé assez discret pour ne pas gêner la lecture du reste de la page. À rouvrir si le bandeau s'étoffe ou si un audit externe le relève. `prefers-reduced-motion` coupe l'animation, ce qui couvre les personnes qui ont exprimé la préférence au niveau du système.
+  **Une limite connue et acceptée** : le bandeau de logos clients de l'accueil défile en boucle et ne se met en pause qu'au survol. WCAG 2.2.2 (« Pause, Stop, Hide », niveau A) demande un moyen d'arrêter tout mouvement automatique de plus de cinq secondes, et le survol n'en est pas un au toucher ni au clavier. Une commande de pause a été construite puis retirée, le mouvement étant jugé assez discret pour ne pas gêner la lecture du reste de la page. À rouvrir si le bandeau s'étoffe ou si un audit externe le relève. Les engagements, eux, ne défilent plus : ils sont une section pleine en bas de page, ce qui a retiré le second défilement infini de l'accueil. `prefers-reduced-motion` coupe l'animation, ce qui couvre les personnes qui ont exprimé la préférence au niveau du système.
 - Motion : expo-out `cubic-bezier(0.16, 1, 0.3, 1)`, 100-360 ms. Entrées fondu + translation. Jamais de rebond ni de parallaxe profonde.
 
 ## Responsive

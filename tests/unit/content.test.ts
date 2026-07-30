@@ -18,7 +18,7 @@ import {
   getCase,
   getNextCase,
 } from "@/lib/content/cases"
-import { clients, siblingBrands } from "@/lib/content/clients"
+import { clients } from "@/lib/content/clients"
 import { guarantees } from "@/lib/content/guarantees"
 import {
   expertiseFamilies,
@@ -427,19 +427,32 @@ describe("preuve sociale", () => {
   })
 
   /**
-   * Le bandeau de l'accueil ne montre que de vraies références.
+   * Chaque référence du bandeau porte ce qu'il faut pour être affichée et retrouvée.
    *
-   * Une marque sœur n'est pas une cliente : la glisser dans `clients` la ferait
-   * apparaître sous « Ils nous font confiance », ce qui serait faux. Le test compare les
-   * deux listes pour que l'erreur ne puisse pas passer par une copie hâtive.
+   * Le `site` n'est pas rendu mais il est vérifié : c'est lui qui garde la provenance de
+   * chaque logo traçable, et une entrée sans source est une autorisation qu'on ne saura
+   * plus où redemander.
    */
-  it("ne fait pas passer une marque sœur pour une cliente", () => {
-    const soeurs = new Set(siblingBrands.map((one) => one.name.toLowerCase()))
+  it("porte un nom, un logo et une source pour chaque référence", () => {
+    const noms = clients.map((one) => one.name)
+    expect(duplicates(noms)).toEqual([])
     for (const client of clients) {
       expect(client.name).not.toBe("")
-      expect(client.logo, client.name).not.toBe("")
+      expect(client.logo, client.name).toMatch(/^\/trusts-logos\//)
       expect(client.site, client.name).toMatch(/^https:\/\//)
-      expect(soeurs.has(client.name.toLowerCase()), client.name).toBe(false)
+    }
+  })
+
+  /**
+   * Le fond transparent n'est pas une préférence esthétique.
+   *
+   * La bande pose les logos sur la surface de la page : un fichier opaque y dessine un
+   * rectangle. Le JPEG n'a pas de canal alpha, donc il ne peut pas convenir - et le
+   * dossier en contient justement un, doublon d'un PNG qui, lui, va bien.
+   */
+  it("n'accepte aucun logo dans un format sans transparence", () => {
+    for (const client of clients) {
+      expect(client.logo, client.name).not.toMatch(/\.(jpe?g)$/i)
     }
   })
 

@@ -1,7 +1,7 @@
 import { CaseList } from "@/components/home/case-list"
 import { ExpertiseGrid } from "@/components/home/expertise-grid"
 import { Hero } from "@/components/home/hero"
-import { CommitmentsMarquee } from "@/components/home/commitments-marquee"
+import { GuaranteesSection } from "@/components/home/guarantees-section"
 import { KpiBand } from "@/components/home/kpi-band"
 import { MethodPreview } from "@/components/home/method-preview"
 import { ClientMarquee } from "@/components/home/client-marquee"
@@ -49,12 +49,12 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <CommitmentsMarquee />
+      <ClientMarquee />
       <ExpertiseGrid />
       <MethodPreview />
       <CaseList cases={featured} />
       <KpiBand />
-      <ClientMarquee />
+      <GuaranteesSection />
       <FinalCta />
     </>
   )

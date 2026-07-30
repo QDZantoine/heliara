@@ -561,16 +561,16 @@
     transform: none;
   }
 
-  .hel-commitments {
+  .hel-logos {
     overflow-x: auto;
     mask-image: none;
   }
 
-  .hel-commitments-track {
+  .hel-logos-track {
     animation: none !important;
   }
 
-  .hel-commitments-track > [aria-hidden="true"] {
+  .hel-logos-track > [aria-hidden="true"] {
     display: none;
   }
 }

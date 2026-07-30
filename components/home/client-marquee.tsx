@@ -1,24 +1,24 @@
 import Image from "next/image"
 
 import { Container } from "@/components/primitives/container"
-import { Eyebrow } from "@/components/primitives/eyebrow"
-import { Reveal } from "@/components/primitives/reveal"
-import { Section } from "@/components/primitives/section"
 import { clients } from "@/lib/content/clients"
 
 /**
- * Le bandeau de logos clients.
+ * S3 - le bandeau de logos clients, juste après le hero.
  *
- * **Il ne s'affiche pas tant qu'il n'y a rien à montrer.** Deux ou trois logos qui
- * défilent dans une bande conçue pour huit se lisent comme un manque ; et un bandeau
- * « Ils nous font confiance » vide serait pire que son absence. La section rend `null`
- * en dessous de quatre entrées - en dessous, une grille statique dit la même chose
- * sans donner l'impression qu'on étire ce qu'on a.
+ * **C'est la place que cette bande attendait depuis le début.** L'architecture UX y
+ * prévoit « la caution avant le premier scroll d'effort », et une rangée de logos est
+ * exactement cela : reconnaissable sans être lue. Elle a d'abord porté huit noms de
+ * clients inventés, puis les engagements contractuels faute de références réelles ; ces
+ * derniers sont désormais une section pleine en bas de page, où un engagement se lit
+ * posément.
  *
- * Il a remplacé trois témoignages inventés, attribués à des personnes nommées avec
- * fonction et employeur. Un logo réel avec l'accord de son propriétaire vaut mieux
- * qu'un verbatim fabriqué, et le rôle de la section dans l'arc - une voix autre que
- * celle du studio, juste avant la demande - est le même.
+ * **Compacte, volontairement.** Une bande d'une ligne avec son libellé à gauche, pas une
+ * section titrée : à cet endroit de la page, la caution doit se percevoir en passant. Un
+ * `h2` et un chapô en S3 retarderaient le propos du site de deux écrans.
+ *
+ * **Elle ne s'affiche pas tant qu'il n'y a rien à montrer.** Un bandeau « Ils nous font
+ * confiance » vide serait pire que son absence.
  */
 function ClientMarquee() {
   if (clients.length === 0) {
@@ -28,50 +28,57 @@ function ClientMarquee() {
   /*
     Assez de logos pour que le défilement ait un sens ? Sinon, une rangée fixe.
 
-    La bande doit être plus large que l'écran pour boucler sans trou visible. Sous
-    quatre logos, la copie de la liste apparaît dans le même champ de vision et le
-    doublon se voit - on lit deux fois le même nom à trente centimètres d'écart.
+    La bande doit être plus large que l'écran pour boucler sans trou visible. Sous quatre
+    logos, la copie de la liste nécessaire au bouclage apparaît dans le même champ de
+    vision et le doublon se voit - on lit deux fois le même nom à trente centimètres
+    d'écart.
   */
   const defile = clients.length >= 4
 
   return (
-    <Section space="lg" aria-labelledby="confiance-titre">
-      <Container>
-        <Reveal className="mb-9 max-w-[35rem] md:mb-11">
-          <Eyebrow className="mb-4">Preuve</Eyebrow>
-          <h2
-            id="confiance-titre"
-            className="text-[clamp(1.625rem,6.5vw,2.75rem)] leading-[1.1] font-bold"
-          >
-            Ils nous font confiance.
-          </h2>
-        </Reveal>
-      </Container>
+    <section
+      aria-labelledby="confiance-titre"
+      /*
+        Fond clair dans les deux thèmes, et c'est le choix qui rend la bande lisible.
 
-      {/*
-        Hors du `Container` quand ça défile : la bande doit filer d'un bord à l'autre
-        de la fenêtre, sinon le dégradé d'estompage se voit s'arrêter au milieu de
-        l'écran et le défilement a l'air enfermé dans une boîte.
-      */}
-      {defile ? (
-        <div className="hel-commitments group overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)]">
-          <div className="hel-commitments-track flex w-max animate-marquee items-center py-2 group-hover:[animation-play-state:paused] max-menu:[animation-duration:52s]">
-            <LogoRow />
-            <LogoRow hidden />
+        Les huit logos sont trop hétérogènes pour un filtre commun : des logotypes
+        horizontaux et des carrés, des marques foncées et des claires, et deux fichiers
+        dont le fond n'est pas transparent. Toute tentative de les uniformiser en CSS -
+        désaturation, `brightness-0 invert` - en dégradait la moitié : Hexceos devenait un
+        carré gris uni, MyDigitalSchool disparaissait, Yoginette s'effaçait.
+
+        Un plateau clair les montre tels que leurs propriétaires les ont dessinés, ce qui
+        est de toute façon ce qu'on doit à une marque qu'on affiche. Le coût est une bande
+        claire dans une page sombre - assumé, et bien moindre que huit logos illisibles.
+      */
+      className="border-y border-line bg-surface dark:bg-inverse-fg"
+    >
+      <Container className="flex flex-col gap-4 py-6 menu:flex-row menu:items-center menu:gap-9">
+        <h2
+          id="confiance-titre"
+          className="flex-none text-[0.72rem] font-semibold tracking-[0.12em] text-label uppercase"
+        >
+          Ils nous font confiance
+        </h2>
+
+        {defile ? (
+          <div className="hel-logos group min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
+            <div className="hel-logos-track flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] max-menu:[animation-duration:52s]">
+              <LogoRow />
+              <LogoRow hidden />
+            </div>
           </div>
-        </div>
-      ) : (
-        <Container>
-          <ul className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 md:justify-start md:gap-x-16">
+        ) : (
+          <ul className="flex flex-1 flex-wrap items-center gap-x-10 gap-y-5">
             {clients.map((client) => (
               <li key={client.name}>
                 <ClientLogo client={client} />
               </li>
             ))}
           </ul>
-        </Container>
-      )}
-    </Section>
+        )}
+      </Container>
+    </section>
   )
 }
 
@@ -80,7 +87,7 @@ function LogoRow({ hidden = false }: { hidden?: boolean }) {
   return (
     <ul
       aria-hidden={hidden ? "true" : undefined}
-      className="flex shrink-0 items-center gap-12 pr-12 md:gap-16 md:pr-16"
+      className="flex shrink-0 items-center gap-10 pr-10 md:gap-14 md:pr-14"
     >
       {clients.map((client) => (
         <li key={client.name} className="shrink-0">
@@ -92,18 +99,22 @@ function LogoRow({ hidden = false }: { hidden?: boolean }) {
 }
 
 /**
- * Un logo, ramené à une hauteur commune.
+ * Un logo, ramené à un poids visuel comparable.
  *
- * **La hauteur est bornée, jamais la largeur** : les logos clients n'ont pas les mêmes
- * proportions - un carré et un logotype horizontal côte à côte - et fixer la largeur
- * rendrait le carré minuscule et l'horizontal énorme. Une hauteur commune est ce qui
- * les fait peser pareil à l'œil.
+ * **La hauteur est bornée, jamais la largeur** : fixer la largeur rendrait un carré
+ * minuscule et un logotype horizontal énorme.
  *
- * **`grayscale` et une opacité réduite, relevées au survol.** Ce n'est pas une
- * coquetterie : sept logos aux couleurs de sept marques, à pleine saturation, feraient
- * de la bande la zone la plus criarde de la page et voleraient le seul geste orange de
- * l'écran. En gris, ils se lisent comme une liste de références - ce qu'ils sont - et
- * la couleur revient quand on s'y intéresse.
+ * **Mais une hauteur unique ne suffit pas.** Un logotype à 28 px de haut couvre 140 px de
+ * large, un carré n'en couvre que 28 - quatre fois moins de surface pour la même consigne.
+ * Les carrés reçoivent donc plus de hauteur, ce qui est la seule façon de les faire peser
+ * pareil sans mesurer chaque fichier à la main.
+ *
+ * **Aucun filtre.** Une première version désaturait les logos et réduisait leur opacité,
+ * pour éviter que huit marques à pleine couleur ne volent le seul geste orange de l'écran.
+ * L'intention était juste, le résultat non : les logos clairs s'effaçaient, et
+ * `brightness-0 invert` en thème sombre écrasait les formes internes de ceux qui en
+ * dépendent. C'est le plateau clair de la bande qui tient désormais la cohérence, pas un
+ * filtre appliqué aux marques des autres.
  */
 function ClientLogo({ client }: { client: (typeof clients)[number] }) {
   return (
@@ -111,8 +122,10 @@ function ClientLogo({ client }: { client: (typeof clients)[number] }) {
       src={client.logo}
       alt={client.name}
       width={240}
-      height={80}
-      className="h-8 w-auto opacity-70 grayscale transition-[opacity,filter] duration-[200ms] ease-expo hover:opacity-100 hover:grayscale-0 md:h-9 dark:opacity-60 dark:invert dark:hover:opacity-100"
+      height={240}
+      className={
+        client.shape === "square" ? "h-10 w-auto md:h-11" : "h-7 w-auto md:h-8"
+      }
     />
   )
 }
