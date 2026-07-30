@@ -39,19 +39,22 @@ function ClientMarquee() {
     <section
       aria-labelledby="confiance-titre"
       /*
-        Fond clair dans les deux thèmes, et c'est le choix qui rend la bande lisible.
+        La bande suit le thème, et les logos gardent leur couleur dans les deux.
 
-        Les huit logos sont trop hétérogènes pour un filtre commun : des logotypes
-        horizontaux et des carrés, des marques foncées et des claires, et deux fichiers
-        dont le fond n'est pas transparent. Toute tentative de les uniformiser en CSS -
-        désaturation, `brightness-0 invert` - en dégradait la moitié : Hexceos devenait un
-        carré gris uni, MyDigitalSchool disparaissait, Yoginette s'effaçait.
+        Un plateau clair maintenu en thème sombre avait été essayé : il garantissait la
+        lisibilité des huit fichiers, au prix d'une bande blanche dans une page encre.
+        Écarté - la couleur des marques se tient sur les deux fonds, et une section qui
+        ignore le thème se remarque plus qu'un logo un peu moins contrasté.
 
-        Un plateau clair les montre tels que leurs propriétaires les ont dessinés, ce qui
-        est de toute façon ce qu'on doit à une marque qu'on affiche. Le coût est une bande
-        claire dans une page sombre - assumé, et bien moindre que huit logos illisibles.
+        Aucun filtre non plus. La désaturation à opacité réduite effaçait les logos
+        clairs, et `brightness-0 invert` en sombre écrasait les formes internes de ceux
+        qui en dépendent. Les logos sont montrés tels que leurs propriétaires les ont
+        dessinés, ce qu'on doit de toute façon à une marque qu'on affiche.
+
+        Conséquence connue : un fichier à fond opaque foncé - `logo-hexceos.png` - se
+        fond dans la bande en thème sombre. Cela se corrige dans le fichier, pas en CSS.
       */
-      className="border-y border-line bg-surface dark:bg-inverse-fg"
+      className="border-y border-line bg-surface"
     >
       <Container className="flex flex-col gap-4 py-6 menu:flex-row menu:items-center menu:gap-9">
         <h2

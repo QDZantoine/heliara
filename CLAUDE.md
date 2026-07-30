@@ -136,16 +136,19 @@ Piège typographique repéré ainsi : les chiffres tabulaires de Schibsted Grote
 
 ## Le bandeau de logos clients
 
-**Il garde un fond clair dans les deux thèmes**, et c'est le seul endroit du site qui
-ignore le mode sombre. La raison est dans les fichiers, pas dans le goût : huit logos de
-huit marques sont trop hétérogènes pour un traitement commun - logotypes horizontaux et
-carrés, marques foncées et claires, et deux fichiers dont le fond n'est pas transparent.
+**Les logos sont montrés sans aucun filtre, dans les deux thèmes.** Deux traitements ont
+été essayés et abandonnés, mesurés à l'écran : la désaturation avec opacité réduite
+effaçait les logos clairs - Yoginette, Luundi, MyDigitalSchool devenaient illisibles ; et
+`brightness-0 invert` en sombre écrasait les formes internes de ceux qui en dépendent,
+transformant Hexceos en carré gris uni. Un plateau clair maintenu en thème sombre a aussi
+été essayé : il garantissait la lisibilité des huit fichiers, au prix d'une bande blanche
+dans une page encre, et une section qui ignore le thème se remarque plus qu'un logo un peu
+moins contrasté.
 
-Ce qui a été essayé et abandonné, mesuré à l'écran : la désaturation avec opacité réduite
-effaçait les logos clairs ; `brightness-0 invert` en sombre écrasait les formes internes
-de ceux qui en dépendent, et transformait Hexceos en carré gris uni. Un plateau clair les
-montre tels que leurs propriétaires les ont dessinés - ce qu'on doit de toute façon à une
-marque qu'on affiche.
+La couleur des marques se tient sur les deux fonds, et c'est de toute façon ce qu'on doit
+à une marque qu'on affiche. **La conséquence à connaître** : un fichier à fond opaque
+foncé se fond dans la bande en thème sombre. Cela se corrige dans le fichier, pas en CSS -
+d'où l'exigence de fond transparent ci-dessous.
 
 **`shape` décide de la hauteur, pas une valeur unique.** Un logotype à 28 px de haut
 couvre 140 px de large ; un carré n'en couvre que 28, soit quatre fois moins de surface
