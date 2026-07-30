@@ -1,3 +1,21 @@
+/**
+ * Les témoignages clients.
+ *
+ * **Volontairement vide.** Ce fichier a porté trois verbatims inventés, attribués à des
+ * personnes nommées avec leur fonction et leur employeur - Claire Fontaine du Groupe
+ * Ardan, Thomas Meunier de Voltéis, Awa Diallo de Nexa Santé. C'était le contenu le plus
+ * exposé du site : si un homonyme réel existe, le préjudice est réel, et le fichier
+ * lui-même portait la mention « verbatims à faire valider et signer par leurs auteurs ».
+ *
+ * La section qu'ils alimentaient sur l'accueil affiche désormais les logos des clients
+ * réels - voir `lib/content/clients.ts`. Son rôle dans l'arc est le même : une voix
+ * autre que celle du studio, juste avant la demande.
+ *
+ * **Pour la remplir un jour** : un verbatim se demande, se relit et se fait valider par
+ * son auteur, par écrit. Une citation approuvée vaut plus que trois inventées, et deux
+ * mots authentiques valent mieux qu'un paragraphe rédigé pour le client.
+ */
+
 export type Testimonial = {
   quote: string
   name: string
@@ -5,31 +23,4 @@ export type Testimonial = {
   initials: string
 }
 
-/**
- * La voix des pairs, juste avant la demande de contact : la dernière voix
- * entendue doit être celle d’un client (Architecture UX, S8).
- * Verbatims à faire valider et signer par leurs auteurs.
- */
-export const testimonials: Testimonial[] = [
-  {
-    quote:
-      "Ils ont compris notre métier avant de parler technologie. Le produit livré fait exactement ce que nos équipes attendaient - et il tient la charge.",
-    name: "Claire Fontaine",
-    role: "Directrice générale, Groupe Ardan",
-    initials: "CF",
-  },
-  {
-    quote:
-      "Une rigueur rare, du cadrage à la mise en production. Les jalons annoncés ont tous été tenus, sans exception.",
-    name: "Thomas Meunier",
-    role: "DSI, Voltéis Industrie",
-    initials: "TM",
-  },
-  {
-    quote:
-      "Le code nous appartient, la documentation est impeccable, la réversibilité est réelle. C’est la première fois qu’un prestataire nous laisse aussi libres.",
-    name: "Awa Diallo",
-    role: "CTO, Nexa Santé",
-    initials: "AD",
-  },
-]
+export const testimonials: readonly Testimonial[] = []

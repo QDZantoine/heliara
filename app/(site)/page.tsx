@@ -4,7 +4,7 @@ import { Hero } from "@/components/home/hero"
 import { CommitmentsMarquee } from "@/components/home/commitments-marquee"
 import { KpiBand } from "@/components/home/kpi-band"
 import { MethodPreview } from "@/components/home/method-preview"
-import { Testimonials } from "@/components/home/testimonials"
+import { ClientMarquee } from "@/components/home/client-marquee"
 import { FinalCta } from "@/components/sections/final-cta"
 import { listPublicCases } from "@/lib/db/public-cases"
 import { pageMetadata } from "@/lib/seo"
@@ -54,7 +54,7 @@ export default async function HomePage() {
       <MethodPreview />
       <CaseList cases={featured} />
       <KpiBand />
-      <Testimonials />
+      <ClientMarquee />
       <FinalCta />
     </>
   )

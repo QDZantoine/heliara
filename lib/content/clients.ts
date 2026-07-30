@@ -1,21 +1,99 @@
 /**
- * Les références clientes du bandeau de preuve sociale (S3).
+ * Les références clientes du bandeau de preuve sociale.
  *
- * **Volontairement vide.** Elle portait huit noms inventés - Groupe Ardan, Voltéis
- * Industrie, CHU Rhône-Nord et cinq autres - sous le libellé « Ils nous font
- * confiance ». Le studio est jeune et n'a pas encore de référence citable avec
- * l'accord de son client : une section absente vaut mieux qu'une section fausse, et
- * c'est le premier élément de caution que voit un visiteur.
+ * **Ce fichier a porté huit noms inventés** - Groupe Ardan, Voltéis Industrie, CHU
+ * Rhône-Nord et cinq autres - sous le libellé « Ils nous font confiance ». Ils ont été
+ * retirés : le studio n'avait alors aucune référence citable, et une section absente
+ * vaut mieux qu'une section fausse.
  *
- * **Ne jamais y mettre les références d'une marque sœur.** Les clients de
- * LessonSharing ou d'Hexceos ne sont pas ceux de Heliara, et ce sont des marques de
- * tiers réelles : les afficher ici serait un usage de marque sans autorisation autant
- * qu'une affirmation fausse. Elles ont leur place sur `/le-groupe`, attribuées à la
- * marque qui les sert, et seulement si l'autorisation d'usage de logo s'étend à ce
- * site.
+ * **Une seule condition pour ajouter une entrée : l'accord du client pour être cité.**
+ * Un logo est une marque, et l'afficher sous « ils nous font confiance » est une
+ * affirmation commerciale. L'accord se demande une fois et se garde par écrit.
  *
- * **Comment la remplir.** Un nom par référence, dans l'ordre d'affichage, et une seule
- * condition : l'accord écrit du client pour être cité. Cette liste ne pilote plus
- * le bandeau d'engagements de l'accueil, qui a son propre composant marquee.
+ * **Ne jamais y mettre une marque sœur.** Hexceos et LessonSharing ne sont pas des
+ * clientes de Heliara : ce sont des marques du même groupe. Elles ont leur place dans
+ * `siblingBrands` ci-dessous, sous un libellé qui dit ce qu'elles sont, et l'endossement
+ * de groupe vit de toute façon dans le pied de page et sur `/le-groupe`.
+ *
+ * Le bandeau ne s'affiche pas quand la liste est vide : il n'y a rien à annoncer.
  */
-export const clients: readonly string[] = []
+
+export type Client = {
+  /** Le nom, tel qu'il s'écrit. Sert d'alternative textuelle au logo. */
+  name: string
+  /**
+   * Le logo, dans `public/logos/clients/`.
+   *
+   * SVG de préférence - il reste net à toutes les tailles et pèse moins. À défaut, un
+   * PNG à fond transparent d'au moins 240 px de haut.
+   */
+  logo: string
+  /** Le site du client. Le bandeau ne fait pas de lien : c'est une preuve, pas une pub. */
+  site: string
+}
+
+/**
+ * Les clients, dans l'ordre d'affichage.
+ *
+ * À compléter avec les logos, une fois récupérés et l'accord obtenu. Les sites sont
+ * notés dès maintenant pour que la provenance de chaque logo reste traçable.
+ */
+export const clients: readonly Client[] = [
+  // {
+  //   name: "Be Skilled Lab",
+  //   logo: "/logos/clients/be-skilled-lab.svg",
+  //   site: "https://be-skilledlab.fr",
+  // },
+  // {
+  //   name: "Yoginette",
+  //   logo: "/logos/clients/yoginette.svg",
+  //   site: "https://yoginette.fr",
+  // },
+  // {
+  //   name: "DK Clim",
+  //   logo: "/logos/clients/dk-clim.svg",
+  //   site: "https://dk-clim.fr",
+  // },
+  // {
+  //   name: "BSL Portage",
+  //   logo: "/logos/clients/bsl-portage.svg",
+  //   site: "https://bslportage.fr",
+  // },
+  // {
+  //   name: "South Clean",
+  //   logo: "/logos/clients/south-clean.svg",
+  //   site: "https://southclean.fr",
+  // },
+  // {
+  //   name: "Luundi",
+  //   logo: "/logos/clients/luundi.svg",
+  //   site: "https://luundi.fr",
+  // },
+  // {
+  //   name: "Rabbit Web",
+  //   logo: "/logos/clients/rabbit-web.svg",
+  //   site: "https://rabbitweb.fr",
+  // },
+]
+
+/**
+ * Les deux marques sœurs, **si l'on choisit de les montrer**.
+ *
+ * Séparées des clients parce qu'elles n'en sont pas, et que le libellé du bandeau ne
+ * peut pas couvrir les deux. Leur inclusion demande un titre distinct - « Adossé à un
+ * groupe » plutôt que « Ils nous font confiance » - et déroge à la règle qui réserve
+ * l'endossement de groupe au pied de page, à `/le-groupe` et à une ligne sur
+ * `/a-propos`. Le choix est donc explicite, pas un effet de bord.
+ */
+export const siblingBrands: readonly Client[] = [
+  {
+    name: "Hexceos",
+    logo: "/logos/logo-hexceos.png",
+    site: "https://hexceos.fr",
+  },
+  {
+    name: "LessonSharing",
+    logo: "/logos/logo-lessonsharing.png",
+    site: "https://lessonsharing.fr",
+  },
+]

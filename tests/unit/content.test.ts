@@ -18,6 +18,7 @@ import {
   getCase,
   getNextCase,
 } from "@/lib/content/cases"
+import { clients, siblingBrands } from "@/lib/content/clients"
 import { guarantees } from "@/lib/content/guarantees"
 import {
   expertiseFamilies,
@@ -411,12 +412,34 @@ describe("équipe et contact", () => {
 })
 
 describe("preuve sociale", () => {
-  it("attribue chaque témoignage à une personne identifiée", () => {
-    expect(testimonials.length).toBeGreaterThan(0)
+  /**
+   * Le test précédent exigeait des témoignages non vides, ce qui garantissait surtout
+   * que trois verbatims inventés restent en place. Ce qui compte est l'inverse : s'il y
+   * en a, chacun doit être attribuable à une personne identifiée. Une liste vide est un
+   * état valide - et c'est l'état actuel.
+   */
+  it("attribue chaque témoignage à une personne identifiée, s'il y en a", () => {
     for (const testimonial of testimonials) {
       expect(testimonial.quote, testimonial.name).not.toBe("")
       expect(testimonial.name).not.toBe("")
       expect(testimonial.role, testimonial.name).not.toBe("")
+    }
+  })
+
+  /**
+   * Le bandeau de l'accueil ne montre que de vraies références.
+   *
+   * Une marque sœur n'est pas une cliente : la glisser dans `clients` la ferait
+   * apparaître sous « Ils nous font confiance », ce qui serait faux. Le test compare les
+   * deux listes pour que l'erreur ne puisse pas passer par une copie hâtive.
+   */
+  it("ne fait pas passer une marque sœur pour une cliente", () => {
+    const soeurs = new Set(siblingBrands.map((one) => one.name.toLowerCase()))
+    for (const client of clients) {
+      expect(client.name).not.toBe("")
+      expect(client.logo, client.name).not.toBe("")
+      expect(client.site, client.name).toMatch(/^https:\/\//)
+      expect(soeurs.has(client.name.toLowerCase()), client.name).toBe(false)
     }
   })
 
