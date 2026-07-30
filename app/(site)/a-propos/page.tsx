@@ -89,7 +89,22 @@ export default function AProposPage() {
                     <h3 className="font-display text-[1.0625rem] font-bold tracking-[-0.01em] text-ink">
                       {person.name}
                     </h3>
-                    <p className="mb-2.5 text-[0.82rem] font-medium text-brand-text">
+                    {/*
+                      Deux lignes réservées au rôle, même quand il n'en occupe qu'une.
+
+                      « Fondateur du groupe - stratégie, sécurité & infrastructure »
+                      passe sur deux lignes là où les deux autres tiennent sur une :
+                      sans réserve, la bio de cette carte démarrait vingt pixels plus
+                      bas que ses voisines, et l'œil lit ce décalage comme un défaut
+                      d'alignement de toute la rangée.
+
+                      L'unité `lh` vaut une hauteur de ligne du bloc : la réserve suit
+                      la taille du texte au lieu d'être un nombre de pixels à corriger
+                      si l'échelle typographique bouge. Un rôle qui atteindrait trois
+                      lignes décalerait à nouveau - deux est ce que la plus longue
+                      formulation demande aujourd'hui.
+                    */}
+                    <p className="mb-2.5 min-h-[2lh] text-[0.82rem] font-medium text-brand-text">
                       {person.role}
                     </p>
                     <p className="mb-5 flex-1 text-[0.845rem] leading-relaxed text-body">

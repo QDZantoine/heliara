@@ -54,6 +54,44 @@ export const expertiseFamilies: ExpertiseFamily[] = [
   },
 ]
 
+/**
+ * L'illustration en tête de carte, par famille.
+ *
+ * **Une table à part, et non un champ de `ExpertiseFamily`.** Les familles sont
+ * administrables : quelqu'un peut en créer une depuis l'administration, où il n'y a pas
+ * de dépôt de fichier pour ce visuel. Une famille absente de cette table retombe donc
+ * sur le croquis d'interface abstrait, qui se règle lui par ses trois barres et son
+ * étiquette - les champs de l'administration gardent ainsi un effet, au lieu de devenir
+ * des réglages sans conséquence.
+ *
+ * Les dimensions viennent du `viewBox` de chaque fichier. Elles sont déclarées pour que
+ * la boîte soit réservée avant le chargement : sans elles, l'arrivée de l'illustration
+ * décalerait la mise en page.
+ *
+ * Couleurs vérifiées avant intégration, comme le veut la règle du projet : les trois
+ * fichiers portent déjà l'orange de marque `#e9591f`. Aucune recoloration nécessaire.
+ */
+export const familyIllustrations: Record<
+  string,
+  { src: string; width: number; height: number }
+> = {
+  "plateformes-saas": {
+    src: "/illustrations/sass-illustration.svg",
+    width: 1095,
+    height: 714,
+  },
+  "sites-e-commerce": {
+    src: "/illustrations/website-illustration.svg",
+    width: 876,
+    height: 661,
+  },
+  "ia-api": {
+    src: "/illustrations/ia-illustration.svg",
+    width: 800,
+    height: 524,
+  },
+}
+
 export type ExpertiseService = {
   slug: string
   family: ExpertiseFamilySlug

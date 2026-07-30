@@ -206,6 +206,23 @@ déploiements, y compris celui de l'administration où tout le reste répond 404
 
 `public/illustrations/` accueille les illustrations SVG statiques, servies par `next/image` en `unoptimized` : l'optimiseur n'apporte rien sur un SVG. Elles sont décoratives, donc `alt=""` et hors arbre d'accessibilité.
 
+Trois illustrations portent les cartes de familles d'expertise de l'accueil :
+`sass-illustration.svg`, `website-illustration.svg`, `ia-illustration.svg`. Elles ont
+remplacé un croquis de barres grises qui se lisait comme un wireframe - trois filets et
+une étiquette monospace suggéraient une interface sans en montrer aucune, ce qui donnait
+à la section l'air d'une maquette inachevée.
+
+**Le croquis reste, en repli.** `familyIllustrations` associe un fichier à un slug de
+famille ; une famille absente de la table retombe sur `ExpertiseSketch`. C'est ce qui
+permet de créer une famille depuis l'administration sans écran de dépôt de fichier, et
+ce qui garde un effet aux trois barres réglables de l'administration - sans ce repli,
+elles seraient devenues des réglages sans conséquence.
+
+**Elles fonctionnent sur les deux thèmes sans recoloration**, pour la même raison que
+`hero-product.json` : leurs panneaux clairs se lisent comme des écrans allumés sur
+l'encre. Leurs traits en `#090814` s'y fondent, mais la composition tient parce que ce
+sont les surfaces claires qui portent les formes. Vérifié à l'écran, pas supposé.
+
 `three-process.svg` (hero de `/le-groupe`) vient d'undraw, signée Katerina Limpitsouni - conserver l'attribution portée par le fichier. Son unique couleur hors palette, un carré rose, a été passée au bleu LessonSharing pour que les trois teintes de la page se retrouvent dans le visuel. **Toujours vérifier les couleurs d'une illustration importée avant de l'intégrer**, et la recolorer plutôt que d'accepter une teinte étrangère à la DA.
 
 Limite connue et acceptée : les flèches de ce fichier sont en `#090814` et perdent leur contraste sur fond encre. La composition reste lisible ; recolorer ces neuf occurrences délaverait aussi les cheveux et les chaussures du personnage en thème clair.
