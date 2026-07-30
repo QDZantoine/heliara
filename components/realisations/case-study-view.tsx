@@ -6,11 +6,14 @@ import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { RichHtml } from "@/components/primitives/rich-html"
+import {
+  CaseCover,
+  type CoverMedia,
+} from "@/components/realisations/case-cover"
 import { Section } from "@/components/primitives/section"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
-import { CaseHeroSketch } from "@/components/visuals/case-hero-sketch"
 import { caseHref } from "@/lib/content/cases"
 import { cta } from "@/lib/site"
 
@@ -28,6 +31,8 @@ export type CaseView = {
   heroTitle: string
   badge: string
   accent: "brand" | "info"
+  /** L'image de tête, absente tant qu'aucune n'a été déposée. */
+  heroMedia?: CoverMedia
   resultsLabel: string
   meta: readonly { label: string; value: string }[]
   chapters: readonly {
@@ -101,7 +106,11 @@ function CaseStudyView({
             </Reveal>
           </div>
           <Reveal>
-            <CaseHeroSketch accent={study.accent} />
+            <CaseCover
+              media={study.heroMedia}
+              accent={study.accent}
+              place="hero"
+            />
           </Reveal>
         </Container>
       </section>

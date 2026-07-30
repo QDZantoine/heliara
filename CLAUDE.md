@@ -738,6 +738,58 @@ modèle possible : en `INVOKER`, la procédure s'exécute avec les droits de
 l'appelant, donc un compte sans droit de table échoue à l'intérieur même de la
 procédure. Aucune clause `DEFINER = ...` explicite, pour ne pas exiger `SET USER`.
 
+### L'image de tête, et deux défauts qui ne se voyaient pas
+
+`CaseCover` rend la couverture d'une réalisation aux **quatre** endroits qui l'affichent :
+hero de la fiche, carte du hub, carte de l'accueil, et l'aperçu de brouillon - qui
+construit sa vue à la main et l'aurait donc oubliée. **Sans média, il rend le croquis
+d'origine** (`CaseHeroSketch`, `CaseCardSketch`, `CaseSketch`) : une fiche sans image ne
+change pas d'un pixel.
+
+L'image remplace **le contenu de la fenêtre, pas la fenêtre** : le halo, le cadre
+flottant, son ombre et son débord restent. C'est la profondeur par les couches, et c'est
+ce qui fait qu'une capture de site se lit comme un écran allumé plutôt qu'une photo
+collée. Pas de halo sur le hero, sa section en portant déjà un.
+
+Deux défauts se cumulaient, et **aucun ne se voyait au build, au typecheck ou dans les
+journaux** :
+
+1. **`heroMedia` n'était consommé nulle part.** La chaîne était complète - MinIO, la
+   ligne `media`, `hero_media_id`, les colonnes des procédures `pub_*`, `heroMedia`
+   construit par `lib/db/public-cases.ts` - et les trois vues dessinaient toujours le
+   croquis. Déposer une image n'avait aucun effet. `CaseSketch` portait depuis l'origine
+   le commentaire « à remplacer par les captures réelles ». Le même défaut valait pour le
+   texte alternatif : `set_media_alt`, son privilège et l'action `setMediaAlt` existaient,
+   sans rien pour les appeler. **Une donnée qui arrive jusqu'au composant et qu'il ignore
+   ne produit aucun signal** : c'est le mode de panne à suspecter quand une écriture
+   réussit et ne se voit pas.
+2. **`next/image` refusait le fichier, deux fois.** `remotePatterns` portait le `pathname`
+   `/heliara`, comparé de façon exacte, alors qu'une image est à `/heliara/public/…` :
+   d'où le `/**`. Et **Next 16 refuse par défaut toute image distante dont l'hôte résout
+   sur une IP privée** (`dangerouslyAllowLocalIP: false`), ce qui vise MinIO en
+   développement. Le piège est que ce refus rend **le même 400 `"url" parameter is not
+   allowed` qu'un motif absent** : on cherche dans `remotePatterns` un défaut qui n'y est
+   pas, et la cause ne se lit que dans le journal du serveur, « resolved to private ip ».
+   Le drapeau est ouvert **selon l'hôte et non selon `NODE_ENV`**, pour qu'un stockage
+   réellement public reste protégé même sur un build de production lancé en local, et le
+   risque reste borné par `remotePatterns`.
+
+**Un changement de `next.config.ts` demande un vrai redémarrage.** Le serveur de dev
+recharge le rendu mais garde la configuration de son optimiseur d'images : l'un passe,
+l'autre continue de répondre 400. Ne pas conclure que le correctif est faux.
+
+**Ne pas lancer un troisième serveur de dev pour vérifier.** `NEXT_DIST_DIR` permet deux
+processus, pas trois : un troisième corrompt le cache Turbopack, et le symptôme est un
+« Parsing CSS source code failed » sur `app/globals.css` avec des octets abîmés dans le
+CSS **généré**. La source est intacte, le correctif est `rm -rf .next-read .next-write`
+puis un redémarrage. Vérifier une page se fait par CDP sur les serveurs déjà en marche.
+
+`curl` ne suffit pas pour vérifier un rendu : la réponse contient surtout la charge RSC,
+et une section absente du HTML récupéré n'est pas une section absente de la page.
+
+Limite connue : la **galerie** d'une réalisation est saisissable et enregistrée, mais
+n'est rendue par aucune vue publique.
+
 ### Aperçu de brouillon
 
 `/admin/realisations/[slug]/apercu`, servi par l'administration, **et il ne peut
@@ -796,6 +848,14 @@ ni avertissement - ce défaut ne se voit qu'en relevant les attributs dans le DO
   à MinIO, une seconde action confirme. `XMLHttpRequest` et non `fetch`, seule API
   qui rapporte la progression d'un envoi. Le média n'est `ready` qu'après
   confirmation : un envoi interrompu ne laisse rien d'affichable.
+- **Le texte alternatif de l'image de tête** se saisit dans l'étape Visuels, et
+  l'étape écrit **deux procédures en séquence** : `update_case_study` rattache l'image,
+  `set_media_alt` la décrit - l'alternative appartient au média, pas à la fiche.
+  L'écriture est conditionnée à un changement réel, sans quoi chaque enregistrement de
+  n'importe quelle étape déposerait une ligne `media.set_alt` dans l'audit ; la
+  comparaison porte sur le média **de même identifiant**, l'alternative en base après un
+  remplacement d'image étant celle du nouveau fichier. Il est légitime de le laisser
+  vide : la couverture est posée sous le titre, qui nomme déjà le projet.
 - **Éditeur riche** : `RichText`, sur Tiptap. Jeu de marques volontairement court -
   gras, italique, lien, listes, citation. Ni titres ni couleurs : la hiérarchie et
   la typographie appartiennent à la DA, pas à la personne qui rédige.

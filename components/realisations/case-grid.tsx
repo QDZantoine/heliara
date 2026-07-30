@@ -4,12 +4,24 @@ import * as React from "react"
 import Link from "next/link"
 
 import { Reveal } from "@/components/primitives/reveal"
-import { CaseCardSketch } from "@/components/visuals/case-card-sketch"
+import {
+  CaseCover,
+  type CoverMedia,
+} from "@/components/realisations/case-cover"
 import { caseHref, type CaseStudy } from "@/lib/content/cases"
 import { cn } from "@/lib/utils"
 
+/**
+ * Les fiches, augmentées de leur couverture éventuelle.
+ *
+ * `CaseStudy` décrit le contenu statique, qui n'a pas de média : le visuel n'existe
+ * qu'en base. L'intersection garde le composant ignorant de la provenance sans lui
+ * cacher l'image.
+ */
+export type GridCase = CaseStudy & { heroMedia?: CoverMedia }
+
 type CaseGridProps = {
-  cases: CaseStudy[]
+  cases: GridCase[]
   sectors: string[]
 }
 
@@ -82,9 +94,11 @@ function CaseGrid({ cases, sectors }: CaseGridProps) {
                   href={caseHref(study.slug)}
                   className="flex w-full flex-col overflow-hidden rounded-lg border border-line bg-surface transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-1 hover:shadow-3 active:translate-y-0"
                 >
-                  <CaseCardSketch
+                  <CaseCover
+                    media={study.heroMedia}
                     halo={study.halo}
                     accent={study.accent}
+                    place="card"
                     tall={wide}
                   />
                   <div className="flex flex-1 flex-col gap-2.5 p-6">

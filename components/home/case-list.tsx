@@ -5,7 +5,10 @@ import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
-import { CaseSketch } from "@/components/visuals/case-sketch"
+import {
+  CaseCover,
+  type CoverMedia,
+} from "@/components/realisations/case-cover"
 import type { CaseStudy } from "@/lib/content/cases"
 import { cn } from "@/lib/utils"
 
@@ -17,7 +20,9 @@ import { cn } from "@/lib/utils"
  * Les cas arrivent en prop plutôt qu'importés : la page les lit en base, avec repli
  * sur le contenu statique. Le composant reste ignorant de leur provenance.
  */
-function CaseList({ cases }: { cases: CaseStudy[] }) {
+export type ListCase = CaseStudy & { heroMedia?: CoverMedia }
+
+function CaseList({ cases }: { cases: ListCase[] }) {
   return (
     <Section
       id="realisations"
@@ -85,7 +90,12 @@ function CaseList({ cases }: { cases: CaseStudy[] }) {
                         </p>
                       ) : null}
                     </div>
-                    <CaseSketch halo={study.halo} accent={study.accent} />
+                    <CaseCover
+                      media={study.heroMedia}
+                      halo={study.halo}
+                      accent={study.accent}
+                      place="home"
+                    />
                   </Link>
                 </Reveal>
               </li>

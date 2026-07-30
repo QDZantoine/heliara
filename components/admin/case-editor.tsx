@@ -9,6 +9,7 @@ import {
   setChapters,
   setGallery,
   setLessons,
+  setMediaAlt,
   setMeta,
   setResults,
   updateCase,
@@ -120,8 +121,34 @@ function CaseEditor({ item }: { item: CaseDetail }) {
           ]
         : ([] as UploadedMedia[]),
     },
-    ({ heroMedia, ...rest }) =>
-      updateCase(item.id, { ...rest, heroMediaId: heroMedia[0]?.id ?? null })
+    /*
+      Deux procédures en séquence, parce que le texte alternatif n'appartient pas à la
+      fiche mais au média : `update_case_study` rattache l'image, `set_media_alt` décrit
+      son contenu. Un bouton par procédure serait fidèle à la plomberie et
+      incompréhensible à l'usage - l'étape enregistre tout ce qu'elle touche.
+
+      **L'écriture de l'alternative est conditionnée à un changement**, sans quoi chaque
+      enregistrement de n'importe quelle étape déposerait une ligne `media.set_alt` dans
+      le journal d'audit. La comparaison porte sur le média **de même identifiant** :
+      après remplacement de l'image, l'alternative en base est celle du nouveau fichier,
+      c'est-à-dire vide, et non celle du précédent.
+    */
+    async ({ heroMedia, ...rest }) => {
+      const fait = await updateCase(item.id, {
+        ...rest,
+        heroMediaId: heroMedia[0]?.id ?? null,
+      })
+      if (fait.status !== "ok") {
+        return fait
+      }
+
+      const hero = heroMedia[0]
+      if (!hero) {
+        return fait
+      }
+      const enBase = hero.id === item.heroMedia?.id ? item.heroMedia.alt : ""
+      return hero.alt === enBase ? fait : setMediaAlt(hero.id, hero.alt)
+    }
   )
   const v = fiche.values
   const set = fiche.set
@@ -561,6 +588,34 @@ function CaseEditor({ item }: { item: CaseDetail }) {
               value={v.heroMedia}
               onChange={(media) => set("heroMedia", media)}
             />
+
+            {/*
+              Le champ n'apparaît qu'une fois l'image déposée : sans média, il n'y a rien
+              à décrire, et `set_media_alt` a besoin d'un identifiant.
+            */}
+            {v.heroMedia[0] ? (
+              <Field
+                label="Texte alternatif"
+                hint="Ce que les lecteurs d'écran annoncent, et ce qui s'affiche si l'image ne charge pas. À laisser vide si l'image ne fait qu'illustrer : elle est posée juste sous le titre de la fiche, qui nomme déjà le projet, et une alternative redondante ferait entendre la même chose deux fois. À remplir dès qu'elle montre quelque chose que le texte ne dit pas."
+                example="La page d'accueil du site, avec le menu des trois métiers déroulé"
+              >
+                <input
+                  className={input}
+                  maxLength={300}
+                  value={v.heroMedia[0].alt}
+                  onChange={(event) =>
+                    set("heroMedia", [
+                      { ...v.heroMedia[0], alt: event.target.value },
+                    ])
+                  }
+                />
+              </Field>
+            ) : null}
+            {v.heroMedia[0] ? (
+              <div className="-mt-3 flex justify-end">
+                <Counter value={v.heroMedia[0].alt} max={300} />
+              </div>
+            ) : null}
           </Fieldset>
 
           <Fieldset
