@@ -1,5 +1,6 @@
 import "server-only"
 
+import { isoDay } from "@/lib/date"
 import { write } from "@/lib/db/call"
 import { toHex } from "@/lib/db/id"
 import { publicUrl } from "@/lib/s3"
@@ -52,21 +53,6 @@ export type ArticleDetail = Omit<ArticleSummary, "blockCount"> & {
 
 const bool = (value: unknown) => value === 1 || value === true
 const text = (value: unknown) => (typeof value === "string" ? value : "")
-
-/**
- * Une date `DATE` de MariaDB arrive en `Date` avec `mysql2`. On la ramène en ISO
- * court, la forme que le formulaire manipule.
- *
- * Le découpage sur `toISOString` plutôt qu'un formatage local : la colonne est un
- * jour sans fuseau, et un `toLocaleDateString` pourrait décaler d'un jour selon
- * l'heure du serveur.
- */
-function isoDay(value: unknown): string {
-  if (value instanceof Date) {
-    return value.toISOString().slice(0, 10)
-  }
-  return typeof value === "string" ? value.slice(0, 10) : ""
-}
 
 type SummaryRow = {
   id: Buffer

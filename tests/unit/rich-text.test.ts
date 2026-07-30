@@ -46,7 +46,12 @@ describe("ce que l'éditeur produit est accepté", () => {
   })
 
   it("un lien interne, un courriel, un téléphone, une ancre", () => {
-    for (const href of ["/contact", "mailto:a@b.fr", "tel:+33100000000", "#ici"]) {
+    for (const href of [
+      "/contact",
+      "mailto:a@b.fr",
+      "tel:+33100000000",
+      "#ici",
+    ]) {
       expect(accepts(`<p><a href="${href}">x</a></p>`), href).toBe(true)
     }
   })

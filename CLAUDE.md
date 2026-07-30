@@ -409,6 +409,11 @@ Ce que ces tests ont appris, à ne pas redécouvrir :
   capture, donc aucun gestionnaire de l'arbre ne peut le précéder.
 - **`AGENTS.md` est exclu du contrôle typographique** : son bloc est posé et
   régénéré par l'outillage Next, le corriger serait défait au prochain passage.
+- **Un test d'ordre sur `GenerateKey()` ne doit porter que sur l'horodatage.** Un UUID
+  v7 n'est totalement ordonné dans une même milliseconde que s'il embarque un compteur ;
+  le nôtre remplit sa queue avec `RANDOM_BYTES()`. Comparer deux identifiants complets
+  échouait au hasard environ un lancement sur sept, et l'horodatage de tête suffit à la
+  propriété visée - la localité d'insertion InnoDB.
 
 Un défaut trouvé par ces tests, pour mémoire : le schéma de contact **refusait**
 un champ leurre rempli, alors que la conception veut qu'il l'accepte et laisse
@@ -532,6 +537,45 @@ double.
 
 ### Interface
 
+Les trois éditeurs - réalisations, articles, expertises - partagent **un seul moule**.
+Ajouter une quatrième collection, c'est décrire ses étapes, pas réécrire un écran.
+
+| Pièce                    | Rôle                                                                     |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `editor-state.ts`        | l'état de saisie, hissé au-dessus des panneaux, et ce qu'une étape enregistre |
+| `step-editor.tsx`        | le rail d'étapes et la barre d'enregistrement                            |
+| `publish-panel.tsx`      | ce qu'il manque pour publier, **avant** le clic                          |
+| `placement.tsx`          | le bloc du site dessiné à côté du champ qui le remplit                   |
+| `form-kit.tsx`           | champ, groupe, sélecteur, interrupteur, compteur, liste vide, erreur de ligne |
+| `editor-header.tsx`      | fil d'Ariane, statut, aperçu, lien public, suppression en deux temps      |
+| `create-dialog.tsx`      | la coque des créations, et le champ d'identifiant d'URL avec son aperçu   |
+
+**Des étapes, mais pas un assistant.** Un assistant impose l'ordre et verrouille ce qui
+n'a pas été validé : il faut ça pour une première saisie, c'est insupportable ensuite
+quand on revient corriger une phrase. Les étapes sont numérotées, portent leur état et
+proposent « Enregistrer et continuer », mais toutes restent atteignables d'un clic.
+
+**Hisser l'état hors des panneaux est ce qui autorise le découpage.** Tant qu'un onglet
+était un formulaire, le découpage suivait les procédures d'écriture :
+`update_case_study` prend la fiche entière, donc ses trente champs devaient tenir dans
+un seul écran. L'état vivant dans l'éditeur, une étape peut n'en montrer que quatre et
+enregistrer le tout. Une étape enregistre **tout ce qu'elle touche**, ce qui peut viser
+plusieurs procédures en séquence (`commitAll`) - un bouton par procédure était fidèle à
+la plomberie et incompréhensible à l'usage.
+
+**Les aperçus de placement suivent la frappe, l'état des étapes non.** Le premier doit
+répondre à la saisie ; le second est calculé sur les données **enregistrées**, parce que
+la publication interroge la base et qu'une pastille qui verdirait à la frappe
+promettrait ce que la base refuserait encore. Le panneau de publication duplique
+volontairement les exigences des procédures `publish_*` : la base reste l'autorité, ce
+miroir n'achète que le confort de savoir avant d'essayer.
+
+**`data-active`, pas `data-selected`.** C'est l'attribut que pose cette version de Base
+UI. Les quatre barres d'onglets de l'administration visaient `data-selected` : elles
+n'avaient donc **aucune** marque d'onglet actif, et l'on ne repérait la position qu'à
+l'anneau de focus. Un sélecteur Tailwind qui ne correspond à rien ne produit ni erreur
+ni avertissement - ce défaut ne se voit qu'en relevant les attributs dans le DOM.
+
 - **Glisser-déposer d'images** : `MediaDropzone`. Le fichier ne traverse pas
   l'application - l'action signe une URL, le navigateur envoie l'octet directement
   à MinIO, une seconde action confirme. `XMLHttpRequest` et non `fetch`, seule API
@@ -544,8 +588,22 @@ double.
 - **Réordonnancement** : `SortableList`, sur dnd-kit, **à la souris et au clavier**.
   C'est la raison de la dépendance : l'API de glisser-déposer du navigateur n'a
   aucun équivalent clavier.
-- **Chaque onglet de l'éditeur s'enregistre séparément** : une saisie invalide dans
-  un onglet ne fait pas perdre le travail fait dans un autre.
+- **Chaque étape s'enregistre séparément** : une saisie invalide dans une étape ne fait
+  pas perdre le travail fait dans une autre, et changer d'étape ne perd rien.
+- **Les chapitres d'une réalisation sont en accordéon, un seul ouvert à la fois** -
+  huit éditeurs riches empilés faisaient plusieurs écrans de haut, on perdait le plan
+  de la fiche, et huit instances de Tiptap tournaient pour une seule qu'on utilisait.
+  **Les blocs d'un article, non**, et la différence est délibérée : un chapitre porte un
+  titre, donc replié il reste identifiable et la liste fait sommaire ; un paragraphe
+  d'article n'a que son texte, et rédiger de la prose demande de passer sans cesse d'un
+  paragraphe au suivant. Un accordéon y coûterait un clic par phrase déplacée.
+- **Créer n'exige que le minimum** - titre, adresse, et le champ sans lequel la fiche
+  n'a pas de place (secteur, catégorie, famille). La complétude est exigée à la
+  publication : réclamer tout à la création obligerait à préparer le contenu hors de
+  l'outil.
+- **`lib/slug.ts` reproduit `Slugify()` en SQL**, uniquement pour montrer l'adresse
+  avant d'enregistrer. La valeur qui compte est produite par la base quand le champ est
+  laissé vide, et c'est le test d'intégration qui la vérifie.
 - `useOptimistic` pour le réordonnancement, jamais un `useState` recopié des props :
   React retombe seul sur la valeur du serveur, donc ni rollback à écrire ni
   synchronisation par effet - ce que `react-hooks/set-state-in-effect` refuse.
@@ -571,6 +629,22 @@ Deux dates, et ce n'est pas une redondance : `published_on` en ISO trie et alime
 le plan du site, `date_label` s'affiche en français. Formater l'un depuis l'autre en
 SQL dépendrait de la locale du serveur, et « été 2026 » est parfois plus juste
 qu'une date exacte.
+
+**Un jour de calendrier ne se ramène jamais en ISO par `toISOString()`.** `mysql2` rend
+une colonne `DATE` en `Date` positionnée à minuit **local** ; la reconvertir en UTC la
+fait reculer d'un jour partout à l'est de Greenwich. Le défaut était en production et
+silencieux : la base contenait le 12 juillet, l'éditeur affichait le 11, et enregistrer
+la fiche écrivait le 11 - la date d'un article reculait d'un jour à chaque passage dans
+l'éditeur, et le détail des vues quotidiennes était décalé d'autant. `lib/date.ts`
+(`isoDay`, `todayIso`) ne raisonne qu'en composantes locales, et `tests/unit/date.test.ts`
+le verrouille dans n'importe quel fuseau. Ni le build ni le typecheck ne voyaient quoi
+que ce soit, et le commentaire d'origine affirmait l'inverse - qu'un formatage local
+risquerait de décaler.
+
+Le détail des trente jours est **reconstitué côté écran**, tous les jours y compris
+ceux sans vue. La base ne rend que les jours qui ont une ligne, ce qui est juste pour
+elle et faux à l'affichage : avec un seul jour de trafic, l'unique barre en `flex-1`
+prenait toute la largeur et l'histogramme se lisait comme un mois entier au maximum.
 
 **La mise en avant est exclusive**, portée par `set_article_featured` et non par le
 formulaire : le flux public affiche un article en tête et l'exclut de la grille, donc

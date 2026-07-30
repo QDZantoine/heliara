@@ -1,51 +1,59 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { Tabs } from "@base-ui/react/tabs"
-import {
-  Archive,
-  Check,
-  ExternalLink,
-  Eye,
-  Globe,
-  Loader2,
-  Trash2,
-} from "lucide-react"
+import { Loader2, Star } from "lucide-react"
 
 import {
   deleteArticle,
   publishArticle,
   setBlocks,
+  setFeatured,
   updateArticle,
 } from "@/app/admin/(protected)/articles/actions"
+import { BlockEditor } from "@/components/admin/block-editor"
+import { EditorHeader } from "@/components/admin/editor-header"
+import { useCollection, useFieldSet } from "@/components/admin/editor-state"
 import {
-  BlockEditor,
-  withBlockId,
-  type BlockRow,
-} from "@/components/admin/block-editor"
+  Counter,
+  Field,
+  Fieldset,
+  Select,
+  area,
+  input,
+} from "@/components/admin/form-kit"
 import {
   MediaDropzone,
   type UploadedMedia,
 } from "@/components/admin/media-dropzone"
+import {
+  ArticleCardPreview,
+  ArticleFeaturePreview,
+  Placement,
+  WithPlacements,
+} from "@/components/admin/placement"
+import {
+  PublishPanel,
+  type Requirement,
+} from "@/components/admin/publish-panel"
+import { StepEditor, type EditorStep } from "@/components/admin/step-editor"
 import { Button } from "@/components/ui/button"
+import { isoDay } from "@/lib/date"
 import type { ArticleDetail, ArticleViews } from "@/lib/db/articles"
-import { publicSiteUrl } from "@/lib/public-url"
 import { articleCategories, frenchDateLabel } from "@/lib/schemas/article"
 import { cn } from "@/lib/utils"
 
-const input =
-  "border-line-strong bg-surface text-ink placeholder:text-label h-11 w-full rounded-sm border px-3.5 text-[0.94rem] transition-colors duration-100 aria-invalid:border-danger"
-const area =
-  "border-line-strong bg-surface text-ink placeholder:text-label w-full rounded-sm border px-3.5 py-3 text-[0.94rem] leading-relaxed aria-invalid:border-danger"
-
 /**
- * Éditeur d'article : la fiche, le corps, l'audience.
+ * Éditeur d'article.
  *
- * Trois onglets seulement, contre cinq pour une réalisation : un article est un
- * texte, pas une fiche à collections multiples. Chacun s'enregistre séparément, pour
- * la même raison qu'ailleurs - une saisie invalide dans un onglet ne doit pas coûter
- * le travail fait dans un autre.
+ * Même moule que les réalisations - étapes, aperçus de placement, panneau de
+ * publication qui dit ce qu'il manque - parce que le défaut était le même : trois
+ * onglets qui suivaient les procédures d'écriture, et cinq titres de section dans le
+ * premier. Voir `step-editor.tsx` et `placement.tsx` pour ce que ce découpage change.
+ *
+ * La différence propre aux articles tient en deux points. La **mise en avant** est
+ * exclusive et s'applique tout de suite, sans passer par la barre d'enregistrement -
+ * voir `FeaturedSwitch`. Et l'**audience** est une étape en lecture seule : elle
+ * n'enregistre rien, donc elle n'a pas de barre du tout.
  */
 function ArticleEditor({
   item,
@@ -57,531 +65,463 @@ function ArticleEditor({
   /** Les slugs de réalisations publiées, pour proposer le rebond de fin d'article. */
   caseSlugs: string[]
 }) {
-  return (
-    <div className="grid max-w-4xl gap-6">
-      <Header item={item} />
+  const [step, setStep] = React.useState("identite")
 
-      <Tabs.Root defaultValue="fiche">
-        <Tabs.List className="mb-6 flex flex-wrap gap-1 border-b border-line">
-          {[
-            ["fiche", "Fiche"],
-            ["corps", `Corps (${item.blocks.length})`],
-            ["audience", "Audience"],
-          ].map(([value, label]) => (
-            <Tabs.Tab
-              key={value}
-              value={value}
-              className="-mb-px min-h-11 border-b-2 border-transparent px-3 text-[0.9rem] font-medium text-body transition-colors duration-100 hover:text-ink data-selected:border-brand data-selected:text-ink"
+  /** La fiche entière, répartie sur quatre étapes. `update_article` la prend en bloc. */
+  const fiche = useFieldSet(
+    "La fiche",
+    {
+      slug: item.slug,
+      category: item.category,
+      title: item.title,
+      lead: item.lead,
+      author: item.author,
+      authorRole: item.authorRole,
+      authorInitials: item.authorInitials,
+      publishedOn: item.publishedOn,
+      dateLabel: item.dateLabel,
+      readingTime: item.readingTime,
+      relatedCase: item.relatedCase,
+      heroMedia: item.heroMedia
+        ? [
+            {
+              id: item.heroMedia.id,
+              url: item.heroMedia.url,
+              alt: item.heroMedia.alt,
+              width: item.heroMedia.width,
+              height: item.heroMedia.height,
+              originalName: item.heroMedia.originalName,
+            },
+          ]
+        : ([] as UploadedMedia[]),
+    },
+    ({ heroMedia, ...rest }) =>
+      updateArticle(item.id, { ...rest, heroMediaId: heroMedia[0]?.id ?? null })
+  )
+  const v = fiche.values
+  const set = fiche.set
+
+  /**
+   * Le corps.
+   *
+   * `Row<{ block }>` porte exactement la forme que `BlockEditor` attend - un objet et
+   * sa clé de session - ce qui évite de tenir un second état pour la même liste.
+   */
+  const body = useCollection(
+    "Le corps",
+    item.blocks.map((block) => ({ block })),
+    (items) =>
+      setBlocks(item.id, item.slug, { items: items.map((one) => one.block) })
+  )
+
+  /** Ce qu'exige la publication, repris un à un de `publish_article`. */
+  const requirements: Requirement[] = [
+    {
+      label: "Un titre",
+      done: item.title.trim() !== "",
+      step: "identite",
+      stepLabel: "Identité",
+    },
+    {
+      label: "Un chapô",
+      done: item.lead.trim() !== "",
+      step: "chapo",
+      stepLabel: "Chapô",
+    },
+    {
+      label: "Au moins un bloc de contenu",
+      done: item.blocks.length > 0,
+      step: "corps",
+      stepLabel: "Corps",
+    },
+    {
+      label: "Un auteur",
+      done: item.author.trim() !== "",
+      step: "signature",
+      stepLabel: "Signature",
+    },
+    {
+      label: "Une date affichée",
+      done: item.dateLabel.trim() !== "",
+      step: "signature",
+      stepLabel: "Signature",
+    },
+  ]
+
+  const feedCard = (
+    <Placement title="Carte du flux /ressources">
+      <ArticleCardPreview
+        category={v.category}
+        title={v.title}
+        author={v.author}
+        dateLabel={v.dateLabel}
+        readingTime={v.readingTime}
+      />
+    </Placement>
+  )
+
+  const featureCard = (
+    <Placement title="Carte « À la une »">
+      <ArticleFeaturePreview
+        category={v.category}
+        title={v.title}
+        lead={v.lead}
+        author={v.author}
+        authorRole={v.authorRole}
+        authorInitials={v.authorInitials}
+      />
+    </Placement>
+  )
+
+  const steps: EditorStep[] = [
+    {
+      id: "identite",
+      label: "Identité",
+      purpose:
+        "Comment l'article se nomme, à quelle adresse il vit, et sous quelle catégorie il se range. La catégorie sert de filtre sur le flux.",
+      state: item.title.trim() ? "ready" : "todo",
+      savers: [fiche.saveable],
+      render: () => (
+        <WithPlacements aside={feedCard}>
+          <Fieldset>
+            <Field
+              label="Titre"
+              hint="Le titre du flux comme celui de la page. Une promesse, pas un thème."
+              example="Choisir un socle technique sans se tromper de décennie"
+              error={fiche.fieldErrors.title}
             >
-              {label}
-            </Tabs.Tab>
-          ))}
-        </Tabs.List>
+              <textarea
+                rows={2}
+                className={area}
+                value={v.title}
+                onChange={(event) => set("title", event.target.value)}
+              />
+            </Field>
+            <div className="-mt-3 flex justify-end">
+              <Counter value={v.title} max={300} />
+            </div>
 
-        <Tabs.Panel value="fiche">
-          <FicheForm item={item} caseSlugs={caseSlugs} />
-        </Tabs.Panel>
-        <Tabs.Panel value="corps">
-          <BodyForm item={item} />
-        </Tabs.Panel>
-        <Tabs.Panel value="audience">
-          <Audience item={item} views={views} />
-        </Tabs.Panel>
-      </Tabs.Root>
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_13rem]">
+              <Field
+                label="Identifiant d'URL"
+                hint={`L'article sera à l'adresse /ressources/${v.slug || "…"}.`}
+                error={fiche.fieldErrors.slug}
+              >
+                <input
+                  className={cn(input, "font-mono text-[0.875rem]")}
+                  value={v.slug}
+                  onChange={(event) => set("slug", event.target.value)}
+                />
+              </Field>
+              <Field
+                label="Catégorie"
+                hint="Filtre du flux, et couleur de la pastille."
+                error={fiche.fieldErrors.category}
+              >
+                <Select
+                  value={v.category}
+                  onChange={(value) =>
+                    set("category", value as typeof v.category)
+                  }
+                  options={articleCategories.map(
+                    (category) => [category, category] as const
+                  )}
+                />
+              </Field>
+            </div>
+          </Fieldset>
+        </WithPlacements>
+      ),
+    },
+
+    {
+      id: "chapo",
+      label: "Chapô",
+      purpose:
+        "La promesse de l'article, et son visuel. Le chapô ne s'affiche qu'à la une du flux et en tête de l'article : les cartes ordinaires ne le montrent pas.",
+      state: item.lead.trim() ? "ready" : "todo",
+      savers: [fiche.saveable],
+      render: () => (
+        <WithPlacements aside={featureCard}>
+          <Fieldset>
+            <Field
+              label="Chapô"
+              hint="Deux ou trois phrases : ce que le lecteur saura à la fin, et pourquoi cela lui sert."
+              error={fiche.fieldErrors.lead}
+            >
+              <textarea
+                rows={4}
+                className={area}
+                value={v.lead}
+                onChange={(event) => set("lead", event.target.value)}
+              />
+            </Field>
+            <div className="-mt-3 flex justify-end">
+              <Counter value={v.lead} max={1200} />
+            </div>
+          </Fieldset>
+
+          <Fieldset
+            title="Visuel"
+            hint="Facultatif, une seule image. Déposer une nouvelle image remplace la précédente."
+          >
+            <MediaDropzone
+              label="Image de l'article"
+              value={v.heroMedia}
+              onChange={(media) => set("heroMedia", media)}
+            />
+          </Fieldset>
+        </WithPlacements>
+      ),
+    },
+
+    {
+      id: "corps",
+      label: "Corps",
+      count: body.count,
+      purpose:
+        "Le texte, en blocs typés : paragraphe, intertitre, encadré, liste numérotée. Les titres viennent du gabarit de page, jamais du gras dans un paragraphe.",
+      state: item.blocks.length > 0 ? "ready" : "todo",
+      savers: [body.saveable],
+      render: () => (
+        <BlockEditor
+          rows={body.rows}
+          onChange={body.replace}
+          errorAt={body.anyErrorAt}
+        />
+      ),
+    },
+
+    {
+      id: "signature",
+      label: "Signature",
+      purpose:
+        "Qui l'a écrit, quand, et en combien de temps on le lit. Deux champs pour la date, parce que celle qui trie et celle qui s'affiche ne disent pas la même chose.",
+      state:
+        item.author.trim() && item.dateLabel.trim() && item.publishedOn
+          ? "ready"
+          : "todo",
+      savers: [fiche.saveable],
+      render: () => (
+        <WithPlacements aside={featureCard}>
+          <Fieldset title="Auteur">
+            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_6rem]">
+              <Field label="Nom" error={fiche.fieldErrors.author}>
+                <input
+                  className={input}
+                  value={v.author}
+                  onChange={(event) => set("author", event.target.value)}
+                />
+              </Field>
+              <Field label="Rôle" error={fiche.fieldErrors.authorRole}>
+                <input
+                  className={input}
+                  value={v.authorRole}
+                  onChange={(event) => set("authorRole", event.target.value)}
+                />
+              </Field>
+              <Field label="Initiales" error={fiche.fieldErrors.authorInitials}>
+                <input
+                  maxLength={4}
+                  className={cn(input, "text-center font-mono uppercase")}
+                  value={v.authorInitials}
+                  onChange={(event) =>
+                    set("authorInitials", event.target.value)
+                  }
+                />
+              </Field>
+            </div>
+          </Fieldset>
+
+          <Fieldset
+            title="Date et durée"
+            hint="La date de tri alimente le plan du site et l'ordre du flux ; la date affichée est celle que lit le visiteur. Elle suit la première tant que personne ne l'a personnalisée."
+          >
+            <div className="grid gap-4 sm:grid-cols-[10rem_minmax(0,1fr)_8rem]">
+              <Field label="Date de tri" error={fiche.fieldErrors.publishedOn}>
+                <input
+                  type="date"
+                  className={cn(input, "font-mono")}
+                  value={v.publishedOn}
+                  onChange={(event) => {
+                    const iso = event.target.value
+                    // Le libellé suit la date tant que personne ne l'a
+                    // personnalisé : c'est le cas courant, et une date affichée qui
+                    // contredit la date de tri est un défaut qu'on ne repère qu'en
+                    // production.
+                    const custom =
+                      v.dateLabel !== "" &&
+                      v.dateLabel !== frenchDateLabel(v.publishedOn)
+                    set("publishedOn", iso)
+                    if (!custom) {
+                      set("dateLabel", frenchDateLabel(iso))
+                    }
+                  }}
+                />
+              </Field>
+              <Field
+                label="Date affichée"
+                hint="Modifiable : « été 2026 » est parfois plus juste qu'un jour exact."
+                error={fiche.fieldErrors.dateLabel}
+              >
+                <input
+                  className={input}
+                  value={v.dateLabel}
+                  onChange={(event) => set("dateLabel", event.target.value)}
+                />
+              </Field>
+              <Field
+                label="Lecture"
+                example="18 min"
+                optional
+                error={fiche.fieldErrors.readingTime}
+              >
+                <input
+                  className={input}
+                  value={v.readingTime}
+                  onChange={(event) => set("readingTime", event.target.value)}
+                />
+              </Field>
+            </div>
+          </Fieldset>
+        </WithPlacements>
+      ),
+    },
+
+    {
+      id: "diffusion",
+      label: "Diffusion",
+      purpose:
+        "Où l'article apparaît, et sur quoi il rebondit. Aucune impasse : un article finit sur une réalisation ou sur une action.",
+      state: "optional",
+      savers: [fiche.saveable],
+      render: () => (
+        <div className="grid gap-8">
+          <Fieldset
+            title="À la une"
+            hint="Un seul article en tête du flux, et il en est retiré de la grille. Mettre celui-ci en avant retire donc le précédent."
+          >
+            <FeaturedSwitch id={item.id} featured={item.featured} />
+          </Fieldset>
+
+          <Fieldset
+            title="Rebond"
+            hint="La réalisation proposée en fin d'article. C'est la conversion secondaire : une preuve, pas une demande."
+            // Borné : cette étape n'a pas d'aperçu à côté d'elle, donc ses champs
+            // prendraient les 1150 px de l'éditeur. Un sélecteur de slug large d'un
+            // écran ne se lit pas mieux, il se lit moins bien.
+            className="max-w-md"
+          >
+            <Field label="Réalisation liée" optional>
+              <Select
+                value={v.relatedCase}
+                onChange={(value) => set("relatedCase", value)}
+                options={[
+                  ["", "Aucune"] as const,
+                  ...caseSlugs.map((slug) => [slug, slug] as const),
+                ]}
+              />
+            </Field>
+          </Fieldset>
+        </div>
+      ),
+    },
+
+    {
+      id: "audience",
+      label: "Audience",
+      purpose:
+        "Ce que le compteur sait, et ce qu'il ne sait pas. Rien à enregistrer ici.",
+      state: "optional",
+      // Aucune barre d'enregistrement : l'étape est en lecture seule.
+      savers: [],
+      render: () => <Audience item={item} views={views} />,
+    },
+  ]
+
+  return (
+    <div className="grid max-w-6xl gap-6">
+      <EditorHeader
+        backHref="/admin/articles"
+        backLabel="Articles"
+        slug={item.slug}
+        title={item.title}
+        published={item.status === "published"}
+        previewHref={`/admin/articles/${item.slug}/apercu`}
+        publicPath={`/ressources/${item.slug}`}
+        remove={() => deleteArticle(item.id)}
+        removeHint="Le corps et le compte de vues partent avec l'article."
+      />
+
+      <PublishPanel
+        published={item.status === "published"}
+        requirements={requirements}
+        publish={(next) => publishArticle(item.id, next)}
+        onGoToStep={setStep}
+      />
+
+      <StepEditor steps={steps} value={step} onValueChange={setStep} />
     </div>
   )
 }
 
-function Header({ item }: { item: ArticleDetail }) {
-  const [busy, setBusy] = React.useState<"publish" | "delete" | null>(null)
+/**
+ * La mise en avant, appliquée tout de suite.
+ *
+ * **Elle ne peut pas passer par la barre d'enregistrement**, et ce n'est pas un
+ * détail de plomberie : `set_article_featured` retire la mise en avant précédente,
+ * donc l'action porte sur un autre article que celui qu'on édite. La glisser parmi
+ * les champs de la fiche aurait laissé croire qu'elle s'annule en quittant l'écran
+ * sans enregistrer, alors qu'elle a déjà déplacé un article de la une.
+ */
+function FeaturedSwitch({ id, featured }: { id: string; featured: boolean }) {
+  const [pending, startTransition] = React.useTransition()
   const [error, setError] = React.useState<string | null>(null)
-  const [confirming, setConfirming] = React.useState(false)
 
   return (
-    <header className="grid gap-3">
-      <div className="flex items-center gap-2 text-[0.82rem] text-label">
-        <Link href="/admin/articles" className="hover:text-ink hover:underline">
-          Articles
-        </Link>
-        <span aria-hidden="true">/</span>
-        <span className="font-mono">{item.slug}</span>
-      </div>
-
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="grid gap-1.5">
-          <h1 className="max-w-[40rem] font-display text-[1.5rem] leading-tight font-bold tracking-[-0.02em] text-ink">
-            {item.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 rounded-xs px-1.5 py-0.5 font-semibold tracking-[0.06em] uppercase",
-                item.status === "published"
-                  ? "bg-success-subtle text-success-text"
-                  : "bg-inset text-label"
-              )}
-            >
-              {item.status === "published" ? (
-                <>
-                  <Check className="size-2.5" strokeWidth={2.5} /> En ligne
-                </>
-              ) : (
-                "Brouillon"
-              )}
-            </span>
-            <Link
-              href={`/admin/articles/${item.slug}/apercu`}
-              className="inline-flex items-center gap-1 text-info-text hover:underline"
-            >
-              <Eye className="size-3" strokeWidth={1.75} />
-              Aperçu
-            </Link>
-            {item.status === "published" ? (
-              <a
-                href={publicSiteUrl(`/ressources/${item.slug}`)}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-1 text-info-text hover:underline"
-              >
-                Voir en ligne
-                <ExternalLink className="size-3" strokeWidth={1.75} />
-              </a>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant={item.status === "published" ? "secondary" : "brand"}
-            size="md"
-            disabled={busy !== null}
-            onClick={async () => {
-              setBusy("publish")
+    <div className="grid gap-2">
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          variant={featured ? "secondary" : "outline"}
+          size="md"
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
               setError(null)
-              const result = await publishArticle(
-                item.id,
-                item.status !== "published"
-              )
+              const result = await setFeatured(id, !featured)
               if (result.status === "error") {
                 setError(result.formError ?? "L'action a échoué.")
               }
-              setBusy(null)
-            }}
-          >
-            {busy === "publish" ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : item.status === "published" ? (
-              <Archive className="size-4" strokeWidth={1.5} />
-            ) : (
-              <Globe className="size-4" strokeWidth={1.5} />
-            )}
-            {item.status === "published" ? "Dépublier" : "Publier"}
-          </Button>
-
-          {confirming ? (
-            <span className="flex items-center gap-2 rounded-sm border border-danger bg-danger-subtle px-2 py-1">
-              <span className="text-[0.82rem] text-danger-text">
-                Supprimer définitivement ?
-              </span>
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                disabled={busy !== null}
-                onClick={async () => {
-                  setBusy("delete")
-                  const result = await deleteArticle(item.id)
-                  if (result?.status === "error") {
-                    setError(result.formError ?? "La suppression a échoué.")
-                    setBusy(null)
-                  }
-                }}
-              >
-                {busy === "delete" ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : null}
-                Oui
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setConfirming(false)}
-              >
-                Annuler
-              </Button>
-            </span>
+            })
+          }
+        >
+          {pending ? (
+            <Loader2 className="size-4 animate-spin" />
           ) : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="md"
-              onClick={() => setConfirming(true)}
-              className="text-danger-text"
-            >
-              <Trash2 className="size-4" strokeWidth={1.5} />
-              Supprimer
-            </Button>
+            <Star
+              className={cn("size-4", featured && "fill-brand text-brand")}
+              strokeWidth={1.75}
+            />
           )}
-        </div>
+          {featured ? "Retirer de la une" : "Mettre à la une"}
+        </Button>
+
+        <span className="text-[0.845rem] text-label">
+          {featured
+            ? "Cet article est en tête du flux."
+            : "Appliqué immédiatement, sans passer par l'enregistrement."}
+        </span>
       </div>
 
       {error ? (
-        <p
-          role="alert"
-          className="rounded-sm border-l-2 border-danger bg-danger-subtle px-4 py-3 text-[0.845rem] text-danger-text"
-        >
+        <p role="alert" className="text-[0.82rem] text-danger-text">
           {error}
         </p>
       ) : null}
-    </header>
-  )
-}
-
-/** Barre d'enregistrement, identique à celle des réalisations. */
-function SaveBar({
-  onSave,
-  dirty,
-  saved,
-  error,
-}: {
-  onSave: () => void
-  dirty: boolean
-  saved: boolean
-  error: string | null
-}) {
-  const [pending, startTransition] = React.useTransition()
-
-  return (
-    <div className="sticky bottom-0 -mx-1 mt-2 flex flex-wrap items-center gap-3 border-t border-line bg-page/95 px-1 py-3 backdrop-blur">
-      <Button
-        type="button"
-        size="md"
-        onClick={() => startTransition(() => onSave())}
-        disabled={pending || !dirty}
-      >
-        {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-        {pending ? "Enregistrement…" : "Enregistrer"}
-      </Button>
-
-      {error ? (
-        <p role="alert" className="text-[0.845rem] text-danger-text">
-          {error}
-        </p>
-      ) : saved && !dirty ? (
-        <p
-          role="status"
-          className="flex items-center gap-1.5 text-[0.845rem] text-success-text"
-        >
-          <Check className="size-3.5" strokeWidth={2} />
-          Enregistré.
-        </p>
-      ) : dirty ? (
-        <p className="text-[0.845rem] text-label">
-          Modifications non enregistrées.
-        </p>
-      ) : null}
     </div>
   )
 }
-
-function useSaver(
-  save: () => Promise<{
-    status: string
-    formError?: string
-    fieldErrors?: Record<string, string>
-  }>
-) {
-  const [dirty, setDirty] = React.useState(false)
-  const [saved, setSaved] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
-    {}
-  )
-
-  const touch = React.useCallback(() => {
-    setDirty(true)
-    setSaved(false)
-  }, [])
-
-  const run = React.useCallback(async () => {
-    setError(null)
-    setFieldErrors({})
-    const result = await save()
-    if (result.status === "error") {
-      setError(
-        result.formError ?? Object.values(result.fieldErrors ?? {})[0] ?? null
-      )
-      setFieldErrors(result.fieldErrors ?? {})
-      return
-    }
-    setDirty(false)
-    setSaved(true)
-  }, [save])
-
-  return { dirty, saved, error, fieldErrors, touch, run }
-}
-
-// ------------------------------------------------------------
-// Onglet Fiche
-// ------------------------------------------------------------
-
-function FicheForm({
-  item,
-  caseSlugs,
-}: {
-  item: ArticleDetail
-  caseSlugs: string[]
-}) {
-  const [values, setValues] = React.useState({
-    slug: item.slug,
-    category: item.category,
-    title: item.title,
-    lead: item.lead,
-    author: item.author,
-    authorRole: item.authorRole,
-    authorInitials: item.authorInitials,
-    publishedOn: item.publishedOn,
-    dateLabel: item.dateLabel,
-    readingTime: item.readingTime,
-    relatedCase: item.relatedCase,
-  })
-  const [hero, setHero] = React.useState<UploadedMedia[]>(
-    item.heroMedia
-      ? [
-          {
-            id: item.heroMedia.id,
-            url: item.heroMedia.url,
-            alt: item.heroMedia.alt,
-            width: item.heroMedia.width,
-            height: item.heroMedia.height,
-            originalName: item.heroMedia.originalName,
-          },
-        ]
-      : []
-  )
-
-  const saver = useSaver(() =>
-    updateArticle(item.id, { ...values, heroMediaId: hero[0]?.id ?? null })
-  )
-
-  const set = <K extends keyof typeof values>(
-    key: K,
-    value: (typeof values)[K]
-  ) => {
-    setValues((current) => ({ ...current, [key]: value }))
-    saver.touch()
-  }
-
-  return (
-    <div className="grid gap-6">
-      <Section title="Identité">
-        <Field label="Titre" error={saver.fieldErrors.title}>
-          <textarea
-            rows={2}
-            className={area}
-            value={values.title}
-            onChange={(event) => set("title", event.target.value)}
-          />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-[1fr_12rem]">
-          <Field
-            label="Identifiant d'URL"
-            hint={`/ressources/${values.slug}`}
-            error={saver.fieldErrors.slug}
-          >
-            <input
-              className={cn(input, "font-mono text-[0.875rem]")}
-              value={values.slug}
-              onChange={(event) => set("slug", event.target.value)}
-            />
-          </Field>
-          <Field label="Catégorie" error={saver.fieldErrors.category}>
-            <select
-              className={cn(input, "cursor-pointer appearance-none")}
-              value={values.category}
-              onChange={(event) =>
-                set("category", event.target.value as typeof values.category)
-              }
-            >
-              {articleCategories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-
-        <Field
-          label="Chapô"
-          hint="La promesse de l'article, en une phrase ou deux"
-          error={saver.fieldErrors.lead}
-        >
-          <textarea
-            rows={3}
-            className={area}
-            value={values.lead}
-            onChange={(event) => set("lead", event.target.value)}
-          />
-        </Field>
-      </Section>
-
-      <Section title="Signature">
-        <div className="grid gap-4 sm:grid-cols-[1fr_1fr_5rem]">
-          <Field label="Auteur" error={saver.fieldErrors.author}>
-            <input
-              className={input}
-              value={values.author}
-              onChange={(event) => set("author", event.target.value)}
-            />
-          </Field>
-          <Field label="Rôle" error={saver.fieldErrors.authorRole}>
-            <input
-              className={input}
-              value={values.authorRole}
-              onChange={(event) => set("authorRole", event.target.value)}
-            />
-          </Field>
-          <Field label="Initiales" error={saver.fieldErrors.authorInitials}>
-            <input
-              maxLength={4}
-              className={cn(input, "text-center font-mono uppercase")}
-              value={values.authorInitials}
-              onChange={(event) => set("authorInitials", event.target.value)}
-            />
-          </Field>
-        </div>
-      </Section>
-
-      <Section
-        title="Date et durée"
-        hint="Deux champs pour la date : celui qui trie, et celui qui s'affiche."
-      >
-        <div className="grid gap-4 sm:grid-cols-[10rem_1fr_8rem]">
-          <Field label="Date (tri)" error={saver.fieldErrors.publishedOn}>
-            <input
-              type="date"
-              className={cn(input, "font-mono")}
-              value={values.publishedOn}
-              onChange={(event) => {
-                const iso = event.target.value
-                setValues((current) => ({
-                  ...current,
-                  publishedOn: iso,
-                  // Le libellé suit la date tant que personne ne l'a personnalisé :
-                  // c'est le cas courant, et une date affichée qui contredit la date
-                  // de tri est un défaut qu'on ne repère qu'en production.
-                  dateLabel:
-                    current.dateLabel ===
-                      frenchDateLabel(current.publishedOn) ||
-                    current.dateLabel === ""
-                      ? frenchDateLabel(iso)
-                      : current.dateLabel,
-                }))
-                saver.touch()
-              }}
-            />
-          </Field>
-          <Field
-            label="Date affichée"
-            hint="Modifiable : « été 2026 » est parfois plus juste"
-            error={saver.fieldErrors.dateLabel}
-          >
-            <input
-              className={input}
-              value={values.dateLabel}
-              onChange={(event) => set("dateLabel", event.target.value)}
-            />
-          </Field>
-          <Field label="Lecture" hint="« 18 min »">
-            <input
-              className={input}
-              value={values.readingTime}
-              onChange={(event) => set("readingTime", event.target.value)}
-            />
-          </Field>
-        </div>
-      </Section>
-
-      <Section title="Visuel">
-        <MediaDropzone
-          label="Image de l'article"
-          hint="Facultative. Une seule."
-          value={hero}
-          onChange={(media) => {
-            setHero(media)
-            saver.touch()
-          }}
-        />
-      </Section>
-
-      <Section
-        title="Rebond"
-        hint="Aucune impasse : un article finit sur une réalisation ou une action."
-      >
-        <Field label="Réalisation liée" hint="Facultative">
-          <select
-            className={cn(input, "cursor-pointer appearance-none")}
-            value={values.relatedCase}
-            onChange={(event) => set("relatedCase", event.target.value)}
-          >
-            <option value="">Aucune</option>
-            {caseSlugs.map((slug) => (
-              <option key={slug} value={slug}>
-                {slug}
-              </option>
-            ))}
-          </select>
-        </Field>
-      </Section>
-
-      <SaveBar
-        onSave={saver.run}
-        dirty={saver.dirty}
-        saved={saver.saved}
-        error={saver.error}
-      />
-    </div>
-  )
-}
-
-// ------------------------------------------------------------
-// Onglet Corps
-// ------------------------------------------------------------
-
-function BodyForm({ item }: { item: ArticleDetail }) {
-  const [rows, setRows] = React.useState<BlockRow[]>(() =>
-    item.blocks.map(withBlockId)
-  )
-  const saver = useSaver(() =>
-    setBlocks(item.id, item.slug, { items: rows.map((row) => row.block) })
-  )
-
-  return (
-    <div className="grid gap-4">
-      <BlockEditor
-        rows={rows}
-        onChange={(next) => {
-          setRows(next)
-          saver.touch()
-        }}
-      />
-      <SaveBar
-        onSave={saver.run}
-        dirty={saver.dirty}
-        saved={saver.saved}
-        error={saver.error}
-      />
-    </div>
-  )
-}
-
-// ------------------------------------------------------------
-// Onglet Audience
-// ------------------------------------------------------------
 
 /**
  * Les vues, présentées pour ce qu'elles sont.
@@ -590,6 +530,29 @@ function BodyForm({ item }: { item: ArticleDetail }) {
  * fenêtres à 7 et 30 jours sont ce qui rend le chiffre lisible. Et le compteur est
  * annoncé comme approximatif, parce qu'il l'est - tout compteur public l'est.
  */
+/**
+ * Les trente jours, **tous les trente**, y compris ceux sans vue.
+ *
+ * La base ne rend que les jours qui ont une ligne, ce qui est juste pour elle et faux
+ * à l'écran : avec un seul jour de trafic, l'unique barre en `flex-1` prenait toute la
+ * largeur et l'histogramme se lisait comme un mois entier au maximum. Un pavé orange,
+ * là où la vérité est une barre fine sur trente. La fenêtre est donc reconstituée ici,
+ * et l'absence de vue devient un creux plutôt qu'une absence de colonne.
+ */
+function thirtyDays(daily: readonly { day: string; views: number }[]) {
+  const known = new Map(daily.map((one) => [one.day.slice(0, 10), one.views]))
+  const days: { day: string; views: number }[] = []
+  const cursor = new Date()
+  cursor.setHours(12, 0, 0, 0)
+  for (let back = 29; back >= 0; back -= 1) {
+    const at = new Date(cursor)
+    at.setDate(cursor.getDate() - back)
+    const key = isoDay(at)
+    days.push({ day: key, views: known.get(key) ?? 0 })
+  }
+  return days
+}
+
 function Audience({
   item,
   views,
@@ -597,7 +560,8 @@ function Audience({
   item: ArticleDetail
   views: ArticleViews
 }) {
-  const peak = Math.max(1, ...views.daily.map((day) => day.views))
+  const days = thirtyDays(views.daily)
+  const peak = Math.max(1, ...days.map((day) => day.views))
 
   return (
     <div className="grid gap-6">
@@ -614,20 +578,30 @@ function Audience({
         <Stat value={views.last7} label="sur sept jours" />
       </div>
 
-      {views.daily.length > 0 ? (
+      {views.total > 0 ? (
         <section className="grid gap-3">
-          <h2 className="font-display text-[1.0625rem] font-bold tracking-[-0.01em] text-ink">
+          <h3 className="font-display text-[1rem] font-bold tracking-[-0.01em] text-ink">
             Trente derniers jours
-          </h2>
+          </h3>
           {/* Un histogramme en CSS pur, sans bibliothèque : trente barres ne
               justifient pas d'embarquer un moteur de graphiques. */}
           <ol className="flex h-24 items-end gap-1">
-            {views.daily.map((day) => (
+            {days.map((day) => (
               <li
                 key={day.day}
                 title={`${day.day} : ${day.views} vue${day.views > 1 ? "s" : ""}`}
-                className="flex-1 rounded-t-xs bg-brand/70"
-                style={{ height: `${Math.max(4, (day.views / peak) * 100)}%` }}
+                className={cn(
+                  "flex-1 rounded-t-xs",
+                  // Un jour sans vue reste dessiné, en filet gris : le creux se lit,
+                  // là où une colonne absente déformerait l'échelle des voisines.
+                  day.views > 0 ? "bg-brand/70" : "bg-line"
+                )}
+                style={{
+                  height:
+                    day.views > 0
+                      ? `${Math.max(6, (day.views / peak) * 100)}%`
+                      : "2px",
+                }}
               >
                 <span className="sr-only">
                   {day.day} : {day.views} vues
@@ -640,7 +614,7 @@ function Audience({
         <p className="text-[0.9rem] text-label">Aucune vue enregistrée.</p>
       )}
 
-      <p className="text-xs text-label">
+      <p className="max-w-prose text-xs leading-relaxed text-label">
         Le compteur est une indication de lecture, pas une mesure
         d&apos;audience : il est incrémenté par le navigateur, une fois par
         article et par session, après deux secondes de présence. Il reste
@@ -657,66 +631,6 @@ function Stat({ value, label }: { value: number; label: string }) {
         {value.toLocaleString("fr-FR")}
       </span>
       <span className="text-[0.82rem] text-label">{label}</span>
-    </div>
-  )
-}
-
-// ------------------------------------------------------------
-// Petites pièces
-// ------------------------------------------------------------
-
-function Section({
-  title,
-  hint,
-  children,
-}: {
-  title: string
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="grid gap-4">
-      <div className="grid gap-0.5">
-        <h2 className="font-display text-[1.0625rem] font-bold tracking-[-0.01em] text-ink">
-          {title}
-        </h2>
-        {hint ? <p className="text-xs text-label">{hint}</p> : null}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function Field({
-  label,
-  hint,
-  error,
-  children,
-}: {
-  label: string
-  hint?: string
-  error?: string
-  children: React.ReactNode
-}) {
-  const id = React.useId()
-  return (
-    <div className="grid gap-1.5">
-      <label htmlFor={id} className="text-[0.82rem] font-medium text-ink">
-        {label}
-        {hint ? <span className="font-normal text-label"> {hint}</span> : null}
-      </label>
-      {React.isValidElement(children)
-        ? React.cloneElement(
-            children as React.ReactElement<{
-              id?: string
-              "aria-invalid"?: boolean
-            }>,
-            { id, "aria-invalid": error ? true : undefined }
-          )
-        : children}
-      {error ? (
-        <p className="text-[0.78rem] text-danger-text">{error}</p>
-      ) : null}
     </div>
   )
 }

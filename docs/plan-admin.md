@@ -22,7 +22,9 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
 | 5 - Réalisations                            | **fait**, aperçu de brouillon compris          |
 | 6 - Bascule du site public                  | **fait** pour les réalisations et les articles |
 | 7 - Articles                                | **fait**, comptage de vues compris             |
-| 8 - Le reste des contenus                   | à faire                                        |
+| 8 - Expertises                              | **fait**, familles et nav comprises            |
+| 9 - Interface de saisie                     | **fait** pour les trois collections            |
+| 10 - Le reste des contenus                  | à faire                                        |
 
 Restent dans `lib/content/*.ts`, sans administration : équipe, témoignages, clients,
 chiffres, méthode, groupe et marques, sections légales, et les textes de pages. Le moule est établi - schéma, procédures, grants, couche d'accès,
@@ -196,11 +198,43 @@ comme le formulaire de contact.
 - `generateStaticParams` lit la base : les études de cas restent prérendues.
 - Repli explicite si la base est injoignable au build, pour ne pas casser un déploiement.
 
+## Étape 9 - Interface de saisie
+
+Les trois collections étaient administrables et pénibles à administrer. Le défaut
+n'était pas le nombre de champs, c'était leur **opacité** et un découpage qui suivait
+la plomberie plutôt que le travail.
+
+Ce qui a changé, et pourquoi - le détail des pièces est dans `CLAUDE.md`, section
+« Administration », sous-section « Interface » :
+
+| Défaut constaté                                                                                   | Remède                                                                     |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Un onglet par procédure d'écriture, donc trente champs d'affilée dans le premier                  | `StepEditor` : des étapes qui suivent le récit, et l'état hissé au-dessus   |
+| « Résumé court » et « Résumé long » indistinguables sans savoir lequel atterrit où                | `placement.tsx` : le bloc du site dessiné à côté du champ                   |
+| La base disait ce qu'il manquait pour publier **après** le clic, en message d'erreur               | `PublishPanel` : les exigences listées avant, chacune liée à son étape      |
+| Trois en-têtes d'éditeur recopiés, dont trois comportements de suppression différents             | `EditorHeader`                                                             |
+| Trois créations de trois formes : deux dialogues divergents et un formulaire en ligne             | `CreateDialog` + `SlugField`, et `slugify` sorti dans `lib/slug.ts`         |
+| `data-selected` visé par les barres d'onglets, attribut que Base UI ne pose pas                    | `data-active` - aucun onglet actif n'était marqué, et rien ne le signalait  |
+| Une erreur sur le huitième bloc d'un article ne s'affichait qu'en tête de formulaire              | `anyErrorAt` sur les collections, message sous la ligne concernée           |
+
+Trois constats à ne pas redécouvrir :
+
+- **Un sélecteur Tailwind qui ne correspond à rien ne produit ni erreur ni
+  avertissement.** `data-selected:` était mort dans les quatre barres d'onglets de
+  l'administration ; cela ne se voit qu'en relevant les attributs dans le DOM.
+- **Hisser l'état hors des panneaux est ce qui autorise le découpage libre.** Tant
+  qu'un onglet était un formulaire, le découpage des écrans était dicté par les
+  procédures : `update_case_study` prend la fiche entière, donc tous ses champs
+  devaient tenir dans un seul écran. Voir `components/admin/editor-state.ts`.
+- **Les aperçus de placement sont calculés sur la saisie, l'état des étapes sur les
+  données enregistrées.** Le premier doit suivre la frappe, le second non : la
+  publication interroge la base, et une pastille qui verdirait à la frappe promettrait
+  ce que la base refuserait encore.
+
 ## Étapes suivantes
 
-Sur le même moule, dans cet ordre : articles (avec leurs blocs typés), expertises, équipe,
-témoignages, clients, chiffres, méthode et engagements, groupe et marques, sections
-légales, puis les textes de pages restants.
+Sur le même moule, dans cet ordre : équipe, témoignages, clients, chiffres, méthode et
+engagements, groupe et marques, sections légales, puis les textes de pages restants.
 
 ## Points à confirmer en cours de route
 

@@ -1,5 +1,6 @@
 import "server-only"
 
+import { isoDay } from "@/lib/date"
 import { read } from "@/lib/db/call"
 import {
   articles as staticArticles,
@@ -57,13 +58,6 @@ export type PublicArticle = Article & {
 }
 
 const text = (value: unknown) => (typeof value === "string" ? value : "")
-
-function isoDay(value: unknown): string {
-  if (value instanceof Date) {
-    return value.toISOString().slice(0, 10)
-  }
-  return typeof value === "string" ? value.slice(0, 10) : ""
-}
 
 function toArticle(row: ArticleRow, body: ArticleBlock[]): PublicArticle {
   return {

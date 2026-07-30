@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Heading2, List, Plus, Quote, Text, Trash2 } from "lucide-react"
 
+import { RemoveButton } from "@/components/admin/form-kit"
 import { RichText } from "@/components/admin/rich-text"
 import { SortableList } from "@/components/admin/sortable"
 import {
@@ -14,9 +15,9 @@ import {
 import { cn } from "@/lib/utils"
 
 const input =
-  "border-line-strong bg-surface text-ink placeholder:text-label h-10 w-full rounded-sm border px-3 text-[0.94rem] transition-colors duration-100"
+  "border-line-strong bg-surface text-ink placeholder:text-faint h-10 w-full rounded-sm border px-3 text-[0.94rem] transition-colors duration-100"
 const area =
-  "border-line-strong bg-surface text-ink placeholder:text-label w-full rounded-sm border px-3 py-2.5 text-[0.94rem] leading-relaxed"
+  "border-line-strong bg-surface text-ink placeholder:text-faint w-full rounded-sm border px-3 py-2.5 text-[0.94rem] leading-relaxed"
 
 /** Un bloc muni d'une clé locale, pour que dnd-kit et React puissent le suivre. */
 export type BlockRow = { id: string; block: BlockInput }
@@ -50,9 +51,18 @@ const icons: Record<BlockKind, React.ComponentType<{ className?: string }>> = {
 function BlockEditor({
   rows,
   onChange,
+  errorAt,
 }: {
   rows: BlockRow[]
   onChange: (rows: BlockRow[]) => void
+  /**
+   * L'erreur portant sur un bloc, affichée sous lui.
+   *
+   * Sans elle, un intertitre vide au huitième bloc ne se signalait qu'en tête de
+   * formulaire, sous la forme du premier message rencontré : il fallait deviner
+   * lequel des blocs était en cause, et un corps long en compte vingt.
+   */
+  errorAt?: (index: number) => string | undefined
 }) {
   const update = (id: string, block: BlockInput) =>
     onChange(rows.map((row) => (row.id === id ? { ...row, block } : row)))
@@ -64,39 +74,43 @@ function BlockEditor({
 
   return (
     <div className="grid gap-4">
-      <p className="text-[0.845rem] text-body">
-        Le corps de l&apos;article, dans l&apos;ordre. Attrapez une poignée pour
-        déplacer un bloc, ou utilisez Espace puis les flèches au clavier.
+      {/* Le rôle du corps est dit par l'en-tête de l'étape : ne reste ici que ce
+          qui ne se devine pas, le geste clavier. */}
+      <p className="text-[0.8rem] text-label">
+        Attrapez une poignée pour déplacer un bloc, ou saisissez-la au clavier
+        avec Espace puis les flèches.
       </p>
 
       {rows.length > 0 ? (
         <SortableList id="blocks" items={rows} onReorder={onChange}>
-          {(row, index) => (
-            <div className="grid gap-2">
-              <div className="flex items-center gap-2">
-                <BlockBadge kind={row.block.kind} />
-                <span className="font-mono text-xs text-label">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="flex-1" />
-                <button
-                  type="button"
-                  onClick={() => remove(row.id)}
-                  aria-label={`Retirer le bloc ${index + 1}`}
-                  title="Retirer ce bloc"
-                  className="grid size-8 place-items-center rounded-xs text-label transition-colors duration-100 hover:bg-danger-subtle hover:text-danger-text"
-                >
-                  <Trash2 className="size-3.5" strokeWidth={1.5} />
-                </button>
-              </div>
+          {(row, index) => {
+            const error = errorAt?.(index)
+            return (
+              <div className="grid gap-2">
+                <div className="flex items-center gap-2">
+                  <BlockBadge kind={row.block.kind} />
+                  <span className="font-mono text-xs text-label">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="flex-1" />
+                  <RemoveButton
+                    label={`Retirer le bloc ${index + 1}`}
+                    onClick={() => remove(row.id)}
+                  />
+                </div>
 
-              <BlockFields
-                block={row.block}
-                index={index}
-                onChange={(block) => update(row.id, block)}
-              />
-            </div>
-          )}
+                <BlockFields
+                  block={row.block}
+                  index={index}
+                  onChange={(block) => update(row.id, block)}
+                />
+
+                {error ? (
+                  <p className="text-[0.8rem] text-danger-text">{error}</p>
+                ) : null}
+              </div>
+            )
+          }}
         </SortableList>
       ) : (
         <p className="rounded-lg border border-dashed border-line-strong px-5 py-6 text-center text-[0.9rem] text-label">

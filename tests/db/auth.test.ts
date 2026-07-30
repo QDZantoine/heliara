@@ -88,11 +88,30 @@ describeDb("create_user", () => {
     expect(stamp).toBeLessThanOrEqual(Date.now() + 2000)
   })
 
-  it("trie deux identifiants successifs dans leur ordre de création", async () => {
+  it("range deux identifiants successifs par leur horodatage de tête", async () => {
     const first = await makeUser()
     const second = await makeUser()
-    // C'est la propriété qui donne la localité d'insertion InnoDB.
-    expect(toHex(second.id) > toHex(first.id)).toBe(true)
+
+    /*
+      **L'assertion porte sur les 48 bits d'horodatage, pas sur l'identifiant
+      entier**, et cette nuance n'est pas de la complaisance : c'est exactement ce
+      que `GenerateKey()` garantit.
+
+      Un UUID v7 n'est totalement ordonné à l'intérieur d'une même milliseconde que
+      s'il embarque un compteur ; le nôtre remplit sa queue avec `RANDOM_BYTES()`.
+      Deux créations dans la même milliseconde - le cas courant, elles prennent
+      moins d'une milliseconde - se retrouvaient donc dans un ordre tiré au sort.
+      Comparer les hexadécimaux complets échouait une fois sur deux quand les deux
+      insertions tombaient dans la même milliseconde, soit un test rouge au hasard
+      environ un lancement sur sept.
+
+      Et l'horodatage suffit à la propriété qu'on cherche : la localité d'insertion
+      InnoDB vient de ce que les clés voisines dans le temps sont voisines dans
+      l'index, pas d'un ordre total strict.
+    */
+    const stampOf = (id: Buffer) => id.readUIntBE(0, 6)
+    expect(stampOf(second.id)).toBeGreaterThanOrEqual(stampOf(first.id))
+    expect(toHex(second.id)).not.toBe(toHex(first.id))
   })
 
   it("refuse une adresse déjà prise, en erreur métier typée", async () => {

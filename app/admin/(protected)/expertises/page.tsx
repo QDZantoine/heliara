@@ -43,7 +43,7 @@ export default async function AdminExpertisesPage() {
             <Tabs.Tab
               key={value}
               value={value}
-              className="-mb-px min-h-11 border-b-2 border-transparent px-3 text-[0.9rem] font-medium text-body transition-colors duration-100 hover:text-ink data-selected:border-brand data-selected:text-ink"
+              className="-mb-px min-h-11 border-b-2 border-transparent px-3 text-[0.9rem] font-medium text-body transition-colors duration-100 hover:text-ink data-active:border-brand data-active:text-ink"
             >
               {label}
             </Tabs.Tab>
@@ -51,7 +51,13 @@ export default async function AdminExpertisesPage() {
         </Tabs.List>
 
         <Tabs.Panel value="services" className="grid gap-6">
-          <ExpertiseCreate families={families} />
+          {/* Le bouton de création est à droite, comme sur les deux autres listes.
+              Il ne peut pas monter dans l'en-tête de la page : celui-ci coiffe les
+              deux onglets, et « Nouveau service » n'a rien à faire au-dessus de la
+              liste des familles. */}
+          <div className="flex justify-end">
+            <ExpertiseCreate families={families} />
+          </div>
           <ExpertiseBoard families={families} services={services} />
         </Tabs.Panel>
         <Tabs.Panel value="familles">

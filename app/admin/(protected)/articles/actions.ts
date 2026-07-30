@@ -5,6 +5,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { requireSession, type SessionUser } from "@/lib/auth/session"
+import { todayIso } from "@/lib/date"
 import { blocksToJson } from "@/lib/db/articles"
 import { BusinessError, write } from "@/lib/db/call"
 import { parseId } from "@/lib/db/id"
@@ -117,7 +118,9 @@ export async function createArticle(input: unknown): Promise<ActionResult> {
       }
     }
 
-    const today = new Date().toISOString().slice(0, 10)
+    // `todayIso` et non `toISOString` : celui-ci rend le jour UTC, donc la veille
+    // pendant les premières heures de la nuit en Europe. Voir `lib/date.ts`.
+    const today = todayIso()
     const row = await write.rowStrict<{ slug: string }>("create_article", [
       parsed.data.slug || null,
       parsed.data.title,
