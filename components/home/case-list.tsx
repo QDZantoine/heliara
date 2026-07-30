@@ -5,11 +5,9 @@ import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
-import {
-  CaseCover,
-  type CoverMedia,
-} from "@/components/realisations/case-cover"
+import { CaseCover } from "@/components/realisations/case-cover"
 import type { CaseStudy } from "@/lib/content/cases"
+import type { MediaRef } from "@/lib/media"
 import { cn } from "@/lib/utils"
 
 /**
@@ -20,7 +18,7 @@ import { cn } from "@/lib/utils"
  * Les cas arrivent en prop plutôt qu'importés : la page les lit en base, avec repli
  * sur le contenu statique. Le composant reste ignorant de leur provenance.
  */
-export type ListCase = CaseStudy & { heroMedia?: CoverMedia }
+export type ListCase = CaseStudy & { heroMedia?: MediaRef }
 
 function CaseList({ cases }: { cases: ListCase[] }) {
   return (

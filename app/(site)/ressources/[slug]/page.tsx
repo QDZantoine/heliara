@@ -10,6 +10,7 @@ import {
   relatedPublicArticles,
 } from "@/lib/db/public-articles"
 import { getPublicCase } from "@/lib/db/public-cases"
+import { pageMetadata } from "@/lib/seo"
 
 /**
  * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next
@@ -33,12 +34,42 @@ export async function generateMetadata(
   if (!article) {
     return {}
   }
-  return {
+  /*
+    `pageMetadata` et non un objet écrit à la main, comme partout ailleurs.
+
+    Cette page était la seule route dynamique à composer ses métadonnées elle-même, et
+    elle y perdait deux choses que le socle SEO fournit : **l'URL canonique** et l'image
+    de partage. Un article se partage plus que n'importe quelle autre page du site, ce
+    qui en faisait l'endroit le plus coûteux pour cet oubli.
+  */
+  return pageMetadata({
     title: article.title,
     description: article.lead,
-    authors: [{ name: article.author }],
-    openGraph: { type: "article", publishedTime: article.publishedAt },
-  }
+    path: `/ressources/${article.slug}`,
+    type: "article",
+    article: {
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt,
+      authors: [article.author],
+      section: article.category,
+    },
+    // L'image de tête sert de carte de partage quand l'article en a une, et remplace
+    // alors la carte générée. Même règle que les réalisations.
+    ...(article.heroMedia
+      ? {
+          image: {
+            url: article.heroMedia.url,
+            alt: article.heroMedia.alt || article.title,
+            ...(article.heroMedia.width
+              ? { width: article.heroMedia.width }
+              : {}),
+            ...(article.heroMedia.height
+              ? { height: article.heroMedia.height }
+              : {}),
+          },
+        }
+      : {}),
+  })
 }
 
 export default async function ArticlePage(

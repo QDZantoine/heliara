@@ -778,6 +778,25 @@ journaux** :
 recharge le rendu mais garde la configuration de son optimiseur d'images : l'un passe,
 l'autre continue de répondre 400. Ne pas conclure que le correctif est faux.
 
+**Le rapport de la boîte vient du fichier, pas d'une constante.** `media.width` et
+`media.height` sont lus à l'envoi et stockés : la couverture de lecture d'un article et
+chaque image de galerie prennent donc le rapport réel du fichier, ce qui les affiche
+entières **et** garde la boîte dimensionnée avant le chargement - donc aucun décalage de
+mise en page. Un rapport imposé rognait les côtés d'une capture de site, c'est-à-dire
+coupait le logo du client : exactement ce qu'une couverture doit montrer. Les deux seuls
+endroits qui gardent un `object-cover` rognant sont ceux dont la hauteur est imposée par
+autre chose - la fenêtre de `CaseCover` et la moitié de carte du hub des ressources - et
+ils s'ancrent alors en haut à gauche, une vignette devant montrer le début du contenu.
+
+**Il n'y a pas de champ de texte alternatif pour la galerie**, seulement la légende, et
+c'est le bon partage : la légende est visible donc lue par tout le monde, et une
+alternative qui la répéterait ferait entendre deux fois la même phrase.
+
+`ArticleCardSketch` a été sorti de `app/(site)/ressources/page.tsx` pour devenir le repli
+de la carte « à la une ». Il reste un **repli** et non une illustration : il dessine la
+grille de décision d'un article précis, et s'affichait sous n'importe quel article mis en
+avant.
+
 **Ne pas lancer un troisième serveur de dev pour vérifier.** `NEXT_DIST_DIR` permet deux
 processus, pas trois : un troisième corrompt le cache Turbopack, et le symptôme est un
 « Parsing CSS source code failed » sur `app/globals.css` avec des octets abîmés dans le
@@ -787,8 +806,33 @@ puis un redémarrage. Vérifier une page se fait par CDP sur les serveurs déjà
 `curl` ne suffit pas pour vérifier un rendu : la réponse contient surtout la charge RSC,
 et une section absente du HTML récupéré n'est pas une section absente de la page.
 
-Limite connue : la **galerie** d'une réalisation est saisissable et enregistrée, mais
-n'est rendue par aucune vue publique.
+La **galerie** d'une réalisation se rend par `CaseGallery`, **après le récit et avant les
+résultats** : on lit l'histoire, on voit ce qui a été livré, puis on mesure. Avant le
+récit ce seraient des captures sans contexte ; après les résultats, elle arriverait la
+démonstration déjà faite.
+
+L'**image de tête d'un article** se rend par `ArticleCover`, sous le bloc auteur et avant
+le corps - la placer au-dessus du titre repousserait le `h1` sous le pli, ce qui coûterait
+le LCP pour un gain d'atmosphère. Deux replis différents et c'est voulu : la carte « à la
+une » retombe sur `ArticleCardSketch`, sa moitié visuelle ne pouvant pas être vide sans
+déséquilibrer la grille ; la vue de lecture ne rend **rien**, un article sans image étant
+un article et non un article incomplet.
+
+Traitement plus sobre que celui des réalisations, volontairement : `CaseCover` garde la
+fenêtre flottante de son croquis parce qu'il montre une interface livrée, alors qu'une
+image d'article peut être un schéma comme une photo - un cadre de fenêtre mentirait sur
+la nature du contenu.
+
+**La page article était la seule route dynamique à composer ses métadonnées à la main**,
+et elle y perdait l'URL canonique et l'image de partage. Elle passe désormais par
+`pageMetadata`, avec l'image de tête en carte de partage quand elle existe - même règle
+que les réalisations. Un article se partage plus que toute autre page du site, ce qui en
+faisait l'endroit le plus coûteux pour cet oubli.
+
+Limite connue : les **cartes du flux** de `/ressources` restent sans vignette. Ce sont des
+cartes de texte compactes en trois colonnes ; y ajouter une image ne se ferait bien qu'en
+en mettant sur toutes, et une grille où certaines en ont et d'autres pas se lit comme un
+défaut. À rouvrir comme une décision de mise en page, pas comme un branchement.
 
 ### Aperçu de brouillon
 

@@ -4,6 +4,7 @@ import { Container } from "@/components/primitives/container"
 import { Reveal } from "@/components/primitives/reveal"
 import { RichHtml } from "@/components/primitives/rich-html"
 import { Section } from "@/components/primitives/section"
+import { ArticleCover } from "@/components/ressources/article-cover"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
@@ -14,6 +15,7 @@ import {
   type ArticleCategory,
 } from "@/lib/content/articles"
 import { caseHref } from "@/lib/content/cases"
+import type { MediaRef } from "@/lib/media"
 import { cta } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +36,8 @@ export type ArticleView = {
   authorInitials: string
   date: string
   readingTime: string
+  /** L'image de tête, absente tant qu'aucune n'a été déposée. */
+  heroMedia?: MediaRef
   body: readonly ArticleBlock[]
 }
 
@@ -197,6 +201,22 @@ function ArticleReadingView({
           </span>
         </Reveal>
       </Container>
+
+      {/*
+        L'image de tête sous le bloc auteur, avant le corps : elle installe le sujet
+        après l'avoir nommé. La placer au-dessus du titre repousserait le `h1` sous le
+        pli, ce qui coûterait le LCP pour un gain d'atmosphère.
+
+        `ArticleCover` ne rend rien sans média, donc la marge n'est pas non plus posée :
+        un article sans image garde exactement l'espacement actuel.
+      */}
+      {article.heroMedia ? (
+        <Container width="reading" className="pt-10">
+          <Reveal>
+            <ArticleCover media={article.heroMedia} place="reading" />
+          </Reveal>
+        </Container>
+      ) : null}
 
       <Container width="reading" className="pt-10 pb-16">
         <article>

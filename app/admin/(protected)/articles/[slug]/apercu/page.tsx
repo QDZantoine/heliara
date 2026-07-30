@@ -71,6 +71,8 @@ export default async function ArticlePreviewPage(
             authorInitials: item.authorInitials,
             date: item.dateLabel,
             readingTime: item.readingTime,
+            // Sinon l'aperçu cesse d'être le rendu exact de la page publiée.
+            heroMedia: item.heroMedia ?? undefined,
             body: toRenderableBody(item.blocks),
           }}
         />

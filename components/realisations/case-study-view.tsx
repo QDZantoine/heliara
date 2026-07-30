@@ -6,15 +6,14 @@ import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { RichHtml } from "@/components/primitives/rich-html"
-import {
-  CaseCover,
-  type CoverMedia,
-} from "@/components/realisations/case-cover"
 import { Section } from "@/components/primitives/section"
+import { CaseCover } from "@/components/realisations/case-cover"
+import { CaseGallery } from "@/components/realisations/case-gallery"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
 import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
 import { caseHref } from "@/lib/content/cases"
+import type { MediaRef, MediaWithCaption } from "@/lib/media"
 import { cta } from "@/lib/site"
 
 /**
@@ -32,7 +31,9 @@ export type CaseView = {
   badge: string
   accent: "brand" | "info"
   /** L'image de tête, absente tant qu'aucune n'a été déposée. */
-  heroMedia?: CoverMedia
+  heroMedia?: MediaRef
+  /** Les captures de ce qui a été livré. Vide ou absente, aucun bloc ne s'affiche. */
+  gallery?: readonly MediaWithCaption[]
   resultsLabel: string
   meta: readonly { label: string; value: string }[]
   chapters: readonly {
@@ -175,6 +176,10 @@ function CaseStudyView({
                 remplit par étapes, et un aperçu de brouillon doit montrer ce qui
                 existe, pas des cadres vides - ce qui vaut aussi pour une fiche
                 publiée sans témoignage ni chiffre. */}
+
+            {/* Après le récit, avant les résultats : on lit l'histoire, on voit ce qui
+                a été livré, puis on mesure. Voir `CaseGallery`. */}
+            <CaseGallery items={study.gallery ?? []} />
             {study.results.length > 0 ? (
               <Reveal className="relative mb-13 overflow-hidden rounded-xl border border-line bg-[image:var(--hel-gradient-surface)] p-6 md:p-10">
                 <Halo variant="warm" />

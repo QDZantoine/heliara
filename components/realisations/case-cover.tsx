@@ -4,25 +4,12 @@ import { Halo } from "@/components/primitives/halo"
 import { CaseCardSketch } from "@/components/visuals/case-card-sketch"
 import { CaseHeroSketch } from "@/components/visuals/case-hero-sketch"
 import { CaseSketch } from "@/components/visuals/case-sketch"
+import type { MediaRef } from "@/lib/media"
 import { cn } from "@/lib/utils"
-
-/**
- * Le média de tête, réduit à ce que le rendu consomme.
- *
- * Volontairement structurel et non importé de la couche d'accès : `PublicHeroMedia`
- * côté site et `CaseMediaRef` côté administration s'y conforment tous les deux, et les
- * composants restent ignorants de la provenance du contenu.
- */
-export type CoverMedia = {
-  url: string
-  alt: string
-  width: number | null
-  height: number | null
-}
 
 type CaseCoverProps = {
   /** Le média de tête, ou `undefined` : la fiche retombe alors sur son croquis. */
-  media?: CoverMedia
+  media?: MediaRef
   /**
    * La teinte du halo, pour les cartes seulement.
    *

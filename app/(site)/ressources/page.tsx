@@ -3,9 +3,9 @@ import Link from "next/link"
 
 import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
-import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
+import { ArticleCover } from "@/components/ressources/article-cover"
 import { ArticleFeed } from "@/components/ressources/article-feed"
 import { NewsletterForm } from "@/components/ressources/newsletter-form"
 import { articleHref, categoryTone } from "@/lib/content/articles"
@@ -117,46 +117,12 @@ export default async function RessourcesPage() {
                 </p>
               </div>
 
-              {/* Visuel : la grille de décision de l’article, en schéma. */}
-              <div
-                aria-hidden="true"
-                className="relative min-h-52 overflow-hidden bg-inset md:min-h-75"
-              >
-                <Halo variant="warm" />
-                <div className="absolute top-11 -right-6 -bottom-6 left-9 rounded-tl-md border border-line bg-raised p-5.5 shadow-3">
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div className="rounded-xs border border-line p-3.5">
-                      <p className="text-[0.69rem] font-semibold text-ink">
-                        Acheter
-                      </p>
-                      <div className="mt-2 grid gap-1.5">
-                        <span className="h-2 w-[80%] rounded-[3px] bg-inset" />
-                        <span className="h-2 w-[60%] rounded-[3px] bg-inset" />
-                      </div>
-                    </div>
-                    <div className="rounded-xs border border-brand bg-brand-subtle p-3.5">
-                      <p className="text-[0.69rem] font-semibold text-brand-text">
-                        Construire
-                      </p>
-                      <div className="mt-2 grid gap-1.5">
-                        <span className="h-2 w-[72%] rounded-[3px] bg-raised" />
-                        <span className="h-2 w-[84%] rounded-[3px] bg-raised" />
-                      </div>
-                    </div>
-                  </div>
-                  {/* Les sept questions, en lignes schématiques : c'est ce qui
-                      occupe le bas du visuel et donne son volume au bloc. */}
-                  <div className="mt-2.5 grid gap-1.5">
-                    {[86, 72, 90, 64, 80, 58, 76].map((width, index) => (
-                      <span
-                        key={index}
-                        style={{ width: `${width}%` }}
-                        className="h-2.5 rounded-[3px] bg-inset"
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/*
+                Le visuel : l'image de tête de l'article s'il en a une, sinon le croquis.
+                Voir `ArticleCardSketch`, qui porte la raison pour laquelle ce croquis est
+                un repli et non une illustration - il décrit un article précis.
+              */}
+              <ArticleCover media={featured.heroMedia} place="card" />
             </Link>
           </Reveal>
         </Container>

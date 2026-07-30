@@ -4,11 +4,9 @@ import * as React from "react"
 import Link from "next/link"
 
 import { Reveal } from "@/components/primitives/reveal"
-import {
-  CaseCover,
-  type CoverMedia,
-} from "@/components/realisations/case-cover"
+import { CaseCover } from "@/components/realisations/case-cover"
 import { caseHref, type CaseStudy } from "@/lib/content/cases"
+import type { MediaRef } from "@/lib/media"
 import { cn } from "@/lib/utils"
 
 /**
@@ -18,7 +16,7 @@ import { cn } from "@/lib/utils"
  * qu'en base. L'intersection garde le composant ignorant de la provenance sans lui
  * cacher l'image.
  */
-export type GridCase = CaseStudy & { heroMedia?: CoverMedia }
+export type GridCase = CaseStudy & { heroMedia?: MediaRef }
 
 type CaseGridProps = {
   cases: GridCase[]

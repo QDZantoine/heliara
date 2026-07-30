@@ -80,8 +80,10 @@ export default async function CasePreviewPage(
             badge: item.badge,
             accent: item.accent,
             // L'aperçu doit montrer la couverture, sinon il cesse d'être le rendu exact
-            // de la page publiée. `CaseMediaRef` se conforme à `CoverMedia`.
+            // de la page publiée. `CaseMediaRef` se conforme à `MediaRef`.
             heroMedia: item.heroMedia ?? undefined,
+            // La galerie aussi, pour la même raison : l'aperçu est le rendu exact.
+            gallery: item.gallery,
             resultsLabel: item.resultsLabel,
             meta: item.meta,
             chapters: item.chapters.map((chapter) => ({
