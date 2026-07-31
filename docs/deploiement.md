@@ -27,20 +27,20 @@ capable d'écrire.
 
 ## 1. Exécution
 
-| Élément            | Version / valeur                                          |
-| ------------------ | --------------------------------------------------------- |
-| Node.js            | 22 LTS (développé et testé sur 22.19)                     |
-| Gestionnaire       | pnpm 10                                                   |
-| Build              | `pnpm install --frozen-lockfile` puis `pnpm build`         |
-| Démarrage          | `pnpm start` (soit `next start`)                           |
-| Port par défaut    | 3000, réglable par `PORT`                                  |
+| Élément         | Version / valeur                                   |
+| --------------- | -------------------------------------------------- |
+| Node.js         | 22 LTS (développé et testé sur 22.19)              |
+| Gestionnaire    | pnpm 10                                            |
+| Build           | `pnpm install --frozen-lockfile` puis `pnpm build` |
+| Démarrage       | `pnpm start` (soit `next start`)                   |
+| Port par défaut | 3000, réglable par `PORT`                          |
 
 Deux processus à lancer depuis le **même** répertoire de build :
 
-| Processus  | `HELIARA_ROLE` | Exposition        | Sert                     | Identifiants base            |
-| ---------- | -------------- | ----------------- | ------------------------ | ---------------------------- |
-| public     | `read`         | Internet, en TLS  | tout sauf `/admin`       | `DB_READ_*` **seulement**    |
-| administration | `write`    | VPN ou liste d'IP | `/admin` seulement       | `DB_WRITE_*`                 |
+| Processus      | `HELIARA_ROLE` | Exposition        | Sert               | Identifiants base         |
+| -------------- | -------------- | ----------------- | ------------------ | ------------------------- |
+| public         | `read`         | Internet, en TLS  | tout sauf `/admin` | `DB_READ_*` **seulement** |
+| administration | `write`        | VPN ou liste d'IP | `/admin` seulement | `DB_WRITE_*`              |
 
 `read` est la valeur par défaut : un oubli de configuration dégrade vers moins de droits,
 jamais vers plus.
@@ -66,13 +66,13 @@ Le seul prérequis réel est `RANDOM_BYTES()`, présent depuis 11.3. **Ne pas de
 
 **Cinq comptes, et leur séparation est le cœur du modèle de sécurité :**
 
-| Compte       | Privilèges                          | Qui l'utilise                       |
-| ------------ | ----------------------------------- | ----------------------------------- |
-| `root`       | tout, dont `GRANT OPTION`           | l'initialisation et les privilèges  |
-| `db_admin`   | `ALL` sur la base                   | maintenance humaine. Jamais l'app   |
-| `db_migrate` | DDL, routines, DML - **pas** `GRANT` | les migrations                     |
-| `app_read`   | `EXECUTE` sur 15 routines, dont 13 lectures | le site public                |
-| `app_write`  | `EXECUTE` sur 85 procédures          | l'administration                   |
+| Compte       | Privilèges                                  | Qui l'utilise                      |
+| ------------ | ------------------------------------------- | ---------------------------------- |
+| `root`       | tout, dont `GRANT OPTION`                   | l'initialisation et les privilèges |
+| `db_admin`   | `ALL` sur la base                           | maintenance humaine. Jamais l'app  |
+| `db_migrate` | DDL, routines, DML - **pas** `GRANT`        | les migrations                     |
+| `app_read`   | `EXECUTE` sur 15 routines, dont 13 lectures | le site public                     |
+| `app_write`  | `EXECUTE` sur 85 procédures                 | l'administration                   |
 
 Les comptes applicatifs n'ont **aucun droit de table** : ils ne peuvent qu'appeler des
 procédures stockées. Vérifié par un test d'intégration.
@@ -136,11 +136,11 @@ que plusieurs explorateurs refusent sans le dire.
 
 ## 4. Réseau, DNS et TLS
 
-| Nom                       | Vers                       | Exposition             |
-| ------------------------- | -------------------------- | ---------------------- |
-| `heliara.fr`, `www`       | processus `read`, port 3000 | Internet, TLS obligatoire |
-| un nom pour l'administration | processus `write`, port 3001 | VPN ou liste d'IP    |
-| un nom pour les médias    | le stockage objet           | Internet, TLS, lecture seule |
+| Nom                          | Vers                         | Exposition                   |
+| ---------------------------- | ---------------------------- | ---------------------------- |
+| `heliara.fr`, `www`          | processus `read`, port 3000  | Internet, TLS obligatoire    |
+| un nom pour l'administration | processus `write`, port 3001 | VPN ou liste d'IP            |
+| un nom pour les médias       | le stockage objet            | Internet, TLS, lecture seule |
 
 - **Rediriger `www` vers le nom nu, ou l'inverse, en 301.** Une page servie sous deux noms
   se dédouble dans l'index ; l'URL canonique de chaque page est déjà absolue et unique,
@@ -198,13 +198,13 @@ signale un incident, pas un fonctionnement normal. À faire remonter par la supe
 
 Il n'y a pas de route de santé dédiée. Surveiller :
 
-| Signal                                            | Ce qu'il veut dire                    |
-| ------------------------------------------------- | ------------------------------------- |
-| `GET /` répond 200                                | l'application est debout              |
-| `GET /sitemap.xml` répond 200 et contient plus de 20 URL | la base répond                |
-| « repli sur le contenu statique » dans les journaux | la base est muette ou vide           |
-| « execute command denied »                        | des privilèges perdus, voir §2        |
-| 5xx sur `/_next/image`                            | le stockage objet est injoignable     |
+| Signal                                                   | Ce qu'il veut dire                |
+| -------------------------------------------------------- | --------------------------------- |
+| `GET /` répond 200                                       | l'application est debout          |
+| `GET /sitemap.xml` répond 200 et contient plus de 20 URL | la base répond                    |
+| « repli sur le contenu statique » dans les journaux      | la base est muette ou vide        |
+| « execute command denied »                               | des privilèges perdus, voir §2    |
+| 5xx sur `/_next/image`                                   | le stockage objet est injoignable |
 
 Les journaux d'application vont sur la sortie standard. Aucun secret n'y est écrit.
 

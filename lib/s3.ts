@@ -119,6 +119,34 @@ export async function deleteObject(key: string) {
   await client().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }))
 }
 
+/**
+ * Dépose un objet **depuis le serveur**, sans URL présignée.
+ *
+ * **La seule exception à la règle « le fichier ne traverse jamais l'application »**, et
+ * elle est bornée : ce chemin ne sert qu'à l'amorçage, où il n'y a pas de navigateur pour
+ * recevoir une URL signée et envoyer l'octet lui-même. Les fichiers viennent alors du
+ * dépôt, pas d'un appelant.
+ *
+ * **Ne pas l'utiliser dans une action serveur.** Faire passer un téléversement d'usager
+ * par l'application, c'est reprendre à sa charge la taille, le type, le temps de transfert
+ * et la mémoire - tout ce que la signature déporte sur le stockage.
+ */
+export async function putObject(
+  key: string,
+  body: Buffer,
+  mimeType: string
+): Promise<void> {
+  await client().send(
+    new PutObjectCommand({
+      Bucket: bucket(),
+      Key: key,
+      Body: body,
+      ContentType: mimeType,
+      ContentLength: body.byteLength,
+    })
+  )
+}
+
 /** Le type et la taille annoncés sont-ils acceptables ? */
 export function checkUpload(mimeType: string, byteSize: number) {
   if (!ALLOWED_TYPES.includes(mimeType as (typeof ALLOWED_TYPES)[number])) {

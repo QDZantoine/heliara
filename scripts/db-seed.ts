@@ -25,15 +25,20 @@
  */
 import "@/scripts/env"
 
+import { createHash } from "node:crypto"
+import { readFile } from "node:fs/promises"
+import { join } from "node:path"
 import { stdout } from "node:process"
 
 import { hashPassword } from "@/lib/auth/password"
 import { articles } from "@/lib/content/articles"
 import { caseStudies } from "@/lib/content/cases"
+import { clients } from "@/lib/content/clients"
 import { expertiseFamilies, expertiseServices } from "@/lib/content/expertises"
 import { blocksToJson } from "@/lib/db/articles"
 import { BusinessError, write } from "@/lib/db/call"
 import { closePool } from "@/lib/db/pool"
+import { objectKey, putObject } from "@/lib/s3"
 import type { BlockInput } from "@/lib/schemas/article"
 
 /** Compte technique auteur de l'amorçage, pour que le journal d'audit ait un acteur. */
@@ -395,6 +400,136 @@ async function seedExpertises(actor: Buffer) {
   return { families, services, skipped }
 }
 
+/**
+ * Dépose un fichier du dépôt dans le stockage objet et rend son identifiant de média.
+ *
+ * **C'est le seul endroit du projet où un fichier traverse l'application**, et c'est
+ * inévitable ici : il n'y a pas de navigateur pour recevoir une URL signée. Les fichiers
+ * viennent du dépôt, pas d'un appelant, donc la surface est nulle.
+ *
+ * **Les dimensions restent nulles**, et c'est un choix, pas un manque : la bande de logos
+ * borne la hauteur de chaque image et laisse la largeur suivre, `shape` décidant de cette
+ * hauteur. Les lire demanderait une bibliothèque de décodage pour une donnée qu'aucun
+ * rendu ne consomme - et un SVG n'en a de toute façon pas.
+ *
+ * L'empreinte est calculée pour que la ligne soit identique à celle d'un envoi par le
+ * navigateur, qui la fournit.
+ */
+async function seedMedia(
+  actor: Buffer,
+  chemin: string,
+  alt = ""
+): Promise<Buffer> {
+  const octets = await readFile(join(process.cwd(), "public", chemin))
+  const nom = chemin.split("/").pop() ?? chemin
+  const extension = nom.split(".").pop()?.toLowerCase() ?? ""
+  const mime =
+    extension === "svg"
+      ? "image/svg+xml"
+      : extension === "png"
+        ? "image/png"
+        : extension === "webp"
+          ? "image/webp"
+          : extension === "avif"
+            ? "image/avif"
+            : "image/jpeg"
+
+  const key = objectKey(mime)
+  await putObject(key, octets, mime)
+
+  const row = await write.rowStrict<{ id: Buffer }>("create_media", [
+    key,
+    process.env.S3_BUCKET ?? "heliara",
+    mime,
+    octets.byteLength,
+    null,
+    null,
+    alt,
+    nom,
+    createHash("sha256").update(octets).digest("hex"),
+    actor,
+    null,
+  ])
+
+  // Une ligne n'est `ready` qu'après confirmation : un envoi interrompu ne laisse rien
+  // d'affichable, et l'amorçage doit produire des médias affichables.
+  await write.void("confirm_media", [
+    row.id,
+    null,
+    null,
+    octets.byteLength,
+    actor,
+    null,
+  ])
+
+  return row.id
+}
+
+/**
+ * Les références clientes du bandeau, publiées d'emblée.
+ *
+ * **Elles le sont parce qu'elles le sont déjà** : les huit logos s'affichent aujourd'hui
+ * sur l'accueil depuis le contenu statique, et les remettre en brouillon les retirerait du
+ * site. Leur autorisation d'usage a donc déjà été obtenue - c'est la condition qui les a
+ * fait entrer dans `lib/content/clients.ts`.
+ *
+ * Idempotent par nom, comme le reste de l'amorçage. Les fichiers déposés une première fois
+ * ne le sont pas deux : une référence dont le nom existe est passée avant tout dépôt.
+ */
+async function seedClients(actor: Buffer) {
+  const existing = new Set(
+    (await write.rows<{ name: string }>("list_client_references")).map(
+      (row) => row.name
+    )
+  )
+
+  let created = 0
+  let skipped = 0
+
+  for (const client of clients) {
+    if (existing.has(client.name)) {
+      skipped += 1
+      continue
+    }
+
+    /*
+      Une chaîne quand un seul fichier tient sur les deux thèmes, une paire quand la
+      marque est monochrome. C'est la distinction que porte `Client.logo`, et elle se
+      traduit ici en un ou deux médias.
+    */
+    const [clair, sombre] =
+      typeof client.logo === "string"
+        ? [client.logo, null]
+        : [client.logo.light, client.logo.dark]
+
+    const logoId = await seedMedia(actor, clair, client.name)
+    const darkId = sombre ? await seedMedia(actor, sombre, "") : null
+
+    const row = await write.rowStrict<{ id: Buffer }>(
+      "create_client_reference",
+      [client.name, logoId, actor, null]
+    )
+
+    await write.void("update_client_reference", [
+      row.id,
+      client.name,
+      logoId,
+      darkId,
+      client.shape,
+      client.site,
+      actor,
+      null,
+    ])
+
+    await write.void("publish_client_reference", [row.id, 1, actor, null])
+
+    created += 1
+    stdout.write(`  + ${client.name}\n`)
+  }
+
+  return { created, skipped }
+}
+
 async function main() {
   stdout.write("\nAmorçage de la base depuis le contenu statique.\n\n")
 
@@ -418,6 +553,11 @@ async function main() {
   stdout.write(
     skills.skipped ? `, ${skills.skipped} déjà présent(s).\n` : ".\n"
   )
+  stdout.write("\nRéférences clientes\n")
+  const refs = await seedClients(actor)
+  stdout.write(`  ${refs.created} créée(s)`)
+  stdout.write(refs.skipped ? `, ${refs.skipped} déjà présente(s).\n` : ".\n")
+
   stdout.write(
     "\nLe site public lit désormais la base. Le contenu statique reste en secours.\n\n"
   )

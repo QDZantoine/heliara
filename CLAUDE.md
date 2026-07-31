@@ -917,8 +917,40 @@ aurait donné deux définitions à tenir d'accord, ce qu'un schéma partagé ser
 Les marqueurs du genre `[À COMPLÉTER]` sont **importés tels quels et signalés en fin
 d'exécution**. Les effacer ferait disparaître la question qu'ils posent.
 
-Trois collections sont administrables : **Réalisations**, **Articles** et
-**Expertises**. Les autres contenus vivent encore dans `lib/content/*.ts`.
+Quatre collections sont administrables : **Réalisations**, **Articles**, **Expertises** et
+**Références clientes**. Les autres contenus vivent encore dans `lib/content/*.ts`.
+
+### Références clientes
+
+Le bandeau « Ils nous font confiance » de l'accueil, à `/admin/references`.
+
+**Un tableau et non l'éditeur à étapes**, à la différence des trois autres collections. Une
+référence a quatre champs et pas de page à elle : le rail d'étapes, le panneau de
+publication et les aperçus de placement seraient une coque autour de rien. On voit la bande
+entière dans son ordre, ce qui est exactement ce qu'on vient vérifier.
+
+**Le logo est montré à la hauteur qu'il aura dans la bande**, sur la même surface. C'est la
+seule façon de voir qu'un fichier est trop chargé, mal détouré ou déséquilibré par rapport à
+ses voisins ; un aperçu confortable mentirait sur le résultat.
+
+**« En ligne » veut dire « l'autorisation est obtenue ».** C'est le seul écran où publier
+engage autre chose que la qualité du contenu : un logo est une marque, et l'afficher sous
+« ils nous font confiance » est une affirmation commerciale qui se couvre par un accord
+écrit. Aucune base ne peut le vérifier, d'où le rappel à côté de l'interrupteur et le sens
+particulier que prend `status` dans cette table.
+
+**`seedMedia()` est la seule exception à « le fichier ne traverse jamais l'application ».**
+L'amorçage a dû pousser les huit logos du dépôt vers le stockage objet, et il n'y a pas de
+navigateur pour recevoir une URL présignée. La surface est nulle - les fichiers viennent du
+dépôt - mais `putObject()` ne doit pas servir dans une action serveur : faire passer un
+téléversement d'usager par l'application, c'est reprendre à sa charge la taille, le type,
+le temps de transfert et la mémoire, tout ce que la signature déporte sur le stockage.
+
+**Les dimensions des logos restent nulles en base**, et c'est un choix. La bande borne la
+hauteur de chaque image et laisse la largeur suivre, `shape` décidant de cette hauteur :
+aucun rendu ne consomme les dimensions, les lire demanderait une bibliothèque de décodage,
+et un SVG n'en a pas. C'est l'inverse d'une couverture de réalisation, dont la boîte prend
+le rapport du fichier.
 
 **Corriger un contenu administrable dans `lib/content/*.ts` ne change rien au site.**
 Réalisations, articles et expertises sont lus en base ; ces fichiers ne sont plus que le
