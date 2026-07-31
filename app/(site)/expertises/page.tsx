@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
@@ -10,14 +11,25 @@ import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
 import { expertiseHref } from "@/lib/content/expertises"
 import { publicServicesByFamily } from "@/lib/db/public-expertises"
+import { collectionPageNode, graph } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = pageMetadata({
+/**
+ * Le titre, la description et le chemin de la page, en un seul endroit.
+ *
+ * Hissés en constante parce que **deux consommateurs les lisent** : les métadonnées
+ * et le nœud `CollectionPage` des données structurées. Les écrire deux fois, c'est
+ * garantir qu'ils divergeront - et un balisage qui contredit la page est un écart
+ * signalable, pas un détail.
+ */
+const page = {
   title: "Expertises",
   description:
     "Neuf savoir-faire regroupés en trois familles : plateformes et SaaS, sites et e-commerce, IA et API.",
   path: "/expertises",
-})
+}
+
+export const metadata: Metadata = pageMetadata(page)
 
 /**
  * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next
@@ -32,6 +44,11 @@ export default async function ExpertisesPage() {
 
   return (
     <>
+      {/* Une page de section : `CollectionPage` dit à un moteur que cette adresse est un
+          point d'entrée vers une collection, et non un article de plus. Le titre et la
+          description viennent de `page`, la même source que les métadonnées. */}
+      <JsonLd data={graph([collectionPageNode(page)])} />
+
       <PageHero
         eyebrow="Expertises"
         title="Neuf savoir-faire, trois familles de produits"

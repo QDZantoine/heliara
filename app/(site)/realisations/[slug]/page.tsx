@@ -26,7 +26,9 @@ export const dynamicParams = true
 
 export async function generateStaticParams() {
   const slugs = await listPublicCaseSlugs()
-  return slugs.map((slug) => ({ slug }))
+  // `listPublic*Slugs` rend des objets et non des chaînes, depuis qu'il porte aussi la
+  // date de modification pour le plan du site.
+  return slugs.map((item) => ({ slug: item.slug }))
 }
 
 export async function generateMetadata(

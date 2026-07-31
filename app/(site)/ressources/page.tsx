@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Container } from "@/components/primitives/container"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
@@ -14,14 +15,25 @@ import {
   publicArticleCategories,
 } from "@/lib/db/public-articles"
 import { cn } from "@/lib/utils"
+import { collectionPageNode, graph } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = pageMetadata({
+/**
+ * Le titre, la description et le chemin de la page, en un seul endroit.
+ *
+ * Hissés en constante parce que **deux consommateurs les lisent** : les métadonnées
+ * et le nœud `CollectionPage` des données structurées. Les écrire deux fois, c'est
+ * garantir qu'ils divergeront - et un balisage qui contredit la page est un écart
+ * signalable, pas un détail.
+ */
+const page = {
   title: "Ressources",
   description:
     "Guides, analyses et retours d’expérience : ce que nous apprenons en construisant des produits numériques.",
   path: "/ressources",
-})
+}
+
+export const metadata: Metadata = pageMetadata(page)
 
 /**
  * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next
@@ -59,6 +71,11 @@ export default async function RessourcesPage() {
 
   return (
     <>
+      {/* Une page de section : `CollectionPage` dit à un moteur que cette adresse est un
+          point d'entrée vers une collection, et non un article de plus. Le titre et la
+          description viennent de `page`, la même source que les métadonnées. */}
+      <JsonLd data={graph([collectionPageNode(page)])} />
+
       <div className="border-b border-line">
         <Container className="pt-14 pb-10 md:pt-18">
           <Reveal>

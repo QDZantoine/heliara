@@ -190,6 +190,110 @@ Carrières a été retiré du périmètre : la fiche existe dans l'Architecture 
 
 Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec next typegen`. Sans quoi `PageProps<"/ma/[route]">` échoue au typecheck.
 
+## Référencement, et référencement génératif
+
+Trois couches, dans l'ordre où elles comptent.
+
+**`lib/seo.ts` - `pageMetadata()`.** Titre, description, canonique, OpenGraph et carte
+Twitter en un appel. **Toute page publique doit passer par lui**, y compris les routes
+dynamiques : les deux qui composaient leurs métadonnées à la main - la page d'article et
+la page d'expertise - y perdaient toutes les deux leur **URL canonique**, ce qui ne se
+voit ni au build ni à l'écran. `absoluteTitle` existe pour l'accueil, dont le titre porte
+déjà le nom du studio et qui sortirait « Heliara - … - Heliara » avec le gabarit du
+layout.
+
+**`lib/schema.ts` - les données structurées.** Un graphe par page, aux `@id` stables, avec
+`organizationNode` et `websiteNode` posés une fois dans le layout du groupe `(site)`. La
+couverture : `Article` sur un article, `Article` sur une réalisation, `Service` plus
+`FAQPage` sur une expertise, `CollectionPage` sur les trois listings, et un
+`BreadcrumbList` partout où un fil est affiché.
+
+Deux règles qui ne se négocient pas :
+
+- **Le balisage reprend mot pour mot ce que la page montre.** Un fil balisé plus profond
+  que celui qu'on affiche, ou une FAQ balisée absente de l'écran, est un écart
+  signalable - d'où le `faqNode` conditionné à `service.faq.length > 0`.
+- **`FAQPage` est conservé bien que Google en ait retiré le résultat enrichi en 2023.**
+  La raison qui reste : des paires question-réponse explicites sont ce qu'un moteur
+  génératif reprend le plus volontiers, n'ayant rien à reformuler.
+
+**Le titre et la description d'un listing sont hissés en constante `page`**, lue par
+`pageMetadata` **et** par `collectionPageNode`. Les écrire deux fois garantirait qu'ils
+divergent, et un balisage qui contredit la page est un écart, pas un détail.
+
+### Les cartes de partage
+
+`lib/og.tsx` génère la carte, et chaque segment a son `opengraph-image.tsx`.
+
+**Un fichier par segment, et ce n'est pas de la redondance : la convention n'est pas
+héritée.** Mesuré - une carte unique dans `app/` ne couvrait rien du tout, et déplacée
+dans `app/(site)/` elle ne couvrait que l'accueil. Toutes les autres pages sortaient sans
+vignette. Chaque page porte donc la sienne, ce qui lui vaut au passage son propre titre.
+
+**La hiérarchie des images, et elle fonctionne dans cet ordre** : une réalisation ou un
+article qui porte une image de tête la donne en carte de partage, écrite explicitement par
+`pageMetadata`, ce qui **prend le pas** sur la convention de fichier. La carte générée
+n'est donc que le défaut. Une capture de l'interface livrée vaut mieux qu'un titre sur
+fond encre.
+
+**Les polices sont des TTF versionnés dans `assets/fonts/`**, pas `next/font/google`.
+Satori - le moteur derrière `next/og` - n'accepte ni WOFF2 ni police variable, or c'est
+exactement ce que `next/font` émet. Schibsted Grotesk est sous OFL-1.1, dont le texte est
+joint : redistribuable à condition de garder la licence. Un fichier du dépôt ne dépend
+d'aucun accès réseau au rendu.
+
+**Deux pièges de satori, tous deux invisibles dans le JSX** - il faut regarder l'image :
+
+- **Il aplatit les `span` imbriqués en éléments de flex.** Le point orange écrit à la
+  suite du titre se posait au bout de la **première** ligne, contre le bord droit de la
+  carte. Le titre est donc décomposé en un mot par élément avec `flexWrap`, l'espace porté
+  par une marge : le point redevient un élément de plus, collé au dernier mot.
+- **`display: block` fait échouer le rendu.** La route répond alors une réponse vide, pas
+  une erreur. C'était la correction évidente au défaut précédent ; elle ne marche pas.
+
+### `robots.txt`, et ce qu'il ne dit pas
+
+**`/admin` n'y est pas interdit, volontairement.** `robots.txt` est public : y nommer
+l'administration en annoncerait l'existence, ce qui défait le choix de répondre 404 plutôt
+que 403. Il n'y a rien à interdire, tout `/admin` répondant 404 sur le déploiement public.
+
+**Les explorateurs des moteurs génératifs ne sont pas bloqués, et ne sont pas nommés.**
+`User-agent: *` avec `Allow: /` les couvre tous ; une douzaine de règles `Allow`
+nominatives n'aurait **aucun effet** et donnerait l'illusion d'un réglage à tenir à jour.
+`Google-Extended` et `Applebot-Extended` ne servent qu'à refuser : leur absence est
+l'autorisation. Si l'entraînement devait être refusé - décision commerciale - c'est là que
+les `Disallow` viendraient.
+
+### `/llms.txt`
+
+Généré par `app/llms.txt/route.ts`, lu en base avec le même repli que le reste. Un fichier
+figé annoncerait des services supprimés et tairait les nouveaux, sans que personne le voie
+puisque aucun visiteur ne le lit.
+
+**Ce qu'il porte et qui ne se lit nulle part ailleurs aussi nettement, c'est ce que le
+studio ne fait pas** : la pile par défaut n'est pas une obligation, l'e-commerce passe par
+Shopify plutôt que par un moteur de paiement maison, et **aucun résultat chiffré n'est
+publié**. Ce sont exactement les trois points sur lesquels un modèle inventerait. Un
+fichier destiné à être repris textuellement est le dernier endroit où mettre une
+affirmation qu'on ne peut pas justifier.
+
+`## Optional` reste en anglais : c'est un nom de section que la spécification
+(llmstxt.org) réserve pour marquer le contenu secondaire, le traduire le rendrait muet.
+
+### `sitemap.ts`
+
+**`lastModified` est omis plutôt qu'inventé.** Les entrées venues du contenu statique et
+les pages fixes n'ont pas de date honnête : leur donner celle du jour annoncerait une
+modification qui n'a pas eu lieu, et un moteur qui recrawle pour rien apprend à ne plus y
+croire. 24 des 32 URL en portent une, les 8 pages fixes non.
+
+**Un objet interpolé dans un gabarit ne lève jamais au typecheck.** `listPublicCaseSlugs`
+et `listPublicServiceSlugs` sont passés de `string[]` à `{ slug, updatedAt }[]` - les
+procédures rendaient `updated_at` depuis toujours, seule la couche d'accès le jetait. Les
+trois appelants ont alors produit `/realisations/[object Object]` : aucune erreur de
+compilation, aucun avertissement. `tests/unit/navigation.test.ts` porte désormais une
+assertion explicite là-dessus.
+
 ## Icônes et manifeste
 
 Conventions de fichier de l'App Router : `app/favicon.ico`, `app/icon0.svg`,

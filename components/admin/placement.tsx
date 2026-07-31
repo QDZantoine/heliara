@@ -104,10 +104,10 @@ export function CaseCardPreview({
         <img
           src={imageUrl}
           alt=""
-          className="aspect-16/9 w-full object-cover"
+          className="aspect-video w-full object-cover"
         />
       ) : (
-        <div className="grid aspect-16/9 w-full place-items-center bg-page text-[0.66rem] text-faint">
+        <div className="grid aspect-video w-full place-items-center bg-page text-[0.66rem] text-faint">
           visuel
         </div>
       )}

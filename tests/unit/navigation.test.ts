@@ -222,6 +222,23 @@ describe("plan du site", () => {
     vi.restoreAllMocks()
   })
 
+  /*
+    Un objet interpolé dans un gabarit ne lève **jamais** au typecheck.
+
+    Les listes de slugs ont gagné leur date de modification, et sont passées de
+    `string[]` à `{ slug, updatedAt }[]`. Les trois appelants qui interpolaient l'élément
+    entier ont alors produit `/realisations/[object Object]` - sans erreur de compilation,
+    sans avertissement, et sans que rien ne le signale à l'exécution. Cette assertion est
+    plus explicite que celle des collections juste en dessous, qui l'attrape aussi mais
+    en nommant un slug manquant plutôt que la cause.
+  */
+  it("ne construit aucune URL depuis un objet interpolé", () => {
+    for (const url of urls) {
+      expect(url, url).not.toContain("[object")
+      expect(url, url).not.toContain("undefined")
+    }
+  })
+
   it("préfixe toutes les URL par le domaine, sans doublon", () => {
     for (const url of urls) {
       expect(url.startsWith(`${site.url}/`)).toBe(true)

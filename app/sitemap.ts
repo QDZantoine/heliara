@@ -12,6 +12,20 @@ import { site } from "@/lib/site"
  * Les priorités suivent l'architecture UX : l'accueil et la preuve d'abord, le
  * contact ensuite, l'éditorial en dernier.
  */
+/**
+ * `lastModified`, quand on le connaît.
+ *
+ * **Omis plutôt qu'inventé** : une entrée qui vient du contenu statique n'est pas datée,
+ * et lui donner la date du jour annoncerait une modification qui n'a pas eu lieu - un
+ * signal faux coûte plus qu'un signal absent, puisqu'un moteur qui recrawle pour rien
+ * apprend à ne plus y croire.
+ *
+ * Les horodatages de la base sont des `UNIX_TIMESTAMP()`, donc en secondes.
+ */
+function quand(updatedAt?: number) {
+  return updatedAt ? { lastModified: new Date(updatedAt * 1000) } : {}
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (path: string) => `${site.url}${path}`
 
@@ -34,14 +48,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     // Les réalisations viennent de la base, avec repli sur le contenu statique :
     // le plan du site ne doit pas se vider parce que la base n'a pas répondu.
-    ...(await listPublicCaseSlugs()).map((slug) => ({
-      url: url(`/realisations/${slug}`),
+    ...(await listPublicCaseSlugs()).map((item) => ({
+      url: url(`/realisations/${item.slug}`),
+      ...quand(item.updatedAt),
       changeFrequency: "yearly" as const,
       priority: 0.8,
     })),
     // Les expertises aussi, même repli sur le contenu statique.
-    ...(await listPublicServiceSlugs()).map((slug) => ({
-      url: url(`/expertises/${slug}`),
+    ...(await listPublicServiceSlugs()).map((item) => ({
+      url: url(`/expertises/${item.slug}`),
+      ...quand(item.updatedAt),
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),

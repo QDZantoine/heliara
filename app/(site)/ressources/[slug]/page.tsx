@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { JsonLd } from "@/components/seo/json-ld"
 import { ArticleReadingView } from "@/components/ressources/article-reading-view"
 import { ViewCounter } from "@/components/ressources/view-counter"
 import {
@@ -10,6 +11,7 @@ import {
   relatedPublicArticles,
 } from "@/lib/db/public-articles"
 import { getPublicCase } from "@/lib/db/public-cases"
+import { articleNode, breadcrumbNode, graph } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 
 /**
@@ -91,6 +93,39 @@ export default async function ArticlePage(
 
   return (
     <>
+      {/*
+        Les données structurées de l'article.
+
+        `Article` est le type que les moteurs savent lire, et c'est aussi ce qu'un moteur
+        générateur reprend le plus volontiers : auteur nommé, date de publication, date de
+        modification, durée de lecture, section. `dateModified` n'est pas du remplissage -
+        c'est ce qui distingue un contenu tenu à jour d'un contenu abandonné.
+
+        Le fil balisé **reprend exactement** celui que `ArticleReadingView` affiche, la
+        catégorie en page courante : un fil balisé plus profond que celui qu'on montre est
+        un écart signalable.
+      */}
+      <JsonLd
+        data={graph([
+          articleNode({
+            path: `/ressources/${article.slug}`,
+            title: article.title,
+            description: article.lead,
+            publishedAt: article.publishedAt,
+            modifiedAt: article.updatedAt,
+            author: article.author,
+            authorRole: article.authorRole,
+            section: article.category,
+            readingTime: article.readingTime,
+            imageUrl: article.heroMedia?.url,
+          }),
+          breadcrumbNode([
+            { label: "Ressources", path: "/ressources" },
+            { label: article.category },
+          ]),
+        ])}
+      />
+
       {/* Ne rend rien : signale une lecture, une fois par article et par session,
           après deux secondes de présence. Le comptage vient du navigateur parce que
           la page est prérendue et que son code ne s'exécute pas à chaque visite. */}

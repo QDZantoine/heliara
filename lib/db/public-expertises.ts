@@ -308,11 +308,28 @@ export async function getPublicService(
 }
 
 /** Les slugs à prérendre : union de la base et du statique. */
-export async function listPublicServiceSlugs(): Promise<string[]> {
-  const statics = staticServices.map((item) => item.slug)
+export async function listPublicServiceSlugs(): Promise<
+  { slug: string; updatedAt?: number }[]
+> {
+  const statics = staticServices.map((item) => ({ slug: item.slug }))
   try {
-    const rows = await read.rows<{ slug: string }>("pub_list_expertise_slugs")
-    return [...new Set([...rows.map((row) => row.slug), ...statics])]
+    const rows = await read.rows<{ slug: string; updated_at: number | null }>(
+      "pub_list_expertise_slugs"
+    )
+    // Même chose que pour les réalisations : `updated_at` était déjà rendu par la
+    // procédure et perdu ici. Voir `listPublicCaseSlugs`.
+    const vues = new Map<string, number | undefined>(
+      rows.map((row) => [
+        row.slug,
+        row.updated_at === null ? undefined : Number(row.updated_at),
+      ])
+    )
+    for (const item of statics) {
+      if (!vues.has(item.slug)) {
+        vues.set(item.slug, undefined)
+      }
+    }
+    return [...vues].map(([slug, updatedAt]) => ({ slug, updatedAt }))
   } catch (error) {
     fallback("base injoignable au prérendu", error)
     return statics

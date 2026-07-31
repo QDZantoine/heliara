@@ -248,11 +248,35 @@ export async function getPublicCase(slug: string): Promise<PublicCase | null> {
  * rester servie, et une fiche seulement en base doit être prérendue. Le repli au
  * build en dépend - si la base ne répond pas, on prérend au moins ce qu'on connaît.
  */
-export async function listPublicCaseSlugs(): Promise<string[]> {
-  const statics = caseStudies.map((item) => item.slug)
+export async function listPublicCaseSlugs(): Promise<
+  { slug: string; updatedAt?: number }[]
+> {
+  const statics = caseStudies.map((item) => ({ slug: item.slug }))
   try {
-    const rows = await read.rows<{ slug: string }>("pub_list_case_slugs")
-    return [...new Set([...rows.map((row) => row.slug), ...statics])]
+    const rows = await read.rows<{ slug: string; updated_at: number | null }>(
+      "pub_list_case_slugs"
+    )
+    /*
+      La date de modification accompagne le slug, **et la procédure la rendait déjà** :
+      seule cette couche la jetait. Le plan du site en a besoin pour `lastModified`, et
+      la demander autrement coûterait un appel par fiche pour une donnée déjà en main.
+
+      Une entrée du contenu statique n'en a pas : elle n'est pas datée, et un
+      `lastModified` inventé serait un signal faux plutôt qu'un signal manquant.
+    */
+    const vues = new Map<string, number | undefined>(
+      rows.map((row) => [
+        row.slug,
+        row.updated_at === null ? undefined : Number(row.updated_at),
+      ])
+    )
+    // Le statique ne remplace jamais une entrée de la base : elle est plus à jour.
+    for (const item of statics) {
+      if (!vues.has(item.slug)) {
+        vues.set(item.slug, undefined)
+      }
+    }
+    return [...vues].map(([slug, updatedAt]) => ({ slug, updatedAt }))
   } catch (error) {
     fallback("base injoignable au prérendu", error)
     return statics
