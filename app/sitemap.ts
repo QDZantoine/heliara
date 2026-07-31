@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next"
 import { listPublicArticleSlugs } from "@/lib/db/public-articles"
 import { listPublicCaseSlugs } from "@/lib/db/public-cases"
 import { listPublicServiceSlugs } from "@/lib/db/public-expertises"
-import { site } from "@/lib/site"
+import { siteOrigin } from "@/lib/origin"
 
 /**
  * Plan du site. Les pages légales en sont absentes : elles portent
@@ -27,7 +27,7 @@ function quand(updatedAt?: number) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const url = (path: string) => `${site.url}${path}`
+  const url = (path: string) => `${siteOrigin()}${path}`
 
   const staticPages = [
     { path: "/", priority: 1 },

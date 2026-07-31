@@ -1,3 +1,4 @@
+import { siteOrigin } from "@/lib/origin"
 import { absoluteUrl } from "@/lib/seo"
 import { site, socialProfiles } from "@/lib/site"
 
@@ -27,8 +28,14 @@ import { site, socialProfiles } from "@/lib/site"
 
 type Node = Record<string, unknown>
 
-export const ORGANIZATION_ID = `${site.url}/#organization`
-export const WEBSITE_ID = `${site.url}/#website`
+/*
+  Des fonctions et non des constantes : `siteOrigin()` lit l'environnement, et une
+  constante de module figerait la valeur au premier import. Les `@id` doivent suivre
+  l'origine réellement servie, sans quoi le graphe d'une préproduction se déclarerait
+  comme celui de la production.
+*/
+export const organizationId = () => `${siteOrigin()}/#organization`
+export const websiteId = () => `${siteOrigin()}/#website`
 
 /** Un graphe complet, prêt à être sérialisé. */
 export function graph(nodes: Node[]) {
@@ -46,9 +53,9 @@ export function graph(nodes: Node[]) {
 export function organizationNode(knowsAbout: string[] = []): Node {
   return {
     "@type": "Organization",
-    "@id": ORGANIZATION_ID,
+    "@id": organizationId(),
     name: site.name,
-    url: site.url,
+    url: siteOrigin(),
     description: site.description,
     slogan: site.baseline,
     logo: {
@@ -85,12 +92,12 @@ export function organizationNode(knowsAbout: string[] = []): Node {
 export function websiteNode(): Node {
   return {
     "@type": "WebSite",
-    "@id": WEBSITE_ID,
-    url: site.url,
+    "@id": websiteId(),
+    url: siteOrigin(),
     name: site.name,
     description: site.description,
     inLanguage: "fr-FR",
-    publisher: { "@id": ORGANIZATION_ID },
+    publisher: { "@id": organizationId() },
   }
 }
 
@@ -156,7 +163,7 @@ export function articleNode({
   return {
     "@type": "Article",
     "@id": `${url}#article`,
-    isPartOf: { "@id": WEBSITE_ID },
+    isPartOf: { "@id": websiteId() },
     mainEntityOfPage: url,
     url,
     headline: title,
@@ -174,10 +181,10 @@ export function articleNode({
           "@type": "Person",
           name: author,
           ...(authorRole ? { jobTitle: authorRole } : {}),
-          worksFor: { "@id": ORGANIZATION_ID },
+          worksFor: { "@id": organizationId() },
         }
-      : { "@id": ORGANIZATION_ID },
-    publisher: { "@id": ORGANIZATION_ID },
+      : { "@id": organizationId() },
+    publisher: { "@id": organizationId() },
   }
 }
 
@@ -215,7 +222,7 @@ export function caseStudyNode({
   return {
     "@type": "Article",
     "@id": `${url}#case-study`,
-    isPartOf: { "@id": WEBSITE_ID },
+    isPartOf: { "@id": websiteId() },
     mainEntityOfPage: url,
     url,
     headline: heroTitle?.trim() || title,
@@ -236,8 +243,8 @@ export function caseStudyNode({
           })),
         }
       : {}),
-    author: { "@id": ORGANIZATION_ID },
-    publisher: { "@id": ORGANIZATION_ID },
+    author: { "@id": organizationId() },
+    publisher: { "@id": organizationId() },
   }
 }
 
@@ -273,7 +280,7 @@ export function serviceNode({
     // exactement ce que la page dit en tête, dans le même ordre.
     description: [tagline, problem].filter(Boolean).join(" "),
     serviceType: familyLabel,
-    provider: { "@id": ORGANIZATION_ID },
+    provider: { "@id": organizationId() },
     areaServed: { "@type": "Country", name: "France" },
     inLanguage: "fr-FR",
     ...(deliverables && deliverables.length > 0
@@ -341,7 +348,7 @@ export function collectionPageNode({
     url,
     name: title,
     description,
-    isPartOf: { "@id": WEBSITE_ID },
+    isPartOf: { "@id": websiteId() },
     inLanguage: "fr-FR",
   }
 }

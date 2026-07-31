@@ -280,6 +280,40 @@ affirmation qu'on ne peut pas justifier.
 `## Optional` reste en anglais : c'est un nom de section que la spécification
 (llmstxt.org) réserve pour marquer le contenu secondaire, le traduire le rendrait muet.
 
+### `SITE_ORIGIN` : l'origine des URL absolues
+
+**Un défaut trouvé en production, et le plus silencieux de tous.** Les métadonnées étaient
+bâties sur `site.url`, `https://heliara.fr` en dur. Sur un déploiement d'essai la page se
+servait très bien, mais annonçait ses URL absolues vers un domaine qui ne répondait pas
+encore : **aucun aperçu de lien ne s'affichait**. WhatsApp allait chercher
+`https://heliara.fr/opengraph-image-…` et ne trouvait rien, alors que la même image
+répondait 200 sur l'hôte réel. Les balises étaient présentes, complètes et bien formées -
+elles pointaient ailleurs. Rien dans le build, le typecheck ou les journaux ne pouvait le
+voir.
+
+Le même défaut rendait faux, sur un tel hôte : le `canonical`, `og:url`, le plan du site,
+l'adresse du sitemap dans `robots.txt`, les liens de `llms.txt` et les `@id` du graphe
+schema.org.
+
+`lib/origin.ts` est désormais la source unique, et **tout** passe par elle.
+
+- **`SITE_ORIGIN` sans préfixe `NEXT_PUBLIC_`, donc lue à l'exécution.** Une même image
+  applicative sert plusieurs origines sans reconstruction. `NEXT_PUBLIC_SITE_ORIGIN` reste
+  accepté en second choix : il est figé au build, ce qui est nécessaire pour les liens
+  rendus côté client dans l'administration, mais inutilisable pour un hôte inconnu au
+  moment du build.
+- **Réserve** : les pages étant prérendues, le HTML des premières requêtes porte la valeur
+  du build, reprise au premier `revalidate` - une minute. Régler la variable au build aussi
+  pour que ce soit juste dès la première requête.
+- **Le repli est le domaine de production, jamais l'en-tête `Host`.** Une origine devinée
+  depuis la requête se laisserait dicter par l'appelant, et un `canonical` choisi par
+  l'appelant ouvre la porte à l'empoisonnement d'index.
+- `ORGANIZATION_ID` et `WEBSITE_ID` sont devenus `organizationId()` et `websiteId()` :
+  une constante de module figerait la valeur au premier import.
+
+Sur une préproduction, penser aussi à `noIndex` ou à un `robots.txt` restrictif au niveau
+de l'hôte : un canonical juste ne suffit pas à éviter qu'elle soit indexée.
+
 ### `sitemap.ts`
 
 **`lastModified` est omis plutôt qu'inventé.** Les entrées venues du contenu statique et

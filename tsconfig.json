@@ -41,7 +41,9 @@
     ".next-write/types/**/*.ts",
     ".next-write/dev/types/**/*.ts",
     ".next-verif/types/**/*.ts",
-    ".next-verif/dev/types/**/*.ts"
+    ".next-verif/dev/types/**/*.ts",
+    ".next-og/types/**/*.ts",
+    ".next-og/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

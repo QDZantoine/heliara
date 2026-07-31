@@ -8,6 +8,7 @@ import {
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
+import { siteOrigin } from "@/lib/origin"
 import { site } from "@/lib/site"
 
 const fontDisplay = Schibsted_Grotesk({
@@ -26,7 +27,13 @@ const fontMono = Spline_Sans_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
+  /*
+    `metadataBase` est ce contre quoi Next résout les URL relatives des images de
+    partage produites par la convention `opengraph-image`. C'est donc **la** ligne dont
+    dépendait l'aperçu de lien : mal réglée, les balises sont correctes et pointent
+    ailleurs. Voir `lib/origin.ts`.
+  */
+  metadataBase: new URL(siteOrigin()),
   title: {
     default: `${site.name} - ${site.baseline.replace(/\.$/, "")}`,
     template: `%s - ${site.name}`,
@@ -42,7 +49,7 @@ export const metadata: Metadata = {
     l'ordre des suffixes. Les redéclarer ici les dupliquerait.
   */
   appleWebApp: { title: site.name },
-  authors: [{ name: site.name, url: site.url }],
+  authors: [{ name: site.name, url: siteOrigin() }],
   creator: site.name,
   publisher: site.name,
   /*

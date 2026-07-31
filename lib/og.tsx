@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { ImageResponse } from "next/og"
 
+import { siteOrigin } from "@/lib/origin"
 import { site } from "@/lib/site"
 
 /**
@@ -199,7 +200,7 @@ export async function ogCard({
         }}
       >
         <span>{site.baseline}</span>
-        <span>{site.url.replace(/^https?:\/\//, "")}</span>
+        <span>{siteOrigin().replace(/^https?:\/\//, "")}</span>
       </div>
     </div>,
     {

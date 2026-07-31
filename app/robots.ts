@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 
-import { site } from "@/lib/site"
+import { siteOrigin } from "@/lib/origin"
 
 /**
  * `robots.txt`, et les deux décisions qu'il porte par ce qu'il **ne** dit pas.
@@ -31,6 +31,6 @@ import { site } from "@/lib/site"
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: { userAgent: "*", allow: "/" },
-    sitemap: `${site.url}/sitemap.xml`,
+    sitemap: `${siteOrigin()}/sitemap.xml`,
   }
 }

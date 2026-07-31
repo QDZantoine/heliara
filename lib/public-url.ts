@@ -1,4 +1,4 @@
-import { site } from "@/lib/site"
+import { siteOrigin } from "@/lib/origin"
 
 /**
  * URL absolue vers le **site public**, depuis l'administration.
@@ -23,8 +23,10 @@ export function publicSiteOrigin(): string {
   if (configured) {
     return configured.replace(/\/$/, "")
   }
+  // En développement, le port de lecture ; ailleurs, l'origine servie par ce
+  // déploiement - la même que celle des URL canoniques, voir `lib/origin.ts`.
   return process.env.NODE_ENV === "production"
-    ? site.url
+    ? siteOrigin()
     : "http://localhost:3000"
 }
 

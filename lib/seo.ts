@@ -1,3 +1,4 @@
+import { siteOrigin } from "@/lib/origin"
 import { site } from "@/lib/site"
 
 import type { Metadata } from "next"
@@ -28,7 +29,7 @@ import type { Metadata } from "next"
 /** L'URL absolue d'un chemin du site. Jamais de double barre, jamais de barre finale. */
 export function absoluteUrl(path: string): string {
   const clean = path === "/" ? "" : `/${path.replace(/^\/+|\/+$/g, "")}`
-  return `${site.url}${clean}`
+  return `${siteOrigin()}${clean}`
 }
 
 type PageMetaInput = {

@@ -1,6 +1,7 @@
 import { listPublicArticles } from "@/lib/db/public-articles"
 import { listPublicCases } from "@/lib/db/public-cases"
 import { listPublicServices } from "@/lib/db/public-expertises"
+import { siteOrigin } from "@/lib/origin"
 import { site } from "@/lib/site"
 
 /**
@@ -32,7 +33,7 @@ import { site } from "@/lib/site"
 /** Une minute, comme le reste du contenu lu en base. Littéral obligatoire. */
 export const revalidate = 60
 
-const url = (path: string) => `${site.url}${path}`
+const url = (path: string) => `${siteOrigin()}${path}`
 
 /** Une ligne de liste au format llms.txt : `- [Titre](url) : description`. */
 function lien(titre: string, path: string, description?: string) {
