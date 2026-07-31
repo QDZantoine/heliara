@@ -24,11 +24,63 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
 | 7 - Articles                                | **fait**, comptage de vues compris             |
 | 8 - Expertises                              | **fait**, familles et nav comprises            |
 | 9 - Interface de saisie                     | **fait** pour les trois collections            |
-| 10 - Le reste des contenus                  | à faire                                        |
+| 10 - Références clientes                    | **fait**, logos poussés vers le stockage       |
+| 11 - Équipe                                 | **en cours**, voir ci-dessous                  |
+| 12 - Le reste des contenus                  | à faire, et une partie ne le sera pas          |
 
-Restent dans `lib/content/*.ts`, sans administration : équipe, témoignages, clients,
-chiffres, méthode, groupe et marques, sections légales, et les textes de pages. Le moule est établi - schéma, procédures, grants, couche d'accès,
-actions, écrans, seed, tests - il n'y a plus qu'à le reproduire.
+### Étape 11 - l'équipe : où reprendre
+
+**Deux décisions actées avec l'auteur, à ne pas rediscuter :**
+
+- **La teinte de la pastille est déduite de la position** - 1re carte orange, 2e bleue,
+  3e et suivantes encre. Il n'y a donc **aucune colonne `accent`** : la DA n'autorise
+  qu'un geste orange par écran, une seule répartition est correcte, et un champ dont une
+  seule valeur est juste n'est pas un réglage. Conséquence : réordonner change les
+  couleurs, l'écran doit le dire.
+- **Les personnes seulement.** Le titre de section, le manifeste et les convictions
+  restent dans `lib/content/team.ts`. Les rendre administrables demanderait une table de
+  réglages clé / valeur, forme nouvelle qui appellerait ensuite tous les textes fixes du
+  site - une porte à n'ouvrir qu'avec une raison.
+
+**Fait, et éprouvé contre la base en marche :**
+
+- `db/init/18-schema-team.sql` : `team_member` et `team_member_skill`.
+- `db/init/19-proc-team.sql` : neuf procédures.
+- Privilèges accordés et vérifiés : `app_read` n'a que `pub_list_team_members`.
+- `lib/schemas/team.ts`, `lib/db/team.ts`, `lib/db/public-team.ts`.
+- `app/admin/(protected)/equipe/actions.ts`.
+
+**Reste à faire, dans cet ordre :**
+
+1. L'écran, sur le moule de `components/admin/client-board.tsx` - un tableau et non
+   l'éditeur à étapes. **Deux dépôts de portrait par ligne**, plus les spécialités en
+   collection. C'est le plus gros morceau.
+2. L'entrée de nav dans `components/admin/admin-shell.tsx`, et
+   `app/admin/(protected)/equipe/page.tsx`.
+3. Le branchement de `/a-propos` (tout le monde) et `/contact` (les associés seuls),
+   par `listPublicTeam()`. Les deux listes sortent du même appel : c'est ce qui garantit
+   qu'une personne ne peut pas figurer dans l'une avec un texte et dans l'autre avec un
+   autre.
+4. L'amorçage des six portraits, sur le moule de `seedClients()` dans
+   `scripts/db-seed.ts` - `seedMedia()` fait déjà le dépôt.
+5. Tests, et vérification à l'écran **dans les deux thèmes** : c'est tout l'objet des
+   deux portraits.
+
+**Un piège déjà rencontré et corrigé**, pour ne pas le refaire : les spécialités
+arrivent dans un second jeu de résultats et se répartissent **par `member_id`**, pas en
+suivant l'ordre des personnes. L'ordre seul ne dit pas où finit la liste de l'une.
+
+**Ce qui ne sera pas rendu administrable, et pourquoi :**
+
+- **Les sections légales.** Une page qui engage juridiquement gagne à rester relue et
+  versionnée : le dépôt garde la trace de qui a écrit quoi et quand. Un champ modifiable
+  en deux clics sur le seul contenu du site qui expose échangerait une commodité rare
+  contre un risque permanent.
+- **Méthode, engagements, principes, groupe.** Ils ne changent quasi jamais. Le coût
+  d'un écran par contenu ne se rembourse pas.
+
+Restent donc à considérer : **témoignages** - le seul qui bouge encore à un rythme
+humain, quand un client accepte d'être cité.
 
 Ce qui a été vérifié contre la base en marche, et n'a pas à l'être deux fois :
 
@@ -207,15 +259,15 @@ la plomberie plutôt que le travail.
 Ce qui a changé, et pourquoi - le détail des pièces est dans `CLAUDE.md`, section
 « Administration », sous-section « Interface » :
 
-| Défaut constaté                                                                                   | Remède                                                                     |
-| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Un onglet par procédure d'écriture, donc trente champs d'affilée dans le premier                  | `StepEditor` : des étapes qui suivent le récit, et l'état hissé au-dessus   |
-| « Résumé court » et « Résumé long » indistinguables sans savoir lequel atterrit où                | `placement.tsx` : le bloc du site dessiné à côté du champ                   |
-| La base disait ce qu'il manquait pour publier **après** le clic, en message d'erreur               | `PublishPanel` : les exigences listées avant, chacune liée à son étape      |
-| Trois en-têtes d'éditeur recopiés, dont trois comportements de suppression différents             | `EditorHeader`                                                             |
-| Trois créations de trois formes : deux dialogues divergents et un formulaire en ligne             | `CreateDialog` + `SlugField`, et `slugify` sorti dans `lib/slug.ts`         |
-| `data-selected` visé par les barres d'onglets, attribut que Base UI ne pose pas                    | `data-active` - aucun onglet actif n'était marqué, et rien ne le signalait  |
-| Une erreur sur le huitième bloc d'un article ne s'affichait qu'en tête de formulaire              | `anyErrorAt` sur les collections, message sous la ligne concernée           |
+| Défaut constaté                                                                       | Remède                                                                     |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Un onglet par procédure d'écriture, donc trente champs d'affilée dans le premier      | `StepEditor` : des étapes qui suivent le récit, et l'état hissé au-dessus  |
+| « Résumé court » et « Résumé long » indistinguables sans savoir lequel atterrit où    | `placement.tsx` : le bloc du site dessiné à côté du champ                  |
+| La base disait ce qu'il manquait pour publier **après** le clic, en message d'erreur  | `PublishPanel` : les exigences listées avant, chacune liée à son étape     |
+| Trois en-têtes d'éditeur recopiés, dont trois comportements de suppression différents | `EditorHeader`                                                             |
+| Trois créations de trois formes : deux dialogues divergents et un formulaire en ligne | `CreateDialog` + `SlugField`, et `slugify` sorti dans `lib/slug.ts`        |
+| `data-selected` visé par les barres d'onglets, attribut que Base UI ne pose pas       | `data-active` - aucun onglet actif n'était marqué, et rien ne le signalait |
+| Une erreur sur le huitième bloc d'un article ne s'affichait qu'en tête de formulaire  | `anyErrorAt` sur les collections, message sous la ligne concernée          |
 
 Trois constats à ne pas redécouvrir :
 

@@ -43,6 +43,7 @@ GRANT EXECUTE ON PROCEDURE heliara.pub_list_articles      TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_get_article        TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_article_slugs TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_client_references TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_team_members TO 'app_read'@'%';
 
 -- **La seule procédure d'écriture accordée au site public.** Elle ne peut
 -- qu'incrémenter deux compteurs, ne rend aucune ligne et n'accepte qu'un slug : le
@@ -173,6 +174,17 @@ GRANT EXECUTE ON PROCEDURE heliara.publish_client_reference  TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.reorder_client_references TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.delete_client_reference   TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_client_references TO 'app_write'@'%';
+
+-- L'équipe. Les personnes de /a-propos, dont les associés de /contact.
+GRANT EXECUTE ON PROCEDURE heliara.list_team_members     TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.list_team_skills      TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.create_team_member    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.update_team_member    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_team_skills       TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.publish_team_member   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.reorder_team_members  TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_team_member    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_team_members TO 'app_write'@'%';
 
 -- Fonctions utilitaires.
 GRANT EXECUTE ON FUNCTION heliara.GenerateKey TO 'app_write'@'%';
