@@ -755,7 +755,7 @@ pnpm dev:write   # 3001, l'administration
 | Routes servies | tout sauf `/admin` | `/admin` seulement |
 
 **La séparation lecture / écriture est portée par la base, pas par le réseau.**
-`app_read` n'a `EXECUTE` que sur les quatre procédures `pub_*`, accordées une par
+`app_read` n'a `EXECUTE` que sur les procédures `pub_*`, accordées une par
 une dans `db/init/10-grants.sql`. Il se voit refuser toute procédure d'écriture,
 `list_case_studies` - celle qui montrerait un brouillon - et `SELECT` sur toute
 table. Vérifié contre la base en marche dans `tests/db/separation.test.ts`.
