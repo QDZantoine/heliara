@@ -20,6 +20,7 @@ pnpm lint       # eslint (flat config)
 pnpm typecheck  # tsc --noEmit
 pnpm build
 pnpm format     # prettier --write
+pnpm og         # les cartes de partage d'un site en marche, et leur statut
 
 pnpm db:up      # MariaDB + MinIO + création du seau
 pnpm db:down    # arrêt, volumes conservés
@@ -235,6 +236,26 @@ article qui porte une image de tête la donne en carte de partage, écrite expli
 `pageMetadata`, ce qui **prend le pas** sur la convention de fichier. La carte générée
 n'est donc que le défaut. Une capture de l'interface livrée vaut mieux qu'un titre sur
 fond encre.
+
+**Comment les regarder** - `pnpm og`, parce qu'une URL d'image n'est pas devinable :
+Next suffixe la route d'une empreinte (`/methode/opengraph-image-oupj1r?f76b0f56`) et ne
+sert **que** cette adresse, `/methode/opengraph-image` répondant 404. L'empreinte change à
+chaque modification du fichier. La seule source fiable est la balise `og:image` de la page,
+et c'est ce que le script va lire.
+
+```text
+pnpm og                              # les pages représentatives
+pnpm og --open                       # et les ouvre
+pnpm og /methode /contact            # des chemins précis
+pnpm og --base=https://heliara.fr /  # une autre origine, une fois déployé
+```
+
+**Il demande l'image séparément et rapporte son statut**, ce qui est le plus utile des
+deux : une balise juste qui pointe vers une adresse injoignable donne une page parfaite et
+aucun aperçu. Un `200` est la vérification qui compte. Le rendu tel qu'un réseau le
+compose se voit ensuite dans le *post inspector* de LinkedIn ou le *sharing debugger* de
+Facebook - dont WhatsApp reprend la carte, en la mettant en cache par URL : pour retester
+un lien déjà partagé, il faut lui ajouter un paramètre.
 
 **Les polices sont des TTF versionnés dans `assets/fonts/`**, pas `next/font/google`.
 Satori - le moteur derrière `next/og` - n'accepte ni WOFF2 ni police variable, or c'est
