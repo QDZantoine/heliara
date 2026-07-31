@@ -13,10 +13,12 @@
 
 # next.js
 /.next/
-# Répertoires de build de `pnpm dev:both` : un par rôle, pour contourner le verrou
-# de Next sur le serveur de dev.
-/.next-read/
-/.next-write/
+# Tout répertoire de build alternatif, réglé par NEXT_DIST_DIR. `pnpm dev:both` en
+# utilise deux - un par rôle, pour contourner le verrou de Next sur le serveur de dev -
+# et une vérification ponctuelle peut en créer d'autres. Un motif plutôt que deux noms :
+# un répertoire de build oublié se retrouve sinon versionné, et fait échouer le lint sur
+# quatorze mille problèmes dans du code généré.
+/.next-*/
 /out/
 
 # production

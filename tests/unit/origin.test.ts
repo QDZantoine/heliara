@@ -27,7 +27,6 @@ describe("siteOrigin", () => {
 
   it("retombe sur le domaine de production, jamais sur l'hôte de la requête", async () => {
     vi.stubEnv("SITE_ORIGIN", undefined)
-    vi.stubEnv("NEXT_PUBLIC_SITE_ORIGIN", undefined)
     expect(await charger()).toBe(site.url)
   })
 
@@ -41,16 +40,17 @@ describe("siteOrigin", () => {
     expect(await charger()).toBe("https://apercu.exemple.test")
   })
 
-  it("préfère `SITE_ORIGIN` à la variable figée au build", async () => {
-    vi.stubEnv("SITE_ORIGIN", "https://execution.exemple.test")
-    vi.stubEnv("NEXT_PUBLIC_SITE_ORIGIN", "https://build.exemple.test")
-    expect(await charger()).toBe("https://execution.exemple.test")
-  })
-
-  it("accepte la variable de build à défaut, pour un hôte connu d'avance", async () => {
+  /*
+    `NEXT_PUBLIC_SITE_ORIGIN` désigne à peu près la même chose et n'est pourtant pas lue.
+    Elle sert les liens de l'administration vers le site public et vaut
+    `http://localhost:3000` en développement : la lire ferait qu'un build de production
+    lancé sur une machine de développement produise des canoniques vers `localhost`.
+    C'est arrivé, et c'est le genre de défaut que personne ne remarque.
+  */
+  it("ignore la variable des liens d'administration, qui vaut localhost en dev", async () => {
     vi.stubEnv("SITE_ORIGIN", undefined)
-    vi.stubEnv("NEXT_PUBLIC_SITE_ORIGIN", "https://build.exemple.test")
-    expect(await charger()).toBe("https://build.exemple.test")
+    vi.stubEnv("NEXT_PUBLIC_SITE_ORIGIN", "http://localhost:3000")
+    expect(await charger()).toBe(site.url)
   })
 })
 

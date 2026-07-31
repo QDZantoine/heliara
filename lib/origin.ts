@@ -16,22 +16,28 @@ import { site } from "@/lib/site"
  * l'adresse du sitemap dans `robots.txt`, les `@id` des données structurées et les liens
  * de `llms.txt`.
  *
- * **`SITE_ORIGIN` d'abord, et c'est le point important.** Sans préfixe `NEXT_PUBLIC_`,
- * la variable est lue **à l'exécution** : une même image applicative peut donc servir
- * plusieurs origines sans être reconstruite. `NEXT_PUBLIC_SITE_ORIGIN` est figé dans le
- * bundle au moment du build, ce qui est nécessaire pour les liens rendus côté client dans
- * l'administration, mais inutilisable pour un hôte qu'on ne connaît pas encore.
+ * **`SITE_ORIGIN`, sans préfixe `NEXT_PUBLIC_`**, donc lue **à l'exécution** : une même
+ * image applicative peut servir plusieurs origines sans être reconstruite.
  *
  * **Réserve à connaître** : les pages sont prérendues, donc le HTML des premières requêtes
  * porte la valeur du build. Elle est reprise au premier `revalidate` - une minute. Pour
  * que ce soit juste dès la première requête, régler la variable au build aussi.
  *
- * **Le repli est le domaine de production**, jamais l'hôte courant. Une origine devinée
- * depuis l'en-tête `Host` se laisserait dicter par l'appelant, et un `canonical` que
- * l'appelant choisit est une porte ouverte à l'empoisonnement d'index.
+ * **`NEXT_PUBLIC_SITE_ORIGIN` n'est délibérément pas lue ici**, alors qu'elle désigne à peu
+ * près la même chose. Cette variable sert les liens de l'administration vers le site
+ * public, et **vaut `http://localhost:3000` en développement** : la lire ferait qu'un build
+ * de production lancé sur une machine de développement - donc avec un `.env` local présent -
+ * produirait des canoniques vers `localhost`. Vérifié, c'est bien ce qui arrivait. Un
+ * canonique faux est un défaut que personne ne remarque, et deux variables qui se
+ * ressemblent ne sont pas une raison de les confondre.
+ *
+ * **Le repli est le domaine de production**, jamais l'hôte courant. Deux raisons. Un oubli
+ * de configuration dégrade alors vers la bonne valeur plutôt que vers `localhost` - c'est
+ * le même principe que le rôle `read` par défaut de `HELIARA_ROLE`. Et une origine devinée
+ * depuis l'en-tête `Host` se laisserait dicter par l'appelant : un `canonical` choisi par
+ * l'appelant est une porte ouverte à l'empoisonnement d'index.
  */
 export function siteOrigin(): string {
-  const configured =
-    process.env.SITE_ORIGIN ?? process.env.NEXT_PUBLIC_SITE_ORIGIN
+  const configured = process.env.SITE_ORIGIN
   return configured ? configured.replace(/\/+$/, "") : site.url
 }

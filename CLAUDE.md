@@ -298,10 +298,13 @@ schema.org.
 `lib/origin.ts` est désormais la source unique, et **tout** passe par elle.
 
 - **`SITE_ORIGIN` sans préfixe `NEXT_PUBLIC_`, donc lue à l'exécution.** Une même image
-  applicative sert plusieurs origines sans reconstruction. `NEXT_PUBLIC_SITE_ORIGIN` reste
-  accepté en second choix : il est figé au build, ce qui est nécessaire pour les liens
-  rendus côté client dans l'administration, mais inutilisable pour un hôte inconnu au
-  moment du build.
+  applicative sert plusieurs origines sans reconstruction.
+- **`NEXT_PUBLIC_SITE_ORIGIN` n'est délibérément pas lue**, alors qu'elle désigne à peu
+  près la même chose. Elle sert les liens de l'administration vers le site public et vaut
+  `http://localhost:3000` en développement : la lire ferait qu'un build de production
+  lancé sur une machine de développement - donc avec un `.env` local présent - produise
+  des canoniques vers `localhost`. Vérifié, c'est bien ce qui arrivait. Deux variables qui
+  se ressemblent ne sont pas une raison de les confondre.
 - **Réserve** : les pages étant prérendues, le HTML des premières requêtes porte la valeur
   du build, reprise au premier `revalidate` - une minute. Régler la variable au build aussi
   pour que ce soit juste dès la première requête.
@@ -313,6 +316,14 @@ schema.org.
 
 Sur une préproduction, penser aussi à `noIndex` ou à un `robots.txt` restrictif au niveau
 de l'hôte : un canonical juste ne suffit pas à éviter qu'elle soit indexée.
+
+**`S3_PUBLIC_URL` porte la seconde moitié du problème, et le symptôme est identique.** Une
+réalisation ou un article qui a une image de tête donne **cette URL** comme carte de
+partage. Un stockage objet joignable seulement depuis le serveur donne donc des pages qui
+s'affichent parfaitement et ne produisent aucun aperçu de lien - la cause est ailleurs que
+dans `SITE_ORIGIN`, et se cherche en récupérant l'`og:image` de la page puis en tentant de
+la charger de l'extérieur. En HTTP sur un site HTTPS, c'est du contenu mixte, que plusieurs
+explorateurs refusent sans le dire.
 
 ### `sitemap.ts`
 
