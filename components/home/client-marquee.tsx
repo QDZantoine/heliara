@@ -1,7 +1,7 @@
 import Image from "next/image"
 
 import { Container } from "@/components/primitives/container"
-import { clients } from "@/lib/content/clients"
+import type { Client } from "@/lib/content/clients"
 
 /**
  * S3 - le bandeau de logos clients, juste après le hero.
@@ -19,8 +19,12 @@ import { clients } from "@/lib/content/clients"
  *
  * **Elle ne s'affiche pas tant qu'il n'y a rien à montrer.** Un bandeau « Ils nous font
  * confiance » vide serait pire que son absence.
+ *
+ * **Les références arrivent en prop plutôt qu'importées.** Elles sont administrables, donc
+ * lues en base avec repli sur le contenu statique ; le composant reste ignorant de leur
+ * provenance, comme `CaseList` et `CaseGrid`.
  */
-function ClientMarquee() {
+function ClientMarquee({ clients }: { clients: readonly Client[] }) {
   if (clients.length === 0) {
     return null
   }
@@ -67,8 +71,8 @@ function ClientMarquee() {
         {defile ? (
           <div className="hel-logos group min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
             <div className="hel-logos-track flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] max-menu:[animation-duration:52s]">
-              <LogoRow />
-              <LogoRow hidden />
+              <LogoRow clients={clients} />
+              <LogoRow clients={clients} hidden />
             </div>
           </div>
         ) : (
@@ -86,7 +90,13 @@ function ClientMarquee() {
 }
 
 /** La liste, rendue deux fois pour que le défilement boucle sans saut. */
-function LogoRow({ hidden = false }: { hidden?: boolean }) {
+function LogoRow({
+  clients,
+  hidden = false,
+}: {
+  clients: readonly Client[]
+  hidden?: boolean
+}) {
   return (
     <ul
       aria-hidden={hidden ? "true" : undefined}
@@ -135,7 +145,7 @@ function LogoRow({ hidden = false }: { hidden?: boolean }) {
  * source demanderait du JavaScript, et un `<picture media>` se désynchroniserait d'un
  * choix manuel. Même mécanique que les portraits d'équipe.
  */
-function ClientLogo({ client }: { client: (typeof clients)[number] }) {
+function ClientLogo({ client }: { client: Client }) {
   const taille =
     client.shape === "square" ? "h-10 w-auto md:h-11" : "h-7 w-auto md:h-8"
   const rendu =

@@ -7,6 +7,7 @@ import { MethodPreview } from "@/components/home/method-preview"
 import { ClientMarquee } from "@/components/home/client-marquee"
 import { FinalCta } from "@/components/sections/final-cta"
 import { listPublicCases } from "@/lib/db/public-cases"
+import { listPublicClients } from "@/lib/db/public-clients"
 import { pageMetadata } from "@/lib/seo"
 import { site } from "@/lib/site"
 
@@ -43,13 +44,21 @@ export const metadata: Metadata = pageMetadata({
 export const revalidate = 60
 
 export default async function HomePage() {
-  // Les mises en avant viennent de la base, avec repli sur le contenu statique.
-  const featured = (await listPublicCases()).filter((item) => item.featured)
+  /*
+    Deux lectures indépendantes, en parallèle : ni les mises en avant ni les références
+    clientes ne dépendent l'une de l'autre. Les deux portent leur propre repli sur le
+    contenu statique - un accueil sans preuve serait pire qu'un accueil un peu périmé.
+  */
+  const [cases, clients] = await Promise.all([
+    listPublicCases(),
+    listPublicClients(),
+  ])
+  const featured = cases.filter((item) => item.featured)
 
   return (
     <>
       <Hero />
-      <ClientMarquee />
+      <ClientMarquee clients={clients} />
       <ExpertiseGrid />
       <MethodPreview />
       <CaseList cases={featured} />

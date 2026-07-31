@@ -48,9 +48,22 @@ export async function submitContact(input: unknown): Promise<ContactResult> {
     return { status: "sent" }
   }
 
-  const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.CONTACT_FROM
-  const to = process.env.CONTACT_TO ?? site.email
+  const apiKey = process.env.RESEND_API_KEY?.trim()
+  const from = process.env.CONTACT_FROM?.trim()
+  /*
+    **`||` et non `??`, et ce n'était pas un détail de style.**
+
+    `CONTACT_TO` est facultative, et une variable facultative se déclare dans un `.env`
+    en laissant sa valeur vide - c'est ce que fait `.env.example`. `process.env` rend
+    alors une **chaîne vide**, que `??` laisse passer puisqu'elle n'est ni `null` ni
+    `undefined` : le destinataire devenait `""` et Resend refusait l'envoi. Le repli sur
+    l'adresse publique du site, seule raison d'être de cette ligne, ne s'appliquait
+    jamais dans la configuration qu'il était censé couvrir.
+
+    Le `trim()` des trois valeurs suit la même logique : une espace laissée derrière un
+    `=` produit une valeur vraie et inutilisable.
+  */
+  const to = process.env.CONTACT_TO?.trim() || site.email
 
   if (!apiKey || !from) {
     console.error(

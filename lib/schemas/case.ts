@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { requiredRichTextSchema } from "@/lib/rich-text"
+import { orderSchema } from "@/lib/schemas/order"
 
 /**
  * Schémas des réalisations, partagés par le formulaire d'administration et les
@@ -246,17 +247,14 @@ export const galleryListSchema = z.object({
   items: z.array(gallerySchema).max(24, "Vingt-quatre images suffisent."),
 })
 
-/** Réordonnancement de la grille. */
-export const reorderSchema = z.object({
-  order: z
-    .array(
-      z.object({
-        id: z.string().regex(/^[0-9a-f]{32}$/),
-        position: z.number().int().min(0).max(100000),
-      })
-    )
-    .max(500),
-})
+/**
+ * Réordonnancement de la grille.
+ *
+ * La forme vit dans `lib/schemas/order.ts`, partagée par les collections : elle n'a rien
+ * de spécifique aux réalisations. Le nom local est conservé pour ne pas toucher aux
+ * appelants.
+ */
+export const reorderSchema = orderSchema
 
 /**
  * Signature d'un téléversement. Les mêmes bornes que `lib/s3.ts`, exprimées ici

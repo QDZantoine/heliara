@@ -42,6 +42,7 @@ GRANT EXECUTE ON PROCEDURE heliara.pub_list_case_sectors  TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_articles      TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_get_article        TO 'app_read'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.pub_list_article_slugs TO 'app_read'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_client_references TO 'app_read'@'%';
 
 -- **La seule procédure d'écriture accordée au site public.** Elle ne peut
 -- qu'incrémenter deux compteurs, ne rend aucune ligne et n'accepte qu'un slug : le
@@ -163,6 +164,15 @@ GRANT EXECUTE ON PROCEDURE heliara.pub_list_article_slugs TO 'app_write'@'%';
 -- d'intégration exercent le comptage, et l'aperçu peut vouloir le déclencher. Elle
 -- ne lui ouvre rien de plus - elle a déjà tous les droits d'écriture.
 GRANT EXECUTE ON PROCEDURE heliara.pub_count_article_view TO 'app_write'@'%';
+
+-- Références clientes. Le bandeau « Ils nous font confiance ».
+GRANT EXECUTE ON PROCEDURE heliara.list_client_references    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.create_client_reference   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.update_client_reference   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.publish_client_reference  TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.reorder_client_references TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.delete_client_reference   TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.pub_list_client_references TO 'app_write'@'%';
 
 -- Fonctions utilitaires.
 GRANT EXECUTE ON FUNCTION heliara.GenerateKey TO 'app_write'@'%';

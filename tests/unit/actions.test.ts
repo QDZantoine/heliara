@@ -142,6 +142,35 @@ describe("submitContact", () => {
       await submitContact(valid)
       expect(send.mock.calls[0][0].to).toBe("bureau@heliara.fr")
     })
+
+    /*
+      Le cas qui a laissé passer un défaut en configuration réelle.
+
+      Une variable facultative se déclare dans un `.env` en laissant sa valeur vide -
+      c'est ce que fait `.env.example`. `process.env` rend alors une **chaîne vide**, que
+      le `??` d'origine laissait passer : le destinataire devenait `""` et Resend
+      refusait l'envoi. Le repli, seule raison d'être de cette ligne, ne s'appliquait
+      jamais dans la configuration qu'il était censé couvrir.
+
+      Le test précédent ne pouvait pas le voir : il supprime la variable, donc il teste
+      `undefined`, jamais `""`.
+    */
+    it("retombe sur l'adresse publique quand CONTACT_TO est vide, pas seulement absente", async () => {
+      process.env.CONTACT_TO = ""
+      await submitContact(valid)
+      expect(send.mock.calls[0][0].to).toBe(site.email)
+    })
+
+    it("ignore les espaces autour d'une valeur d'environnement", async () => {
+      process.env.CONTACT_TO = "   "
+      await submitContact(valid)
+      expect(send.mock.calls[0][0].to).toBe(site.email)
+
+      send.mockClear()
+      process.env.CONTACT_TO = "  bureau@heliara.fr  "
+      await submitContact(valid)
+      expect(send.mock.calls[0][0].to).toBe("bureau@heliara.fr")
+    })
   })
 
   describe("quand l'envoi ne peut pas aboutir", () => {

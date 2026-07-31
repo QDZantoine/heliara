@@ -1,4 +1,5 @@
 import {
+  BadgeCheck,
   BookOpen,
   ExternalLink,
   FolderOpen,
@@ -28,6 +29,7 @@ const nav = [
   { href: "/admin/realisations", label: "Réalisations", icon: FolderOpen },
   { href: "/admin/articles", label: "Articles", icon: BookOpen },
   { href: "/admin/expertises", label: "Expertises", icon: Layers },
+  { href: "/admin/references", label: "Références", icon: BadgeCheck },
   { href: "/admin/comptes", label: "Comptes", icon: Users, soon: true },
 ] as const
 

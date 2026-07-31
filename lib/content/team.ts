@@ -91,7 +91,7 @@ export const team: Person[] = [
     initials: "AR",
     name: "Alexandre Robine Decourcelle",
     role: "Expert cybersécurité - DG Hexceos",
-    bio: "Consultant et formateur en cybersécurité, directeur général d'Hexceos. Ancien référent cybersécurité et ingénieur DevOps chez Thales. Lead pentester (architectures, services applicatifs, embarqué), il sécurise les produits Heliara dès la conception - du durcissement applicatif au cloud (AWS, Azure, Terraform).",
+    bio: "Co-fondateur de Hexceos, consultant et formateur en cybersécurité, directeur général d'Hexceos. Ancien référent cybersécurité et ingénieur DevOps chez Thales. Lead pentester (architectures, services applicatifs, embarqué), il sécurise les produits Heliara dès la conception - du durcissement applicatif au cloud (AWS, Azure, Terraform).",
     skills: [
       "Pentest & audit",
       "DevOps / Cloud",

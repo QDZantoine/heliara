@@ -148,14 +148,9 @@ export const whyCustomSchema = z.object({
     .max(10, "Dix signes suffisent, au-delà on ne les lit plus."),
 })
 
-/** Réordonnancement, commun aux familles et aux services. */
-export const orderSchema = z.object({
-  order: z
-    .array(
-      z.object({
-        id: z.string().regex(/^[0-9a-f]{32}$/),
-        position: z.number().int().min(0).max(100000),
-      })
-    )
-    .max(200),
-})
+/**
+ * Réordonnancement, commun aux familles et aux services.
+ *
+ * Réexporté depuis `lib/schemas/order.ts`, où la forme est écrite une seule fois.
+ */
+export { orderSchema } from "@/lib/schemas/order"
