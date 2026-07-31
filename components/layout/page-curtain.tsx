@@ -120,7 +120,9 @@ function PageCurtain() {
       try {
         const [lottie, animationData] = await Promise.all([
           loadLottie(),
-          loadLottieData("/loading-animation-white.json"),
+          loadLottieData(
+            "/animated-illustrations/loading-animation-white.json"
+          ),
         ])
         if (cancelled || !markRef.current) {
           return

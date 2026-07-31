@@ -44,10 +44,14 @@ run_as() {
 }
 
 echo "Schéma et procédures, en db_migrate."
-for file in db/init/0[2-9]-*.sql db/init/1[0-9]-*.sql; do
-  # 01-users.sh crée les comptes et n'est pas rejouable : il est hors de la boucle.
-  # 10-grants.sql demande root, il passe à la fin.
+# Tous les fichiers SQL numérotés, dans l'ordre. Le motif était `0[2-9]` puis
+# `1[0-9]`, ce qui aurait ignoré en silence un fichier `20-` le jour où il existe -
+# un schéma non joué ne se voit qu'à la première erreur de l'application.
+for file in db/init/[0-9][0-9]-*.sql; do
   case "$file" in
+    # 01-users.sh crée les comptes et n'est pas rejouable.
+    *01-users.sh) continue ;;
+    # 10-grants.sql demande root, il passe à la fin.
     *-grants.sql) continue ;;
   esac
   printf '  %-28s' "$(basename "$file")"

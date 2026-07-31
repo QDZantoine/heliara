@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils"
 function HeroLottie({ className }: { className?: string }) {
   return (
     <LottieScene
-      src="/hero-product.json"
+      src="/animated-illustrations/hero-product.json"
       load="eager"
       speed={0.44}
       holdMs={2200}

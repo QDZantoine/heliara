@@ -116,7 +116,11 @@ export const valueChain = [
     brand: "LessonSharing",
     text: "On développe les compétences et on mobilise les talents.",
     accent: "blue" as const,
-    scene: { src: "/chain-former.json", speed: 0.7, scale: "scale-95" },
+    scene: {
+      src: "/animated-illustrations/chain-former.json",
+      speed: 0.7,
+      scale: "scale-95",
+    },
   },
   {
     num: "02",
@@ -124,7 +128,11 @@ export const valueChain = [
     brand: "Heliara",
     text: "On traduit le besoin en produit : conception, design et développement.",
     accent: "orange" as const,
-    scene: { src: "/chain-concevoir.json", speed: 0.75, scale: "scale-110" },
+    scene: {
+      src: "/animated-illustrations/chain-concevoir.json",
+      speed: 0.75,
+      scale: "scale-110",
+    },
   },
   {
     num: "03",
@@ -132,7 +140,11 @@ export const valueChain = [
     brand: "Hexceos",
     text: "On exploite, on sécurise et on héberge dans la durée, 24/7.",
     accent: "ink" as const,
-    scene: { src: "/chain-operer.json", speed: 0.75, scale: "scale-110" },
+    scene: {
+      src: "/animated-illustrations/chain-operer.json",
+      speed: 0.75,
+      scale: "scale-110",
+    },
   },
 ]
 

@@ -85,6 +85,36 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 - Le focus visible est global (`:focus-visible` dans `globals.css`) : ne jamais ajouter d'anneau propre à un composant, on en cumulerait deux.
 - `Reveal` bascule l'attribut `data-reveal` directement sur le nœud DOM, sans état React. Ne pas y remettre de `setState` dans un effet : la règle ESLint `react-hooks/set-state-in-effect` est active et le refuse.
 
+## La page 404
+
+Elle n'existait pas : un lien mort affichait l'écran par défaut de Next, noir sur blanc,
+sans en-tête ni pied de page et **sans un seul lien pour revenir** - une impasse à
+l'endroit où le visiteur arrive par accident.
+
+**Deux points d'entrée, une seule vue.** `NotFoundView` porte l'écran ;
+`app/not-found.tsx` et `app/(site)/not-found.tsx` le rendent. Un visiteur ne doit pas voir
+deux écrans différents selon la façon dont il s'est perdu.
+
+| Fichier                     | Attrape                                              | Chrome                      |
+| --------------------------- | ---------------------------------------------------- | --------------------------- |
+| `app/not-found.tsx`         | les URL qui ne correspondent à **aucune** route      | le pose lui-même            |
+| `app/(site)/not-found.tsx`  | les `notFound()` d'une page du site : slug inconnu   | hérité du layout du groupe  |
+
+**Deux pièges, tous deux mesurés dans le DOM, aucun visible à la lecture du code :**
+
+- **Une `not-found.tsx` posée seulement dans le groupe `(site)` ne sert à rien.** Elle
+  n'était utilisée pour aucun des deux chemins, et Next continuait de rendre son écran par
+  défaut. Seule la racine de `app/` attrape une URL non résolue - la documentation de la
+  version installée le dit en une phrase, à la fin.
+- **Le fichier racine seul double le chrome** sur un slug inconnu. L'URL correspond alors à
+  une route existante, donc le layout du groupe s'applique **et** la 404 racine pose le
+  sien : deux en-têtes, deux pieds de page, deux `<main>`. D'où la 404 de segment, qui ne
+  rend que la vue.
+
+**`SiteChrome` a été extrait du layout du groupe pour cela.** La 404 racine vit hors du
+groupe - contrainte de Next, pas un choix - et sans cette extraction, la 404 la plus
+fréquente serait un écran sans chemin de retour.
+
 ## Transition de page
 
 `PageCurtain` (dans le layout) intercepte les clics sur les liens internes, fait apparaître un voile encre en fondu avec l'illustration Lottie en son centre, navigue écran couvert, puis lève le voile pendant que la page entrante monte se mettre en place.
@@ -108,7 +138,7 @@ Pas de `framer-motion` : tout porte sur `opacity` et `transform`, déjà compos�
 
 ### Illustration Lottie
 
-`public/loading-animation-white.json` (7,3 ko, quatre calques vectoriels, 1,9 s par cycle, sans expressions) est jouée par `lottie-web`, centrée dans le voile.
+`public/animated-illustrations/loading-animation-white.json` (7,3 ko, quatre calques vectoriels, 1,9 s par cycle, sans expressions) est jouée par `lottie-web`, centrée dans le voile.
 
 - **Chargement à la demande.** `lottie-web/build/player/lottie_light` (~168 ko, la variante sans expressions suffit puisque le fichier n'en contient aucune) est importé dynamiquement dans un `requestIdleCallback`, jamais avant : il ne pèse pas sur le premier rendu, et il n'est pas téléchargé du tout sous `prefers-reduced-motion`. Si le chargement échoue ou n'a pas eu le temps d'aboutir, la transition se joue sans illustration.
 - **La taille se porte sur le conteneur, pas sur le SVG.** `lottie-web` pose `width: 100%` en style inline sur le SVG qu'il crée : une règle CSS visant le SVG est perdue. D'où le `div.hel-curtain-lottie` intermédiaire.
@@ -445,6 +475,13 @@ Limite connue et acceptée : les flèches de ce fichier sont en `#090814` et per
 
 ## Illustrations Lottie
 
+**Tous les fichiers vivent dans `public/animated-illustrations/`**, et pas à la racine de
+`public/`. Sept JSON mêlés aux logos, aux icônes et aux illustrations SVG rendaient le
+dossier illisible ; un sous-dossier les nomme pour ce qu'ils sont. Les chemins passés à
+`LottieScene` et à `loadLottieData` sont donc préfixés - un fichier ajouté à la racine ne
+serait pas trouvé.
+
+
 Six illustrations, **un seul composant** : `components/visuals/lottie-scene.tsx`. Ne pas réécrire un lecteur ailleurs, tout passe par lui.
 
 `lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère avec repli sur un délai pour Safari. Un seul chunk, un seul téléchargement par fichier, quel que soit le nombre de scènes.
@@ -477,10 +514,11 @@ Les autres garanties sont communes à toutes les scènes, et c'est la raison d'�
 | `chain-former.json` (227 ko)          | chaîne de valeur, Former    | `visible`                        | 0,7×                                          |
 | `chain-concevoir.json` (177 ko)       | chaîne de valeur, Concevoir | `visible`                        | 0,75×                                         |
 | `chain-operer.json` (374 ko)          | chaîne de valeur, Opérer    | `visible`                        | 0,75×                                         |
+| `error-404.json` (94 ko)              | page 404                    | `eager`                          | 0,9× et arrêt de 1,2 s                        |
 
 Les artboards ont des proportions et des marges internes différentes : chaque scène porte une échelle en `transform` pour équilibrer les tailles apparentes, jamais une largeur, afin de ne pas toucher à la mise en page.
 
-### `public/hero-product.json` - illustration du hero
+### `public/animated-illustrations/hero-product.json` - illustration du hero
 
 48 ko, trois calques nommés `wireframe`, `code`, `hi-fidelity` : les trois fenêtres s'empilent, tiennent la pose, puis recommencent. C'est le propos du studio montré plutôt qu'écrit, et cela reste dans la règle de la DA - illustration abstraite, volumes simples, jamais de photo ni de 3D gadget. Elle a remplacé la fenêtre produit en CSS pur et ses trois cartes flottantes (`hero-stage`, `product-window`, `parallax`, supprimés).
 
@@ -493,7 +531,7 @@ Les artboards ont des proportions et des marges internes différentes : chaque s
 - Les 11 expressions du fichier sont deux formules de **rebond élastique**, que `lottie_light` n'évalue pas. C'est voulu : la DA interdit le rebond. Le rendu a été comparé image par image contre le build complet - identique par ailleurs.
 - Le fichier fonctionne tel quel sur les deux thèmes : sur l'encre, ses panneaux clairs se lisent comme des écrans allumés. Aucune recoloration.
 
-### `public/theme-toggle.json` - sélecteur de thème
+### `public/animated-illustrations/theme-toggle.json` - sélecteur de thème
 
 57 ko, 19 calques, 60 i/s, 481 images. Le fichier enchaîne les deux bascules avec de longues tenues entre elles, **sans marqueur** : les repères ont été relevés en rendant la séquence image par image, et sont consignés en constantes dans `theme-toggle.tsx` (`LIGHT_REST` 40, `DARK_REST` 305, `TO_DARK` [40, 120], `TO_LIGHT` [305, 400]). On ne joue que les transitions, à 2,2× - 2 s d'origine par bascule serait bien trop lent pour une commande - et l'on se repose sur l'image de tenue d'où part la transition suivante. Les tenues étant visuellement identiques, le saut de l'une à l'autre ne se voit pas.
 

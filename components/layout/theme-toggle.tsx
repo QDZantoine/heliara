@@ -8,7 +8,7 @@ import { Moon, Sun } from "lucide-react"
 import { loadLottie, loadLottieData, whenIdle } from "@/lib/lottie"
 
 /**
- * Repères relevés dans `public/theme-toggle.json` (60 i/s, 481 images). Le
+ * Repères relevés dans `public/animated-illustrations/theme-toggle.json` (60 i/s, 481 images). Le
  * fichier enchaîne les deux bascules avec de longues tenues entre elles ; on ne
  * joue que les transitions, et l'on se repose sur l'image de tenue d'où part la
  * transition suivante - les tenues étant visuellement identiques, le saut de
@@ -54,7 +54,7 @@ function ThemeToggle() {
       try {
         const [lottie, animationData] = await Promise.all([
           loadLottie(),
-          loadLottieData("/theme-toggle.json"),
+          loadLottieData("/animated-illustrations/theme-toggle.json"),
         ])
         if (cancelled || !boxRef.current) {
           return
