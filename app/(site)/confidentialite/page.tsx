@@ -17,7 +17,7 @@ export default function ConfidentialitePage() {
     <LegalArticle
       eyebrow="Données personnelles"
       title="Politique de confidentialité"
-      updatedAt="juillet 2026"
+      updatedAt="août 2026"
       sections={privacyPolicy}
     />
   )

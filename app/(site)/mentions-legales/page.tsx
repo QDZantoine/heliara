@@ -17,7 +17,7 @@ export default function MentionsLegalesPage() {
     <LegalArticle
       eyebrow="Informations légales"
       title="Mentions légales"
-      updatedAt="juillet 2026"
+      updatedAt="août 2026"
       sections={legalNotice}
     />
   )

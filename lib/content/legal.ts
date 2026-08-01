@@ -5,9 +5,21 @@ import { site } from "@/lib/site"
  * Pages légales. Objectif : conformité irréprochable, qui est aussi un signal de
  * sérieux pour un DSI.
  *
- * Les mentions marquées « à compléter » attendent les informations réelles :
- * raison sociale, capital, immatriculation, coordonnées du délégué à la
- * protection des données. Elles ne doivent pas être publiées en l'état.
+ * **Heliara n'est pas encore une personne morale**, et c'est le fait qui commande toute
+ * cette page. Le site est édité par Hexceos SARL, qui exploite la marque Heliara ; une
+ * structure propre sera immatriculée quand l'activité le justifiera, et ces mentions
+ * seront alors reprises. D'ici là, les identifiants publiés sont ceux de l'éditeur réel.
+ *
+ * **Ce qui ne doit jamais être fait ici** : porter le nom « Heliara » en raison sociale
+ * au-dessus du SIREN, du RCS ou de la TVA d'Hexceos. L'article 6-III de la loi LCEN
+ * demande d'identifier l'éditeur, c'est-à-dire celui qui répond juridiquement du site.
+ * Nommer une société qui n'existe pas au registre, en lui attribuant les identifiants
+ * d'une autre, serait faux deux fois - et vérifiable en trente secondes par n'importe
+ * quel visiteur sur l'annuaire des entreprises.
+ *
+ * La structure suit celle des mentions légales d'Hexceos, dont le texte est repris et
+ * adapté à ce site. La seule mention encore ouverte est celle du délégué à la protection
+ * des données, dans la politique de confidentialité.
  */
 
 export type LegalSection = {
@@ -17,38 +29,82 @@ export type LegalSection = {
   rows?: { label: string; value: string }[]
 }
 
+/** Le téléphone de l'éditeur, distinct de celui affiché sur la page de contact. */
+const editorPhone = "+33 1 59 35 30 27"
+
 export const legalNotice: LegalSection[] = [
   {
     title: "Éditeur du site",
+    paragraphs: [
+      "Le présent site, heliara.fr, est édité par Hexceos SARL, société à responsabilité limitée de droit français, qui exploite la marque Heliara.",
+      "Une structure juridique propre à Heliara sera immatriculée lorsque l'activité le justifiera. Les présentes mentions seront alors mises à jour, et l'éditeur identifié ci-dessous demeure responsable du site jusque-là.",
+    ],
     rows: [
-      { label: "Raison sociale", value: "À compléter" },
-      { label: "Forme juridique", value: "À compléter" },
-      { label: "Capital social", value: "À compléter" },
-      { label: "Immatriculation", value: "RCS à compléter" },
-      { label: "Numéro de TVA", value: "À compléter" },
-      { label: "Siège social", value: "À compléter" },
+      { label: "Raison sociale", value: "Hexceos SARL" },
+      {
+        label: "Forme juridique",
+        value: "Société à responsabilité limitée",
+      },
+      { label: "Capital social", value: "1 000 euros" },
+      { label: "SIREN", value: "919 321 182" },
+      { label: "SIRET", value: "919 321 182 00017" },
+      { label: "Immatriculation", value: "RCS Évry 919 321 182" },
+      { label: "Numéro de TVA intracommunautaire", value: "FR00919321182" },
+      { label: "Code APE / NAF", value: "6202A" },
+      {
+        label: "Siège social",
+        value: "76 rue du Trou Grillon, 91280 Saint-Pierre-du-Perray, France",
+      },
       { label: "Adresse électronique", value: site.email },
-      { label: "Téléphone", value: site.phone },
-      { label: "Directeur de la publication", value: "À compléter" },
+      { label: "Téléphone", value: editorPhone },
+    ],
+  },
+  {
+    title: "Directeur de la publication",
+    paragraphs: [
+      "Gaëtan Maiuri, gérant d'Hexceos SARL, au sens de l'article 6-III-1° de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique.",
     ],
   },
   {
     title: "Rattachement au groupe",
     paragraphs: [
       "Heliara est une marque du groupe, aux côtés de LessonSharing (formation IT) et Hexceos (cybersécurité, infogérance, hébergement). Les trois marques sont indépendantes dans leur métier et complémentaires dans leur mission.",
-      "Dirigeant : Gaetan Maiuri. Siège : 76 rue du Trou Grillon, 91280 Saint-Pierre-du-Perray. Nom du groupe et SIREN de Heliara : à compléter.",
+      "Les marques LessonSharing et Hexceos sont citées sur ce site à ce titre. Les références clientes présentées comme les nôtres sont les nôtres : celles des marques sœurs leur restent attribuées.",
     ],
   },
   {
     title: "Hébergement",
-    paragraphs: [hostingStatement],
+    paragraphs: [
+      hostingStatement,
+      "L'éditeur et l'hébergeur de ce site sont la même personne morale. Aucune donnée du site n'est confiée à un hébergeur tiers.",
+    ],
   },
   {
     title: "Propriété intellectuelle",
     paragraphs: [
-      "L'ensemble des contenus de ce site, textes, illustrations, éléments d'interface et code, est protégé par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation écrite préalable est interdite.",
+      "L'ensemble des contenus de ce site, textes, illustrations, éléments d'interface, charte graphique et code, est protégé par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou partielle, sans autorisation écrite préalable est interdite et constitue une contrefaçon au sens des articles L. 335-2 et suivants du Code de la propriété intellectuelle.",
       "Les marques et logotypes des clients cités le sont avec leur accord, et restent la propriété de leurs titulaires respectifs.",
       "Le code produit dans le cadre de nos missions appartient à nos clients dès le premier jour, conformément à nos engagements contractuels. Il n'entre pas dans le champ de la présente clause.",
+    ],
+  },
+  {
+    title: "Liens hypertextes",
+    paragraphs: [
+      "La mise en place d'un lien vers ce site est libre, à condition qu'elle ne porte pas atteinte à l'image de Heliara et qu'elle n'induise pas en erreur sur l'origine du contenu. Nous nous réservons le droit d'en demander le retrait.",
+      "Les liens sortants de ce site pointent vers des contenus dont nous n'avons pas la maîtrise, et leur présence n'engage pas notre responsabilité quant à leur contenu.",
+    ],
+  },
+  {
+    title: "Données personnelles",
+    paragraphs: [
+      "Le traitement des données collectées sur ce site est décrit dans notre politique de confidentialité, accessible depuis le pied de page.",
+    ],
+  },
+  {
+    title: "Responsabilité",
+    paragraphs: [
+      "Nous nous efforçons de maintenir ce site accessible et ses informations exactes et à jour, sans pouvoir garantir l'absence d'erreur ni la disponibilité permanente du service.",
+      "Les informations publiées ici ont une valeur d'information générale et ne constituent pas un engagement contractuel. Seuls les documents signés avec un client engagent Heliara.",
     ],
   },
   {
@@ -57,6 +113,20 @@ export const legalNotice: LegalSection[] = [
       "Ce site est conçu pour respecter le niveau AA des règles pour l'accessibilité des contenus web. Si vous rencontrez une difficulté d'accès à une information, signalez-le à " +
         site.email +
         " : nous corrigeons et vous répondons.",
+    ],
+  },
+  {
+    title: "Droit applicable",
+    paragraphs: [
+      "Les présentes mentions sont soumises au droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux du ressort du siège social de l'éditeur sont seuls compétents.",
+    ],
+  },
+  {
+    title: "Contact",
+    paragraphs: [
+      "Pour toute question relative à ce site ou aux présentes mentions : " +
+        site.email +
+        ", ou par courrier à l'adresse du siège social indiquée ci-dessus.",
     ],
   },
 ]
@@ -68,7 +138,13 @@ export const privacyPolicy: LegalSection[] = [
       "Les données collectées sur ce site sont traitées par l'éditeur identifié dans les mentions légales. Pour toute question relative à vos données, écrivez à " +
         site.email +
         ".",
-      "Coordonnées du délégué à la protection des données : à compléter.",
+      /*
+        Pas de délégué désigné, et le dire est plus juste qu'un « à compléter ».
+        L'article 37 du RGPD n'en impose un ni à raison de la taille de l'éditeur, ni des
+        traitements de ce site - un formulaire de contact et une inscription à des
+        publications. Le jour où un délégué est désigné, ses coordonnées viennent ici.
+      */
+      "Aucun délégué à la protection des données n'est désigné : les traitements de ce site n'entrent dans aucun des cas où l'article 37 du règlement général sur la protection des données l'impose. Les demandes sont traitées par l'éditeur, à l'adresse ci-dessus.",
     ],
   },
   {
@@ -85,9 +161,16 @@ export const privacyPolicy: LegalSection[] = [
           "Adresse électronique seule. Finalité : vous envoyer nos publications. Base légale : votre consentement, retirable à tout moment.",
       },
       {
-        label: "Mesure d'audience",
+        /*
+          Décrit ce que fait réellement `ViewCounter` : aucun outil de mesure tiers,
+          aucun cookie, un compteur par article et une clé dans le stockage de session
+          pour ne pas compter deux fois la même lecture. C'est aussi pour cela que le
+          chiffre affiché est présenté comme une indication de lecture et non comme une
+          mesure d'audience.
+        */
+        label: "Lecture des publications",
         value:
-          "À compléter selon l'outil retenu. Aucun traceur publicitaire n'est déposé, et aucun traceur non nécessaire ne l'est sans votre accord.",
+          "Aucun outil de mesure d'audience tiers n'est utilisé. Un compteur de lectures est tenu par article, sans identifiant de visiteur ni cookie : une clé technique est simplement déposée dans le stockage de session de votre navigateur pour ne pas compter deux fois la même lecture, et elle disparaît à la fermeture de l'onglet.",
       },
     ],
   },
