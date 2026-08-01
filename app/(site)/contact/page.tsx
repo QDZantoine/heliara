@@ -5,7 +5,8 @@ import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
-import { contactSteps, partners, pastilleAccent } from "@/lib/content/team"
+import { contactSteps, pastilleAccent } from "@/lib/content/team"
+import { listPublicTeam } from "@/lib/db/public-team"
 import { pageMetadata } from "@/lib/seo"
 import { site } from "@/lib/site"
 import { cn } from "@/lib/utils"
@@ -17,7 +18,17 @@ export const metadata: Metadata = pageMetadata({
   path: "/contact",
 })
 
-export default function ContactPage() {
+export const revalidate = 60
+
+export default async function ContactPage() {
+  /*
+    Les associés seuls, tirés du même appel que la liste complète de `/a-propos` : c'est
+    ce qui garantit qu'une personne ne peut pas figurer ici avec un texte et là avec un
+    autre. La teinte de sa pastille vient de son rang dans l'équipe entière, donc les
+    deux pages s'accordent aussi sur la couleur.
+  */
+  const { partners } = await listPublicTeam()
+
   return (
     <section className="relative overflow-hidden">
       <Halo variant="warm" />

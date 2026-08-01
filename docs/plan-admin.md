@@ -25,10 +25,10 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
 | 8 - Expertises                              | **fait**, familles et nav comprises            |
 | 9 - Interface de saisie                     | **fait** pour les trois collections            |
 | 10 - Références clientes                    | **fait**, logos poussés vers le stockage       |
-| 11 - Équipe                                 | **en cours**, voir ci-dessous                  |
+| 11 - Équipe                                 | **fait**, les deux pages branchées             |
 | 12 - Le reste des contenus                  | à faire, et une partie ne le sera pas          |
 
-### Étape 11 - l'équipe : où reprendre
+### Étape 11 - l'équipe
 
 **Deux décisions actées avec l'auteur, à ne pas rediscuter :**
 
@@ -36,39 +36,44 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
   3e et suivantes encre. Il n'y a donc **aucune colonne `accent`** : la DA n'autorise
   qu'un geste orange par écran, une seule répartition est correcte, et un champ dont une
   seule valeur est juste n'est pas un réglage. Conséquence : réordonner change les
-  couleurs, l'écran doit le dire.
+  couleurs, et l'écran le dit en clair, à côté de chaque ligne comme en tête de liste.
 - **Les personnes seulement.** Le titre de section, le manifeste et les convictions
   restent dans `lib/content/team.ts`. Les rendre administrables demanderait une table de
   réglages clé / valeur, forme nouvelle qui appellerait ensuite tous les textes fixes du
   site - une porte à n'ouvrir qu'avec une raison.
 
-**Fait, et éprouvé contre la base en marche :**
+**Tout est en place et éprouvé contre l'infrastructure en marche :**
 
-- `db/init/18-schema-team.sql` : `team_member` et `team_member_skill`.
-- `db/init/19-proc-team.sql` : neuf procédures.
-- Privilèges accordés et vérifiés : `app_read` n'a que `pub_list_team_members`.
-- `lib/schemas/team.ts`, `lib/db/team.ts`, `lib/db/public-team.ts`.
-- `app/admin/(protected)/equipe/actions.ts`.
+- `db/init/18-schema-team.sql`, `db/init/19-proc-team.sql`, neuf procédures, privilèges
+  vérifiés - `app_read` n'a que `pub_list_team_members`.
+- `lib/schemas/team.ts`, `lib/db/team.ts`, `lib/db/public-team.ts`,
+  `app/admin/(protected)/equipe/{actions.ts,page.tsx}`,
+  `components/admin/team-board.tsx`, entrée de nav dans `admin-shell.tsx`.
+- `/a-propos` et `/contact` lisent la base par `listPublicTeam()`, avec repli statique.
+- `seedTeam()` dans `scripts/db-seed.ts` : trois personnes, six portraits poussés vers
+  le stockage, publiées d'emblée puisqu'elles s'affichaient déjà.
+- `tests/db/team.test.ts` : 12 tests d'intégration.
+- Vérifié à l'écran par CDP, **dans les deux thèmes**, sur les deux pages publiques et
+  sur l'écran d'administration. Le rendu public est identique au statique, portraits
+  servis depuis MinIO à travers l'optimiseur d'images (200, pas 400).
 
-**Reste à faire, dans cet ordre :**
+**Ce que cette tranche a appris :**
 
-1. L'écran, sur le moule de `components/admin/client-board.tsx` - un tableau et non
-   l'éditeur à étapes. **Deux dépôts de portrait par ligne**, plus les spécialités en
-   collection. C'est le plus gros morceau.
-2. L'entrée de nav dans `components/admin/admin-shell.tsx`, et
-   `app/admin/(protected)/equipe/page.tsx`.
-3. Le branchement de `/a-propos` (tout le monde) et `/contact` (les associés seuls),
-   par `listPublicTeam()`. Les deux listes sortent du même appel : c'est ce qui garantit
-   qu'une personne ne peut pas figurer dans l'une avec un texte et dans l'autre avec un
-   autre.
-4. L'amorçage des six portraits, sur le moule de `seedClients()` dans
-   `scripts/db-seed.ts` - `seedMedia()` fait déjà le dépôt.
-5. Tests, et vérification à l'écran **dans les deux thèmes** : c'est tout l'objet des
-   deux portraits.
-
-**Un piège déjà rencontré et corrigé**, pour ne pas le refaire : les spécialités
-arrivent dans un second jeu de résultats et se répartissent **par `member_id`**, pas en
-suivant l'ordre des personnes. L'ordre seul ne dit pas où finit la liste de l'une.
+- **Les spécialités se répartissent par `member_id`**, jamais en suivant l'ordre des
+  personnes : l'ordre seul ne dit pas où finit la liste de l'une. Piège rencontré,
+  corrigé, et désormais verrouillé par un test à deux personnes de longueurs inégales.
+- **`accentOfIndex` vit dans `lib/content/team.ts`** et non dans la couche d'accès :
+  trois appelants la partagent - lecture publique, écran d'administration, données
+  statiques. C'est une règle de la DA, pas une règle de lecture.
+- **Les deux surfaces d'aperçu sont figées en dur** (`#fafaf9`, `#101012`). `bg-page`
+  suivrait le thème de l'administration : en sombre, l'aperçu du portrait clair se
+  poserait sur l'encre, c'est-à-dire montrerait l'inverse de ce qu'on vient vérifier.
+  Le libellé, lui, est **hors** du cadre, sur la surface de l'écran : à l'intérieur, il
+  aurait fallu deux couleurs figées elles aussi, dont l'une devenait illisible.
+- **`content-start` sur la colonne d'aperçus.** Sans lui, ses rangées s'étirent à la
+  hauteur des champs voisins et les deux cadres deviennent des bandes verticales avec le
+  portrait tassé en haut. Mesuré à l'écran, invisible à la lecture du code - c'est le
+  même piège que dans `Field` et `Fieldset`.
 
 **Ce qui ne sera pas rendu administrable, et pourquoi :**
 

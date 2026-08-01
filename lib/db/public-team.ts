@@ -1,4 +1,5 @@
 import {
+  accentOfIndex,
   partners as staticPartners,
   team as staticTeam,
   type Person,
@@ -41,23 +42,6 @@ function fallback(reason: string, error?: unknown) {
     `Équipe : repli sur le contenu statique (${reason}).`,
     error ?? ""
   )
-}
-
-/**
- * La teinte de la pastille, **déduite du rang**.
- *
- * La DA n'autorise qu'un geste orange par écran : sur une grille de cartes, il n'existe
- * donc qu'une répartition correcte, et c'est celle-ci. La déduire rend deux oranges
- * impossibles par construction, là où un champ laissait la règle à la vigilance de qui
- * saisit - voir `db/init/18-schema-team.sql`.
- *
- * Conséquence assumée : réordonner l'équipe change les couleurs.
- */
-function accentOf(index: number): Person["accent"] {
-  if (index === 0) {
-    return "brand"
-  }
-  return index === 1 ? "info" : "ink"
 }
 
 export type PublicTeam = {
@@ -103,7 +87,9 @@ export async function listPublicTeam(): Promise<PublicTeam> {
       initials: text(row.initials),
       bio: text(row.bio),
       skills: parMembre.get(toHex(row.id)) ?? [],
-      accent: accentOf(index),
+      // La teinte vient du rang, jamais d'une colonne : voir `accentOfIndex` et
+      // l'en-tête de `db/init/18-schema-team.sql`.
+      accent: accentOfIndex(index),
       photo: {
         white: publicUrl(row.light_key),
         orange: publicUrl(row.dark_key),

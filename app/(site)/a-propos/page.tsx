@@ -9,7 +9,8 @@ import { Section } from "@/components/primitives/section"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
 import { TeamPortrait } from "@/components/visuals/team-portrait"
-import { convictions, manifesto, team, teamSection } from "@/lib/content/team"
+import { convictions, manifesto, teamSection } from "@/lib/content/team"
+import { listPublicTeam } from "@/lib/db/public-team"
 import { pageMetadata } from "@/lib/seo"
 import { group } from "@/lib/site"
 
@@ -20,7 +21,16 @@ export const metadata: Metadata = pageMetadata({
   path: "/a-propos",
 })
 
-export default function AProposPage() {
+/*
+  Une minute, comme les autres pages qui lisent la base. Un littéral : Next analyse cet
+  export statiquement. Le titre de section, le manifeste et les convictions restent dans
+  le dépôt - seules les personnes sont administrables.
+*/
+export const revalidate = 60
+
+export default async function AProposPage() {
+  const { all: team } = await listPublicTeam()
+
   return (
     <>
       <PageHero

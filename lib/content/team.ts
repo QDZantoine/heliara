@@ -107,6 +107,31 @@ export const team: Person[] = [
 ]
 
 /**
+ * La teinte d'une pastille, **déduite du rang**.
+ *
+ * Ici et non dans la couche d'accès parce que c'est une règle de la DA et non une règle
+ * de lecture : la DA n'autorise qu'un geste orange par écran, donc sur une grille de
+ * cartes il n'existe qu'une répartition correcte. Trois appelants la partagent - la
+ * lecture publique, l'écran d'administration qui l'annonce à côté de chaque ligne, et
+ * les données statiques ci-dessus, qui la suivent déjà.
+ *
+ * Conséquence assumée : réordonner l'équipe change les couleurs.
+ */
+export function accentOfIndex(index: number): Person["accent"] {
+  if (index === 0) {
+    return "brand"
+  }
+  return index === 1 ? "info" : "ink"
+}
+
+/** Le nom de la teinte, tel que l'administration l'écrit à côté d'une ligne. */
+export const accentLabel: Record<Person["accent"], string> = {
+  brand: "orange",
+  info: "bleu",
+  ink: "encre",
+}
+
+/**
  * Les classes de la pastille d'initiales, par accent.
  *
  * **Ici plutôt que dans chaque page**, sur le modèle de `brandAccent` dans `group.ts` :

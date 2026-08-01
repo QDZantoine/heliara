@@ -917,8 +917,9 @@ aurait donné deux définitions à tenir d'accord, ce qu'un schéma partagé ser
 Les marqueurs du genre `[À COMPLÉTER]` sont **importés tels quels et signalés en fin
 d'exécution**. Les effacer ferait disparaître la question qu'ils posent.
 
-Quatre collections sont administrables : **Réalisations**, **Articles**, **Expertises** et
-**Références clientes**. Les autres contenus vivent encore dans `lib/content/*.ts`.
+Cinq collections sont administrables : **Réalisations**, **Articles**, **Expertises**,
+**Références clientes** et **Équipe**. Les autres contenus vivent encore dans
+`lib/content/*.ts`.
 
 ### Références clientes
 
@@ -977,6 +978,56 @@ la cause invisible.
 modèle possible : en `INVOKER`, la procédure s'exécute avec les droits de
 l'appelant, donc un compte sans droit de table échoue à l'intérieur même de la
 procédure. Aucune clause `DEFINER = ...` explicite, pour ne pas exiger `SET USER`.
+
+### L'équipe
+
+Les personnes de `/a-propos`, dont les associés que `/contact` présente, à `/admin/equipe`.
+Un tableau comme les références, pas l'éditeur à étapes.
+
+**Une seule table pour deux listes.** Le contenu statique en portait deux, `team` étant
+`[...partners, une personne de plus]`. Les dédoubler en base rendrait possible qu'une
+personne figure dans l'une et pas l'autre, ou deux fois avec des textes divergents.
+`is_partner` distingue les usages sans dupliquer la personne, et les deux pages lisent le
+**même appel** - `listPublicTeam()` rend `{ all, partners }`.
+
+**Ce drapeau engage.** `/contact` promet une réponse d'un associé sous 48 heures et
+affiche cette liste : le lever pour quelqu'un qui ne répond pas aux messages rendrait la
+promesse fausse. Ce n'est pas un rang honorifique, d'où le rappel à côté de
+l'interrupteur.
+
+**La teinte de la pastille est déduite de la position**, et il n'existe **aucune colonne
+`accent`** : 1re personne orange, 2e bleue, 3e et suivantes encre. La DA n'autorise qu'un
+geste orange par écran, donc sur une grille de cartes une seule répartition est correcte,
+et un champ dont une seule valeur est juste n'est pas un réglage. `accentOfIndex` vit dans
+`lib/content/team.ts` - c'est une règle de la DA, pas une règle de lecture - et trois
+appelants la partagent. Conséquence assumée : **réordonner change les couleurs**, ce que
+l'écran écrit en tête de liste et à côté de chaque ligne.
+
+**La publication exige les deux portraits**, en plus des initiales et du parcours. Aucun
+fichier ne tient sur les deux thèmes : un détourage sur blanc posé sur une carte encre
+devient un pavé lumineux. Publier sans le portrait sombre laisse un trou qu'on ne voit
+qu'en basculant le thème, c'est-à-dire jamais avant un visiteur - c'est la seule exigence
+de ce genre du projet.
+
+**D'où les deux aperçus côte à côte dans l'écran**, chacun sur la surface figée en dur du
+thème auquel il est destiné (`#fafaf9`, `#101012`), au cadrage exact de la carte. `bg-page`
+suivrait le thème de l'administration : en sombre, l'aperçu du portrait clair se poserait
+sur l'encre, montrant l'inverse de ce qu'on vient vérifier. Le libellé « clair » / « sombre »
+est **hors** du cadre, sur la surface de l'écran : à l'intérieur, il aurait fallu deux
+couleurs figées elles aussi, dont l'une devenait illisible.
+
+**Aucun champ de texte alternatif**, et c'est le bon partage : la carte rend ces images en
+`alt=""`, le nom de la personne étant écrit juste dessous. Une alternative le répéterait à
+voix haute.
+
+**Les spécialités se répartissent par `member_id`**, jamais en suivant l'ordre des
+personnes. Elles arrivent dans un second jeu de résultats, et l'ordre seul ne dit pas où
+finit la liste de l'une. Le défaut a été rencontré ; `tests/db/team.test.ts` le verrouille
+avec deux personnes de longueurs inégales.
+
+Le titre de section, le manifeste et les convictions **restent dans `lib/content/team.ts`**.
+Les rendre administrables demanderait une table de réglages clé / valeur, forme nouvelle
+qui appellerait ensuite tous les textes fixes du site.
 
 ### L'image de tête, et deux défauts qui ne se voyaient pas
 

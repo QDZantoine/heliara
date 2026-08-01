@@ -7,6 +7,7 @@ import {
   Layers,
   LogOut,
   Users,
+  UsersRound,
 } from "lucide-react"
 
 import { logout } from "@/app/admin/actions"
@@ -30,6 +31,7 @@ const nav = [
   { href: "/admin/articles", label: "Articles", icon: BookOpen },
   { href: "/admin/expertises", label: "Expertises", icon: Layers },
   { href: "/admin/references", label: "Références", icon: BadgeCheck },
+  { href: "/admin/equipe", label: "Équipe", icon: UsersRound },
   { href: "/admin/comptes", label: "Comptes", icon: Users, soon: true },
 ] as const
 

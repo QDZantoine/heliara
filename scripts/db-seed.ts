@@ -35,6 +35,7 @@ import { articles } from "@/lib/content/articles"
 import { caseStudies } from "@/lib/content/cases"
 import { clients } from "@/lib/content/clients"
 import { expertiseFamilies, expertiseServices } from "@/lib/content/expertises"
+import { partners, team } from "@/lib/content/team"
 import { blocksToJson } from "@/lib/db/articles"
 import { BusinessError, write } from "@/lib/db/call"
 import { closePool } from "@/lib/db/pool"
@@ -530,6 +531,81 @@ async function seedClients(actor: Buffer) {
   return { created, skipped }
 }
 
+/**
+ * L'équipe, publiée d'emblée.
+ *
+ * **Elle l'est parce qu'elle l'est déjà** : les trois personnes s'affichent aujourd'hui
+ * sur `/a-propos` et les deux associés sur `/contact` depuis le contenu statique. Les
+ * laisser en brouillon les retirerait du site, l'amorçage faisant précisément cesser le
+ * repli.
+ *
+ * **L'ordre du tableau est l'ordre d'affichage**, et il porte plus qu'un rang : la
+ * teinte des pastilles en est déduite à la lecture. Les données statiques déclarent
+ * `accent` et suivent déjà cette répartition - orange, bleu, encre - donc l'amorçage la
+ * reproduit sans rien avoir à écrire.
+ *
+ * Idempotent par nom. Les portraits déposés une première fois ne le sont pas deux : une
+ * personne dont le nom existe est passée avant tout dépôt.
+ */
+async function seedTeam(actor: Buffer) {
+  const existing = new Set(
+    (await write.rows<{ name: string }>("list_team_members")).map(
+      (row) => row.name
+    )
+  )
+
+  let created = 0
+  let skipped = 0
+
+  for (const person of team) {
+    if (existing.has(person.name)) {
+      skipped += 1
+      continue
+    }
+
+    // Aucun texte alternatif : la carte rend ces images en `alt=""`, le nom de la
+    // personne étant écrit juste dessous. Une alternative le répéterait à voix haute.
+    const lightId = await seedMedia(actor, person.photo.white)
+    const darkId = await seedMedia(actor, person.photo.orange)
+
+    const row = await write.rowStrict<{ id: Buffer }>("create_team_member", [
+      person.name,
+      person.role,
+      actor,
+      null,
+    ])
+
+    await write.void("update_team_member", [
+      row.id,
+      person.name,
+      person.role,
+      person.initials,
+      person.bio,
+      // `partners` est `[...]` et `team` commence par lui : l'appartenance se lit donc
+      // sur la liste des associés, jamais sur le rang.
+      partners.some((one) => one.name === person.name) ? 1 : 0,
+      lightId,
+      darkId,
+      actor,
+      null,
+    ])
+
+    await write.void("set_team_skills", [
+      row.id,
+      JSON.stringify(person.skills.map((label) => ({ label }))),
+      actor,
+      null,
+    ])
+
+    await write.void("publish_team_member", [row.id, 1, actor, null])
+
+    created += 1
+    stdout.write(`  + ${person.name}\n`)
+  }
+
+  return { created, skipped }
+}
+
 async function main() {
   stdout.write("\nAmorçage de la base depuis le contenu statique.\n\n")
 
@@ -557,6 +633,13 @@ async function main() {
   const refs = await seedClients(actor)
   stdout.write(`  ${refs.created} créée(s)`)
   stdout.write(refs.skipped ? `, ${refs.skipped} déjà présente(s).\n` : ".\n")
+
+  stdout.write("\nÉquipe\n")
+  const people = await seedTeam(actor)
+  stdout.write(`  ${people.created} personne(s) créée(s)`)
+  stdout.write(
+    people.skipped ? `, ${people.skipped} déjà présente(s).\n` : ".\n"
+  )
 
   stdout.write(
     "\nLe site public lit désormais la base. Le contenu statique reste en secours.\n\n"
