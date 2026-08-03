@@ -46,7 +46,82 @@ function mediaPattern() {
   }
 }
 
+/**
+ * En-têtes de sécurité, posés par l'application et non par le proxy.
+ *
+ * **Pourquoi ici.** Le proxy est le bon endroit pour la terminaison TLS, mais un en-tête
+ * qui n'existe que dans sa configuration disparaît au premier changement d'hébergement,
+ * et personne ne s'en aperçoit : rien ne casse, la protection est simplement partie.
+ * Portés par l'application, ils suivent le code. Un proxy qui en ajoute d'autres ne gêne
+ * pas.
+ *
+ * **Ce qui est délibérément absent, et pourquoi.** Il n'y a **pas** de `script-src` ni de
+ * `style-src`. Une politique de contenu qui les couvre demande un nonce par requête, donc
+ * un middleware qui réécrit chaque réponse : c'est un chantier à part, et une politique
+ * approximative se termine toujours en `unsafe-inline`, qui ne protège de rien tout en
+ * donnant l'apparence du contraire. Les quatre directives retenues ne dépendent d'aucun
+ * nonce et ne peuvent rien casser ici.
+ *
+ * `includeSubDomains` est **absent de HSTS**, volontairement : l'administration et le
+ * stockage des médias vivent sur des sous-domaines, et l'en-tête est mémorisé par le
+ * navigateur pour deux ans - une erreur y est difficilement réversible. À élargir au
+ * niveau du proxy, une fois tous les sous-domaines certifiés.
+ */
+const securityHeaders = [
+  {
+    // Deux ans. Ignoré en HTTP, donc sans effet sur un poste de développement.
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000",
+  },
+  {
+    // Empêche le navigateur de deviner un type MIME, donc d'exécuter comme script
+    // un fichier servi comme autre chose.
+    key: "X-Content-Type-Options",
+    value: "nosniff",
+  },
+  {
+    // L'origine seule part vers un site tiers, le chemin complet reste interne. Un
+    // chemin d'administration ne doit pas fuir dans le `Referer` d'un lien sortant.
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
+  },
+  {
+    // Aucune de ces interfaces n'est utilisée. Les refuser explicitement évite qu'un
+    // script tiers un jour injecté puisse même les demander.
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=()",
+  },
+  {
+    /*
+      Les quatre directives qui ne demandent pas de nonce :
+
+      - `frame-ancestors 'none'` remplace `X-Frame-Options` et le fait mieux - aucune
+        mise en cadre, donc pas de détournement de clic sur le formulaire de contact ni
+        sur l'administration.
+      - `base-uri 'self'` : une balise `<base>` injectée réécrirait toutes les URL
+        relatives de la page vers un domaine tiers.
+      - `form-action 'self'` : un formulaire ne peut poster qu'ici. Les actions serveur
+        et la déconnexion visent la même origine.
+      - `object-src 'none'` : aucun greffon, jamais.
+    */
+    key: "Content-Security-Policy",
+    value:
+      "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+  },
+]
+
 const nextConfig: NextConfig = {
+  /**
+   * `X-Powered-By: Next.js` n'apporte rien et nomme la pile à qui cherche une
+   * vulnérabilité connue. Ce n'est pas une protection - la signature se devine par
+   * ailleurs - mais il n'y a aucune raison de la donner.
+   */
+  poweredByHeader: false,
+
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }]
+  },
+
   /**
    * Répertoire de build, configurable par l'environnement.
    *

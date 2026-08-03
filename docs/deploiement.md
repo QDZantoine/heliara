@@ -145,7 +145,7 @@ que plusieurs explorateurs refusent sans le dire.
 - **Rediriger `www` vers le nom nu, ou l'inverse, en 301.** Une page servie sous deux noms
   se dédouble dans l'index ; l'URL canonique de chaque page est déjà absolue et unique,
   mais la redirection évite au moteur de la découvrir deux fois.
-- **HTTP vers HTTPS en 301**, et HSTS une fois le certificat stable.
+- **HTTP vers HTTPS en 301.**
 - Le proxy doit transmettre `X-Forwarded-For` : c'est l'adresse que le journal d'audit
   enregistre pour chaque écriture.
 - Aucun cache partagé n'est nécessaire devant l'application. Un cache de CDN sur les
@@ -154,6 +154,32 @@ que plusieurs explorateurs refusent sans le dire.
 **L'administration n'est pas protégée par son adresse.** Sur le processus public, tout ce
 qui commence par `/admin` répond **404** - pas 403, qui confirmerait l'existence. Mais
 c'est la barrière la plus faible des trois : la restriction réseau reste nécessaire.
+
+### En-têtes de sécurité : l'application les pose déjà
+
+`next.config.ts` émet HSTS, `X-Content-Type-Options`, `Referrer-Policy`,
+`Permissions-Policy` et une politique de contenu partielle, et retire
+`X-Powered-By`. **Rien n'est à configurer côté proxy pour les obtenir**, et c'est
+voulu : un en-tête qui n'existe que dans la configuration d'un proxy disparaît au
+premier changement d'hébergement, sans que rien casse ni que personne le voie.
+
+Deux points restent au proxy, parce qu'ils dépendent du certificat et des
+sous-domaines :
+
+- **`includeSubDomains` sur HSTS** est délibérément absent de l'application :
+  l'administration et les médias vivent sur des sous-domaines, et l'en-tête est
+  mémorisé deux ans. À élargir ici, une fois tous les sous-domaines certifiés. Le
+  `preload` est irréversible en pratique - ne pas s'y inscrire à la légère.
+- **Ne pas dédoubler les en-têtes.** Si le proxy ajoute les siens, vérifier qu'ils
+  ne s'additionnent pas : deux `Content-Security-Policy` se combinent par
+  intersection, deux `Strict-Transport-Security` sont ignorés par certains
+  navigateurs.
+
+**Ce qui n'est pas couvert, et qu'il faut savoir** : la politique de contenu ne porte
+ni `script-src` ni `style-src`. Les couvrir demande un nonce par requête, donc un
+middleware qui réécrit chaque réponse. Une politique approximative se termine
+toujours en `unsafe-inline`, qui ne protège de rien tout en donnant l'apparence du
+contraire. À traiter comme un chantier à part, pas comme une ligne de configuration.
 
 ---
 
@@ -227,6 +253,9 @@ Dans cet ordre, parce que chacune dépend de la précédente.
 6. Le formulaire de contact : envoyer un message et vérifier qu'il arrive. En cas d'échec,
    la page affiche l'adresse e-mail de repli - le message n'est jamais perdu en silence.
 7. Une page inexistante affiche la page 404 du site, avec en-tête et pied de page.
+8. Les en-têtes de sécurité arrivent, et une seule fois chacun :
+   `curl -sD - -o /dev/null https://heliara.fr/ | grep -iE 'strict-transport|content-security|nosniff|referrer|permissions'`.
+   `X-Powered-By` ne doit pas apparaître.
 
 ---
 
