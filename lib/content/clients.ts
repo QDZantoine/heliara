@@ -40,12 +40,7 @@ export type Client = {
   site: string
 }
 
-/**
- * Les clients, dans l'ordre d'affichage.
- *
- * `logo-BSL.jpg` du même dossier n'est pas repris : c'est le même logo que `bsl-logo.png`
- * en JPEG, donc sans transparence, et il dessinerait un rectangle blanc sur la bande.
- */
+/** Les clients, dans l'ordre d'affichage. */
 export const clients: readonly Client[] = [
   {
     name: "MyDigitalSchool",

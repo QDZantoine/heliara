@@ -237,8 +237,29 @@ BEGIN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'MEDIA_NOT_FOUND';
   END IF;
 
-  SELECT (SELECT COUNT(*) FROM case_media WHERE media_id = p_id)
-       + (SELECT COUNT(*) FROM case_study WHERE hero_media_id = p_id)
+  /*
+    **Les sept references, et non deux.**
+
+    Ce compte ne portait que sur `case_media` et `case_study.hero_media_id`, a l'epoque ou
+    c'etaient les seuls usages d'un media. Cinq usages sont apparus depuis, et cinq sur
+    sept sont en `ON DELETE SET NULL` : la suppression passait donc, et **vidait le contenu
+    en silence** - le portrait d'une personne publiee, la couverture d'un article, la
+    variante sombre d'un logo. Une fiche d'equipe se retrouvait publiee sans portrait, etat
+    que `publish_team_member` refuse de creer mais qui existait deja en base.
+
+    Les deux references en `RESTRICT` auraient leve une erreur de cle etrangere, illisible
+    pour l'appelant. Les compter ici donne `MEDIA_IN_USE`, que la couche d'acces traduit.
+
+    **A tenir a jour** : toute nouvelle colonne qui reference `media` s'ajoute ici. La
+    requete de information_schema qui les liste est dans le journal du depot.
+  */
+  SELECT (SELECT COUNT(*) FROM case_media       WHERE media_id            = p_id)
+       + (SELECT COUNT(*) FROM case_study       WHERE hero_media_id       = p_id)
+       + (SELECT COUNT(*) FROM article          WHERE hero_media_id       = p_id)
+       + (SELECT COUNT(*) FROM client_reference WHERE logo_media_id       = p_id)
+       + (SELECT COUNT(*) FROM client_reference WHERE logo_dark_media_id  = p_id)
+       + (SELECT COUNT(*) FROM team_member      WHERE photo_light_media_id = p_id)
+       + (SELECT COUNT(*) FROM team_member      WHERE photo_dark_media_id  = p_id)
     INTO v_usage;
 
   IF v_usage > 0 THEN

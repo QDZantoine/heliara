@@ -202,6 +202,31 @@ describeDb("fiches", () => {
       ])
     ).rejects.toMatchObject({ code: "MEDIA_NOT_FOUND" })
   })
+
+  it("refuse de supprimer un média qui sert de portrait", async () => {
+    /*
+      Le défaut que ce test verrouille, trouvé en faisant du ménage dans le stockage :
+      `delete_media` ne comptait les usages que sur `case_media` et `case_study`, alors que
+      cinq autres colonnes référencent un média - dont ces deux-ci, en `ON DELETE SET NULL`.
+      La suppression passait donc, et **vidait le portrait en silence** : la personne restait
+      publiée, sans image, dans un état que `publish_team_member` refuse de créer.
+    */
+    const member = await makeMember()
+    const { light, dark } = await fillForPublication(member.id, member.name)
+
+    for (const media of [light, dark]) {
+      await expect(
+        write.void("delete_media", [media, actor, null])
+      ).rejects.toMatchObject({ code: "MEDIA_IN_USE" })
+    }
+
+    // Et la fiche a bien gardé ses deux portraits.
+    const row = (await write.rows<MemberRow>("list_team_members")).find(
+      (one) => toHex(one.id) === toHex(member.id)
+    )
+    expect(row?.photo_light_media_id).not.toBeNull()
+    expect(row?.photo_dark_media_id).not.toBeNull()
+  })
 })
 
 describeDb("spécialités", () => {
