@@ -5,21 +5,11 @@ import type { Person } from "@/lib/content/team"
 /**
  * Le portrait en tête de carte d'équipe.
  *
- * **Il a remplacé une pastille d'initiales.** Deux lettres dans un rond disent qu'on
- * n'a pas de photo ; sur une page dont tout l'argument est « vos interlocuteurs sont
- * ceux qui conçoivent », montrer les visages est le propos, pas la décoration.
- *
- * **Deux images, une par thème, et non une seule dont on changerait la source.** Le
- * thème du site est porté par une classe sur `<html>` et non par la seule préférence
- * système - le sélecteur permet de le forcer - donc un `<picture>` avec
- * `media="(prefers-color-scheme: dark)"` se désynchroniserait d'un choix manuel. Les
- * deux variantes sont donc rendues, et le CSS en masque une : c'est la même mécanique
- * que le sélecteur de thème, qui lit l'état en CSS plutôt qu'en React et évite ainsi la
- * garde `mounted` et le rendu vide à l'hydratation.
- *
- * Le coût assumé est un second téléchargement. Il reste modeste parce que `next/image`
- * sert du WebP dimensionné à la largeur d'affichage, là où le PNG source pèse 330 ko -
- * et il ne concerne que cette page.
+ * **Deux images, une par thème, et non une seule dont on changerait la source.** Le thème
+ * est une classe sur `<html>` et non la seule préférence système - le sélecteur permet de
+ * le forcer - donc un `<picture media>` se désynchroniserait d'un choix manuel. Les deux
+ * sont rendues et le CSS en masque une. Le coût est un second téléchargement, borné par le
+ * WebP dimensionné de `next/image` et limité à cette page.
  *
  * `object-top` : les sujets sont cadrés tête et épaules, légèrement décentrés vers la
  * droite. Un cadrage centré couperait le front sur les trois.

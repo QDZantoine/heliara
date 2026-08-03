@@ -12,16 +12,14 @@ import { graph, organizationNode, websiteNode } from "@/lib/schema"
  *
  * **Extrait du layout parce que deux endroits en ont besoin.** Le layout du groupe
  * `(site)` l'entoure de toutes les pages publiques ; `app/not-found.tsx` en a besoin
- * aussi, et il vit **hors** du groupe - c'est une contrainte de Next, pas un choix :
- * seule une page `not-found` posée à la racine de `app/` attrape les URL qui ne
- * correspondent à aucune route. Sans cette extraction, la page 404 la plus fréquente,
- * celle d'un lien mort, se serait affichée sans en-tête ni pied de page - donc sans
- * aucun chemin de retour, ce que la règle « aucune impasse » interdit.
+ * aussi, et il vit **hors** du groupe - contrainte de Next : seule une `not-found` posée à
+ * la racine de `app/` attrape les URL qui ne correspondent à aucune route. Sans cette
+ * extraction, la 404 la plus fréquente s'afficherait sans en-tête ni pied de page, donc
+ * sans chemin de retour.
  *
  * **Les entrées d'expertise sont lues ici**, une fois, et passées à l'en-tête comme au
- * pied de page. Elles viennent de la base, les familles étant administrables, et la
- * lecture porte un repli sur le contenu statique - une base muette ne doit pas vider le
- * menu de toutes les pages.
+ * pied de page. Le repli sur le contenu statique compte double : une base muette ne doit
+ * pas vider le menu de toutes les pages.
  *
  * `knowsAbout` de l'organisation est alimenté par les familles réellement publiées,
  * déjà lues pour la navigation : le signal suit le contenu au lieu d'être une liste de

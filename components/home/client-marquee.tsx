@@ -1,28 +1,19 @@
 import Image from "next/image"
+import { Pause, Play } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
 import type { Client } from "@/lib/content/clients"
 
 /**
- * S3 - le bandeau de logos clients, juste après le hero.
- *
- * **C'est la place que cette bande attendait depuis le début.** L'architecture UX y
- * prévoit « la caution avant le premier scroll d'effort », et une rangée de logos est
- * exactement cela : reconnaissable sans être lue. Elle a d'abord porté huit noms de
- * clients inventés, puis les engagements contractuels faute de références réelles ; ces
- * derniers sont désormais une section pleine en bas de page, où un engagement se lit
- * posément.
+ * S3 - le bandeau de logos clients, juste après le hero : « la caution avant le premier
+ * scroll d'effort » de l'Architecture UX.
  *
  * **Compacte, volontairement.** Une bande d'une ligne avec son libellé à gauche, pas une
- * section titrée : à cet endroit de la page, la caution doit se percevoir en passant. Un
- * `h2` et un chapô en S3 retarderaient le propos du site de deux écrans.
+ * section titrée : un `h2` et un chapô à cet endroit retarderaient le propos du site de
+ * deux écrans.
  *
- * **Elle ne s'affiche pas tant qu'il n'y a rien à montrer.** Un bandeau « Ils nous font
- * confiance » vide serait pire que son absence.
- *
- * **Les références arrivent en prop plutôt qu'importées.** Elles sont administrables, donc
- * lues en base avec repli sur le contenu statique ; le composant reste ignorant de leur
- * provenance, comme `CaseList` et `CaseGrid`.
+ * Elle ne s'affiche pas tant qu'il n'y a rien à montrer, et les références arrivent en
+ * prop : elles sont administrables, le composant reste ignorant de leur provenance.
  */
 function ClientMarquee({ clients }: { clients: readonly Client[] }) {
   if (clients.length === 0) {
@@ -43,24 +34,28 @@ function ClientMarquee({ clients }: { clients: readonly Client[] }) {
     <section
       aria-labelledby="confiance-titre"
       /*
-        La bande suit le thème, et les logos gardent leur couleur dans les deux.
-
-        Un plateau clair maintenu en thème sombre avait été essayé : il garantissait la
-        lisibilité des huit fichiers, au prix d'une bande blanche dans une page encre.
-        Écarté - la couleur des marques se tient sur les deux fonds, et une section qui
-        ignore le thème se remarque plus qu'un logo un peu moins contrasté.
-
-        Aucun filtre non plus. La désaturation à opacité réduite effaçait les logos
-        clairs, et `brightness-0 invert` en sombre écrasait les formes internes de ceux
-        qui en dépendent. Les logos sont montrés tels que leurs propriétaires les ont
-        dessinés, ce qu'on doit de toute façon à une marque qu'on affiche.
-
-        Conséquence connue : un fichier à fond opaque foncé - `logo-hexceos.png` - se
-        fond dans la bande en thème sombre. Cela se corrige dans le fichier, pas en CSS.
+        La bande suit le thème plutôt que de garder un plateau clair : une section qui
+        ignore le thème se remarque plus qu'un logo un peu moins contrasté. Conséquence,
+        un logo monochrome sombre disparaît sur l'encre - cela se corrige en fournissant
+        sa variante claire, jamais par un filtre.
       */
       className="border-y border-line bg-surface"
     >
       <Container className="flex flex-col gap-4 py-6 menu:flex-row menu:items-center menu:gap-9">
+        {/*
+          La case à cocher qui pilote la pause, et sa place dans l'arbre n'est pas
+          négociable : le CSS l'atteint par `~`, donc elle doit être un frère **précédant**
+          le conteneur de la piste. La déplacer dans le bloc du titre casserait la
+          commande sans qu'aucun outil le signale.
+        */}
+        {defile ? (
+          <input
+            type="checkbox"
+            id="hel-logos-pause"
+            className="hel-logos-switch sr-only"
+          />
+        ) : null}
+
         <h2
           id="confiance-titre"
           className="flex-none text-[0.72rem] font-semibold tracking-[0.12em] text-label uppercase"
@@ -84,8 +79,53 @@ function ClientMarquee({ clients }: { clients: readonly Client[] }) {
             ))}
           </ul>
         )}
+
+        {/* En bout de bande, après les logos : la commande est nécessaire, elle n'a pas
+            à disputer l'attention au titre ni aux marques. */}
+        {defile ? <PauseControl /> : null}
       </Container>
     </section>
+  )
+}
+
+/**
+ * La commande de pause du bandeau, en bout de bande.
+ *
+ * **Un `label` et non un bouton**, parce que l'état vit dans une case à cocher : la pause
+ * fonctionne donc sans JavaScript et dès le premier rendu, là où un bouton à état React
+ * n'aurait servi qu'après l'hydratation - c'est-à-dire pas au moment où le défilement
+ * gêne le plus.
+ *
+ * **Une icône seule, et le libellé pour les lecteurs d'écran.** WCAG 2.2.2 demande un
+ * mécanisme, pas un mécanisme textuel : à cet endroit de la page, deux mots de plus
+ * disputeraient l'attention au titre et aux marques. Le `title` donne l'infobulle au
+ * survol, le texte `sr-only` donne la même phrase à qui écoute la page.
+ *
+ * La cible fait 44 px comme le reste des commandes du site, et le focus visible est celui
+ * de `:focus-visible` global - la case étant masquée, l'anneau se pose sur le libellé par
+ * `has-[:focus-visible]`.
+ */
+function PauseControl() {
+  return (
+    <label
+      htmlFor="hel-logos-pause"
+      className="grid size-11 flex-none cursor-pointer place-items-center rounded-sm text-faint transition-colors duration-100 hover:text-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-info"
+    >
+      <span
+        className="hel-logos-when-running inline-flex items-center"
+        title="Arrêter le défilement des logos"
+      >
+        <Pause aria-hidden="true" className="size-3.5" strokeWidth={2} />
+        <span className="sr-only">Arrêter le défilement des logos</span>
+      </span>
+      <span
+        className="hel-logos-when-paused inline-flex items-center"
+        title="Reprendre le défilement des logos"
+      >
+        <Play aria-hidden="true" className="size-3.5" strokeWidth={2} />
+        <span className="sr-only">Reprendre le défilement des logos</span>
+      </span>
+    </label>
   )
 }
 
@@ -114,36 +154,19 @@ function LogoRow({
 /**
  * Un logo, ramené à un poids visuel comparable.
  *
- * **La hauteur est bornée, jamais la largeur** : fixer la largeur rendrait un carré
- * minuscule et un logotype horizontal énorme.
+ * **La hauteur est bornée, jamais la largeur**, et une hauteur unique ne suffit pas : un
+ * logotype à 28 px de haut couvre 140 px de large, un carré n'en couvre que 28. Les carrés
+ * reçoivent donc plus de hauteur.
  *
- * **Mais une hauteur unique ne suffit pas.** Un logotype à 28 px de haut couvre 140 px de
- * large, un carré n'en couvre que 28 - quatre fois moins de surface pour la même consigne.
- * Les carrés reçoivent donc plus de hauteur, ce qui est la seule façon de les faire peser
- * pareil sans mesurer chaque fichier à la main.
+ * **Désaturés en clair, tels quels en sombre**, et l'asymétrie est voulue : à pleine
+ * couleur sur le plateau clair, huit logos deviennent la zone la plus criarde de la page
+ * et volent le seul geste orange de l'écran. Sur l'encre, ces mêmes couleurs ressortent
+ * sans crier, là où le gris ferait des taches ternes.
  *
- * **Désaturés en thème clair, en couleur en thème sombre.** Le traitement n'est pas
- * symétrique parce que les deux fonds ne posent pas le même problème.
- *
- * Sur le plateau clair, huit logos à pleine couleur - un violet, un bleu, un rose, un
- * turquoise, un vert acide - font de la bande la zone la plus criarde de la page et
- * volent le seul geste orange de l'écran, qui est le point du titre du hero juste
- * au-dessus. Le gris les ramène à ce qu'ils sont : une liste de références. La couleur
- * revient au survol, pour qui s'y intéresse.
- *
- * Sur l'encre, l'inverse : les mêmes couleurs y ressortent sans crier, et le gris y
- * ferait des taches ternes. `dark:grayscale-0` et `dark:opacity-100` rendent donc les
- * fichiers tels quels.
- *
- * **`brightness-0 invert` a été essayé et abandonné** : il écrasait les formes internes
- * des logos qui en dépendent et transformait un fond opaque en carré gris uni. Ne pas y
- * revenir - une marque monochrome fournit ses deux variantes, voir `Client.logo`.
- *
- * **Une marque monochrome fournit ses deux variantes**, et l'on rend les deux images en
- * masquant l'une par le CSS. Le thème du site est porté par une classe sur `<html>` et non
- * par la seule préférence système, puisque le sélecteur permet de le forcer : échanger la
- * source demanderait du JavaScript, et un `<picture media>` se désynchroniserait d'un
- * choix manuel. Même mécanique que les portraits d'équipe.
+ * **Les deux variantes d'une marque monochrome sont rendues, le CSS en masque une.** Le
+ * thème est une classe sur `<html>` et non la seule préférence système, puisque le
+ * sélecteur permet de le forcer : un `<picture media>` se désynchroniserait d'un choix
+ * manuel. Même mécanique que les portraits d'équipe.
  */
 function ClientLogo({ client }: { client: Client }) {
   const taille =

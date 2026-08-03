@@ -573,6 +573,39 @@
   .hel-logos-track > [aria-hidden="true"] {
     display: none;
   }
+
+  /* La commande de pause n'a plus d'objet : rien ne bouge. */
+  .hel-logos-switch {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   Bandeau de logos : la commande de pause
+   ------------------------------------------------------------
+   WCAG 2.2.2 « Pause, Stop, Hide », niveau A : tout mouvement automatique de plus de
+   cinq secondes doit pouvoir être arrêté. Le survol ne suffit pas - il n'existe ni au
+   toucher ni au clavier.
+
+   **En CSS et sans JavaScript**, par une case à cocher visuellement masquée dont le
+   libellé est la commande visible. C'est ce qui permet à la pause de fonctionner sur une
+   page non hydratée, alors qu'un bouton à état React ne serait utilisable qu'après
+   l'hydratation - or c'est précisément la période où le défilement gêne le plus, la page
+   venant d'apparaître.
+
+   Le sélecteur passe par un frère : la case est le premier enfant du conteneur, la piste
+   un descendant d'un frère suivant. C'est la seule contrainte de structure, et elle est
+   rappelée dans `client-marquee.tsx`.
+   ------------------------------------------------------------ */
+
+.hel-logos-switch:checked ~ * .hel-logos-track {
+  animation-play-state: paused;
+}
+
+/* Le libellé suit l'état : une seule des deux moitiés est rendue à la fois. */
+.hel-logos-switch:checked ~ * .hel-logos-when-running,
+.hel-logos-switch:not(:checked) ~ * .hel-logos-when-paused {
+  display: none;
 }
 
 
