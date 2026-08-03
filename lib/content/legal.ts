@@ -29,9 +29,6 @@ export type LegalSection = {
   rows?: { label: string; value: string }[]
 }
 
-/** Le téléphone de l'éditeur, distinct de celui affiché sur la page de contact. */
-const editorPhone = "+33 1 59 35 30 27"
-
 export const legalNotice: LegalSection[] = [
   {
     title: "Éditeur du site",
@@ -56,7 +53,12 @@ export const legalNotice: LegalSection[] = [
         value: "76 rue du Trou Grillon, 91280 Saint-Pierre-du-Perray, France",
       },
       { label: "Adresse électronique", value: site.email },
-      { label: "Téléphone", value: editorPhone },
+      /*
+        `site.phone` et non une constante d'ici : c'est le même numéro que celui de
+        `/contact`, et l'écrire deux fois garantirait qu'ils divergent. Un téléphone qui
+        diffère entre la page de contact et les mentions légales fait douter des deux.
+      */
+      { label: "Téléphone", value: site.phone },
     ],
   },
   {

@@ -13,8 +13,17 @@ export const site = {
     "Studio de conception et de développement de produits numériques : plateformes métiers, SaaS, applications et IA.",
   url: "https://heliara.fr",
   email: "contact@heliara.fr",
-  // À remplacer par le numéro réel.
-  phone: "+33 (0)0 00 00 00 00",
+  /*
+    Le numéro de l'éditeur, celui d'Hexceos SARL, qui édite ce site sous la marque
+    Heliara - c'est aussi celui que portent les mentions légales.
+
+    **Il a remplacé un numéro de remplissage**, `+33 (0)0 00 00 00 00`, qui s'affichait
+    sur `/contact` avec un lien `tel:+330000000000` : la seule information fausse qui
+    restait sur le site, et la plus visible, puisqu'un visiteur qui compose un numéro
+    inexistant en tire une conclusion immédiate sur le sérieux du studio. Un numéro
+    propre à Heliara viendra ici le jour où la structure aura sa ligne.
+  */
+  phone: "+33 1 59 35 30 27",
   responseCommitment: "Réponse d’un associé sous 48 heures.",
 } as const
 
