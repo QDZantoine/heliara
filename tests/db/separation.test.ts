@@ -74,6 +74,14 @@ describeDb("le compte de lecture", () => {
       "set_user_password",
       "create_session",
       "delete_session",
+      // L'équipe et les témoignages : les deux collections dont le déploiement
+      // public n'a que la procédure de lecture publiée.
+      "update_team_member",
+      "publish_team_member",
+      "delete_team_member",
+      "update_testimonial",
+      "publish_testimonial",
+      "delete_testimonial",
     ]) {
       await expectDenied(
         read.void(procedure, [null, null, null, null, null, null]),
@@ -93,6 +101,13 @@ describeDb("le compte de lecture", () => {
       read.rows("list_case_studies", [null]),
       "list_case_studies"
     )
+    /*
+      Même raisonnement pour les deux collections sans paramètre de statut : leurs
+      procédures d'administration rendent les brouillons, donc elles sont fermées, et
+      leurs jumelles `pub_*` n'offrent aucun moyen de demander autre chose que le publié.
+    */
+    await expectDenied(read.rows("list_team_members"), "list_team_members")
+    await expectDenied(read.rows("list_testimonials"), "list_testimonials")
     await closePool()
   })
 

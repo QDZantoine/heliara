@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Layers,
   LogOut,
+  Quote,
   Users,
   UsersRound,
 } from "lucide-react"
@@ -32,6 +33,7 @@ const nav = [
   { href: "/admin/expertises", label: "Expertises", icon: Layers },
   { href: "/admin/references", label: "Références", icon: BadgeCheck },
   { href: "/admin/equipe", label: "Équipe", icon: UsersRound },
+  { href: "/admin/temoignages", label: "Témoignages", icon: Quote },
   { href: "/admin/comptes", label: "Comptes", icon: Users, soon: true },
 ] as const
 

@@ -917,9 +917,11 @@ aurait donné deux définitions à tenir d'accord, ce qu'un schéma partagé ser
 Les marqueurs du genre `[À COMPLÉTER]` sont **importés tels quels et signalés en fin
 d'exécution**. Les effacer ferait disparaître la question qu'ils posent.
 
-Cinq collections sont administrables : **Réalisations**, **Articles**, **Expertises**,
-**Références clientes** et **Équipe**. Les autres contenus vivent encore dans
-`lib/content/*.ts`.
+Six collections sont administrables : **Réalisations**, **Articles**, **Expertises**,
+**Références clientes**, **Équipe** et **Témoignages**. C'est **tout ce qui change à un
+rythme humain** : ce qui reste dans `lib/content/*.ts` - méthode, engagements, principes,
+groupe, textes de sections, pages légales - a été écarté volontairement, pour les raisons
+consignées dans `docs/plan-admin.md`.
 
 ### Références clientes
 
@@ -1028,6 +1030,48 @@ avec deux personnes de longueurs inégales.
 Le titre de section, le manifeste et les convictions **restent dans `lib/content/team.ts`**.
 Les rendre administrables demanderait une table de réglages clé / valeur, forme nouvelle
 qui appellerait ensuite tous les textes fixes du site.
+
+### Les témoignages
+
+La section « Ils en parlent mieux que nous » de l'accueil, à `/admin/temoignages`. Un
+tableau, comme les références et l'équipe.
+
+**Le champ qui compte n'est pas le verbatim, c'est la trace de l'accord.** `consent_at`
+et `consent_note` - la date de la validation écrite, et où cet écrit se trouve - sont
+exigées par `publish_testimonial`. Deux colonnes plutôt qu'une case à cocher : une case
+répond « oui » sans dire quand ni où, ce qui ne vaut rien le jour où un auteur demande le
+retrait de sa citation. Aucune base ne peut vérifier qu'un accord existe ; elle peut
+refuser de publier tant qu'on ne l'a pas déclaré. Ni l'une ni l'autre ne sort de
+`pub_list_testimonials` : ce sont des données internes.
+
+**La section ne se rend pas quand la liste est vide**, et c'est ce qui a permis de la
+rétablir. Elle affichait trois verbatims inventés, attribués à des personnes nommées avec
+leur fonction et leur employeur ; elle a été retirée avec eux. Le composant est celui
+d'origine, repris dans l'historique, et il reprend sa place dans l'arc de l'accueil :
+preuve, **pairs**, demande. Tant qu'aucune citation n'est en ligne, l'accueil est
+identique à ce qu'il était.
+
+**Le repli statique est vide, et c'est voulu.** Une base muette fait disparaître la
+section au lieu d'en servir une version périmée : c'est le seul contenu du site où le
+repli ne doit rien ressusciter.
+
+**Les chevrons sont posés par la vue, jamais stockés**, et avec des **espaces
+insécables**. Les laisser à la saisie ferait dépendre le rendu de ce que la personne a
+recopié depuis sa messagerie - guillemets droits, courbes ou absents selon le passage. Et
+avec des espaces ordinaires, le chevron fermant passait seul à la ligne, mesuré à l'écran
+sur la carte du milieu.
+
+**Modifier un témoignage publié ne le dépublie pas.** Une correction de coquille ne doit
+pas retirer une citation du site. La conséquence - l'accord porte sur le texte tel qu'il
+était validé - est portée par le journal d'audit, qui garde l'ancienne valeur en entier,
+et par le rappel de l'écran. Une dépublication automatique ferait disparaître la section
+sans que personne comprenne pourquoi.
+
+**Aucune clé unique sur le nom**, à la différence des références clientes et de l'équipe :
+la même personne peut témoigner deux fois, sur deux projets, et rien ne permet de dire que
+la seconde est une erreur de saisie.
+
+Pas d'amorçage : il n'y a rien à amorcer, et c'est le but.
 
 ### L'image de tête, et deux défauts qui ne se voyaient pas
 

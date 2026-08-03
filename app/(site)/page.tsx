@@ -5,9 +5,11 @@ import { GuaranteesSection } from "@/components/home/guarantees-section"
 import { KpiBand } from "@/components/home/kpi-band"
 import { MethodPreview } from "@/components/home/method-preview"
 import { ClientMarquee } from "@/components/home/client-marquee"
+import { Testimonials } from "@/components/home/testimonials"
 import { FinalCta } from "@/components/sections/final-cta"
 import { listPublicCases } from "@/lib/db/public-cases"
 import { listPublicClients } from "@/lib/db/public-clients"
+import { listPublicTestimonials } from "@/lib/db/public-testimonials"
 import { pageMetadata } from "@/lib/seo"
 import { site } from "@/lib/site"
 
@@ -45,13 +47,19 @@ export const revalidate = 60
 
 export default async function HomePage() {
   /*
-    Deux lectures indépendantes, en parallèle : ni les mises en avant ni les références
-    clientes ne dépendent l'une de l'autre. Les deux portent leur propre repli sur le
-    contenu statique - un accueil sans preuve serait pire qu'un accueil un peu périmé.
+    Trois lectures indépendantes, en parallèle : aucune ne dépend des autres. Les deux
+    premières portent leur propre repli sur le contenu statique - un accueil sans preuve
+    serait pire qu'un accueil un peu périmé.
+
+    La troisième est différente et il faut le savoir : le repli statique des témoignages
+    est **vide**, ses verbatims inventés ayant été retirés. Une base muette fait donc
+    disparaître la section au lieu d'en servir une version périmée, ce qui est le bon
+    comportement - un accueil plus court vaut mieux qu'une citation qu'on n'a pas.
   */
-  const [cases, clients] = await Promise.all([
+  const [cases, clients, testimonials] = await Promise.all([
     listPublicCases(),
     listPublicClients(),
+    listPublicTestimonials(),
   ])
   const featured = cases.filter((item) => item.featured)
 
@@ -64,6 +72,10 @@ export default async function HomePage() {
       <CaseList cases={featured} />
       <KpiBand />
       <GuaranteesSection />
+      {/* Les pairs, entre la preuve et la demande : la place que l'Architecture UX donne
+          aux témoignages. La section ne se rend pas tant qu'aucune citation n'est en
+          ligne, donc son retour ne change rien à l'accueil aujourd'hui. */}
+      <Testimonials testimonials={testimonials} />
       <FinalCta />
     </>
   )

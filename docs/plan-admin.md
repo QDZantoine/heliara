@@ -26,7 +26,8 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
 | 9 - Interface de saisie                     | **fait** pour les trois collections            |
 | 10 - Références clientes                    | **fait**, logos poussés vers le stockage       |
 | 11 - Équipe                                 | **fait**, les deux pages branchées             |
-| 12 - Le reste des contenus                  | à faire, et une partie ne le sera pas          |
+| 12 - Témoignages                            | **fait**, section d'accueil rétablie           |
+| 13 - Le reste des contenus                  | et il n'en reste presque rien : voir ci-dessous |
 
 ### Étape 11 - l'équipe
 
@@ -75,6 +76,62 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
   portrait tassé en haut. Mesuré à l'écran, invisible à la lecture du code - c'est le
   même piège que dans `Field` et `Fieldset`.
 
+### Étape 12 - les témoignages
+
+**Une collection administrable pour un contenu vide, et c'est la raison même.** Le
+fichier statique porte un tableau vide : ses trois verbatims inventés - attribués à des
+personnes nommées avec leur fonction et leur employeur - ont été retirés, et la section
+d'accueil avec eux. Tant qu'elle vivait dans le dépôt, un client qui accepte d'être cité
+demandait un commit et un déploiement. C'est exactement ce qu'un back-office doit retirer.
+
+**La trace de l'accord est le champ qui compte, pas le verbatim.** `consent_at` et
+`consent_note` - la date de la validation écrite, et où cet écrit se trouve - sont exigées
+par `publish_testimonial`. Deux colonnes plutôt qu'une case à cocher : une case répond
+« oui » sans dire quand ni où, ce qui ne vaut rien le jour où un auteur demande le retrait
+de sa citation. Aucune base ne peut vérifier qu'un accord existe ; elle peut refuser de
+publier tant qu'on ne l'a pas déclaré.
+
+**La section d'accueil est rétablie et conditionnée à son contenu.** `Testimonials` rend
+`null` sur une liste vide, donc l'accueil est inchangé aujourd'hui - il enchaîne les
+garanties sur le CTA final, comme avant. Le composant est celui d'origine, repris tel quel
+dans l'historique plutôt que réinventé, et il reprend sa place dans l'arc que
+l'Architecture UX décrit : preuve, **pairs**, demande.
+
+Ce que cette tranche a appris :
+
+- **Le repli statique est vide, et c'est le bon comportement.** Une base muette fait
+  disparaître la section au lieu d'en servir une version périmée. C'est le seul contenu du
+  site où le repli ne doit rien ressusciter.
+- **Les chevrons ne sont pas stockés.** La vue les pose. Les laisser à la saisie ferait
+  dépendre le rendu de ce que la personne a recopié depuis sa messagerie - guillemets
+  droits, courbes ou absents selon le passage. Et ils portent des **espaces insécables** :
+  avec des espaces ordinaires, le chevron fermant passait seul à la ligne, mesuré à
+  l'écran sur la carte du milieu.
+- **Modifier un témoignage publié ne le dépublie pas.** Une correction de coquille ne doit
+  pas retirer une citation du site. La conséquence - l'accord porte sur le texte validé -
+  est portée par le journal d'audit et par le rappel de l'écran, pas par une dépublication
+  automatique qui ferait disparaître la section sans qu'on comprenne pourquoi.
+- **Aucune clé unique sur le nom**, à la différence des références et de l'équipe : la même
+  personne peut témoigner deux fois, sur deux projets.
+- **Un conteneur rendu vide coûte une rangée de grille.** Le compteur de caractères ne se
+  montre qu'à 70 % de la limite, mais sa boîte ajoutait un blanc sous chaque citation
+  courte. Le seuil est donc répété à l'appelant, ce que le commentaire assume.
+- `tests/db/separation.test.ts` couvre désormais **aussi** l'équipe et les témoignages :
+  leurs procédures d'écriture et les deux `list_*` qui montrent les brouillons sont
+  refusées à `app_read`. Le plan l'affirmait pour l'équipe sans qu'aucun test ne le tienne.
+
+### Ce qu'il reste, et pourquoi c'est presque rien
+
+Le tableau ci-dessus est complet : **tout ce qui change à un rythme humain est
+administrable.** Restent dans `lib/content/*.ts` la méthode, les engagements, les
+principes, le groupe et les textes de sections - décidés non administrables ci-dessous -
+plus deux points ouverts qui ne sont pas du contenu :
+
+- **Les comptes**, entrée de nav marquée « à venir ». La question à trancher d'abord est
+  celle des rôles : un seul, ou éditeur / administrateur ?
+- **Le téléphone public du studio**, encore un numéro de remplissage dans `lib/site.ts`,
+  affiché tel quel sur `/contact`. Décision, pas développement.
+
 **Ce qui ne sera pas rendu administrable, et pourquoi :**
 
 - **Les sections légales.** Une page qui engage juridiquement gagne à rester relue et
@@ -84,8 +141,8 @@ Ce tableau est la première chose à lire pour reprendre le chantier. « Fait »
 - **Méthode, engagements, principes, groupe.** Ils ne changent quasi jamais. Le coût
   d'un écran par contenu ne se rembourse pas.
 
-Restent donc à considérer : **témoignages** - le seul qui bouge encore à un rythme
-humain, quand un client accepte d'être cité.
+Les **témoignages** étaient le dernier qui bougeait à un rythme humain, quand un client
+accepte d'être cité : ils sont faits. Il ne reste donc rien à considérer dans cette liste.
 
 Ce qui a été vérifié contre la base en marche, et n'a pas à l'être deux fois :
 
@@ -290,8 +347,13 @@ Trois constats à ne pas redécouvrir :
 
 ## Étapes suivantes
 
-Sur le même moule, dans cet ordre : équipe, témoignages, clients, chiffres, méthode et
-engagements, groupe et marques, sections légales, puis les textes de pages restants.
+Cette liste annonçait : équipe, témoignages, clients, chiffres, méthode et engagements,
+groupe et marques, sections légales, textes de pages. **Les trois premiers sont faits ; les
+suivants ont été écartés**, chacun pour la raison écrite plus haut - les pages légales
+gagnent à rester relues et versionnées, et le reste ne change quasi jamais.
+
+Ce qui reste est donc hors du contenu : les **comptes** et leurs rôles, et les quatre
+points ci-dessous.
 
 ## Points à confirmer en cours de route
 
