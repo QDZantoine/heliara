@@ -1,0 +1,37 @@
+# L'administration. Joignable par VPN ou liste d'IP seulement, jamais par Internet.
+#
+# Elle lit /etc/heliara/write.env, le seul fichier qui porte DB_WRITE_* et les identifiants
+# du stockage objet. Ces deux fichiers d'environnement ne doivent pas être mutualisés :
+# leur séparation est la troisième barrière du modèle de sécurité.
+
+[Unit]
+Description=Heliara - administration
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=heliara
+Group=heliara
+WorkingDirectory=/srv/heliara
+
+Environment=NODE_ENV=production
+Environment=HELIARA_ROLE=write
+Environment=PORT=3001
+EnvironmentFile=/etc/heliara/write.env
+
+ExecStart=/usr/bin/pnpm start
+Restart=always
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/heliara/.next
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

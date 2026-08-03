@@ -1,0 +1,70 @@
+# Reverse proxy Heliara. Trois noms, trois expositions différentes.
+#
+# Remplacer les domaines et la liste d'IP. Caddy obtient et renouvelle les certificats seul.
+#
+# Les en-têtes de sécurité ne sont PAS posés ici : l'application les émet elle-même
+# (next.config.ts), pour qu'ils survivent à un changement d'hébergement. Ne pas les
+# dédoubler - deux `Content-Security-Policy` se combinent par intersection, et deux
+# `Strict-Transport-Security` sont ignorés par certains navigateurs.
+
+# ------------------------------------------------------------
+# Le site public
+# ------------------------------------------------------------
+heliara.fr, www.heliara.fr {
+	# Une page servie sous deux noms se dédouble dans l'index.
+	@www host www.heliara.fr
+	redir @www https://heliara.fr{uri} permanent
+
+	reverse_proxy 127.0.0.1:3000 {
+		# L'adresse que le journal d'audit enregistre pour chaque écriture.
+		header_up X-Forwarded-For {remote_host}
+	}
+
+	encode zstd gzip
+	log {
+		output file /var/log/caddy/heliara-public.log
+	}
+}
+
+# ------------------------------------------------------------
+# L'administration - jamais ouverte à Internet
+# ------------------------------------------------------------
+# Le 404 que le processus public rend sur /admin est la plus faible des trois barrières :
+# il ne remplace pas ce filtrage.
+admin.heliara.fr {
+	@autorise remote_ip À_REMPLACER/32 10.0.0.0/8
+	handle @autorise {
+		reverse_proxy 127.0.0.1:3001 {
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+	# Pas de 403, qui confirmerait l'existence du service.
+	handle {
+		respond 404
+	}
+
+	log {
+		output file /var/log/caddy/heliara-admin.log
+	}
+}
+
+# ------------------------------------------------------------
+# Les médias - lecture seule, publique
+# ------------------------------------------------------------
+# Cette origine doit être joignable depuis Internet en HTTPS : une réalisation qui porte une
+# image de tête donne cette URL comme carte de partage OpenGraph. Injoignable, elle donne des
+# pages parfaites et aucun aperçu de lien - sans qu'aucun journal ne le signale.
+media.heliara.fr {
+	# Seul le préfixe public/ du seau est exposé. Le reste du seau n'a rien à faire ici.
+	handle /heliara/public/* {
+		reverse_proxy 127.0.0.1:9000
+	}
+	handle {
+		respond 404
+	}
+
+	header Cache-Control "public, max-age=31536000, immutable"
+	log {
+		output file /var/log/caddy/heliara-media.log
+	}
+}

@@ -1,0 +1,37 @@
+# Durcissement de la MariaDB de production, à poser dans
+# /etc/mysql/mariadb.conf.d/99-heliara.cnf puis `systemctl restart mariadb`.
+#
+# La VM porte déjà MariaDB 11.8, qui convient : le projet exige au moins la 11.3 pour
+# `RANDOM_BYTES()`, et il assemble ses identifiants UUID v7 à la main plutôt que d'appeler
+# `UUID_v7()` - ce qui le rend portable sur toute la série 11.x.
+
+[mysqld]
+
+# La base est jointe par les deux processus applicatifs, qui tournent sur la même machine.
+# Elle n'a AUCUNE raison d'être joignable depuis Internet.
+bind-address = 127.0.0.1
+
+# Le jeu de caractères du projet. La collation existe depuis la 11.4.
+character-set-server = utf8mb4
+collation-server = utf8mb4_uca1400_ai_ci
+
+# **Le mode strict n'est pas optionnel.** Les procédures s'appuient dessus : une date
+# illisible doit faire lever la conversion plutôt que produire une valeur approchée
+# silencieuse. C'est le défaut de MariaDB, écrit ici pour qu'il ne soit pas relâché par
+# inadvertance.
+sql_mode = STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+
+# Le fuseau ne sert à rien au projet - toutes les dates sont des UNIX_TIMESTAMP - mais un
+# serveur en UTC évite les surprises sur les colonnes DATE, dont un jour de calendrier se
+# décale d'un jour si l'on n'y prend pas garde.
+default-time-zone = '+00:00'
+
+# 8 Go de RAM sur la VM, partagés avec deux processus Node et le stockage objet. 2 Go pour
+# InnoDB laissent de la marge ; à relever si la base grossit et que la RAM reste libre.
+innodb_buffer_pool_size = 2G
+innodb_flush_log_at_trx_commit = 1
+
+# Le journal des requêtes lentes est le premier outil quand une page devient molle.
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 1
