@@ -109,4 +109,6 @@ alors une adresse e-mail et un téléphone.
 
 ---
 
-© Heliara. Code privé, tous droits réservés.
+Code privé, tous droits réservés. **Heliara est une marque d'Hexceos SARL**, qui édite le
+site et détient le code - voir les mentions légales du site pour l'identification complète
+de l'éditeur.
