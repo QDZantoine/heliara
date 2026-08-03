@@ -14,20 +14,13 @@ Next.js 16 App Router · TypeScript · Tailwind CSS v4 · shadcn/ui (style `base
 
 ## Commandes
 
-```text
-pnpm dev        # Turbopack
-pnpm lint       # eslint (flat config)
-pnpm typecheck  # tsc --noEmit
-pnpm build
-pnpm format     # prettier --write
-pnpm og         # les cartes de partage d'un site en marche, et leur statut
+`package.json` porte les scripts. Trois avertissements qu'il ne porte pas :
 
-pnpm db:up      # MariaDB + MinIO + création du seau
-pnpm db:down    # arrêt, volumes conservés
-pnpm db:reset   # détruit les volumes et rejoue db/init - perte de données
-pnpm db:shell   # console SQL en db_admin, accepte -e "SELECT ..."
-pnpm db:logs
-```
+- **`pnpm db:reset` détruit les volumes** et rejoue `db/init` : perte de données.
+- **`pnpm db:migrate` n'est pas un confort** : tout `DROP PROCEDURE` emporte ses privilèges,
+  et cette commande seule les rejoue dans le bon ordre.
+- **`pnpm db:seed` amorce depuis le dépôt, `pnpm db:export` transporte le réel.** Pour
+  reproduire le site tel qu'il est, c'est le second.
 
 Après chaque phase : `pnpm lint && pnpm typecheck && pnpm build`, puis un commit atomique.
 
@@ -63,27 +56,25 @@ Breakpoints : ceux de Tailwind, plus `2xl` ramené à 1440 px et un `menu` à 90
 
 ### Nommage des couleurs
 
-| Utilitaire                                                         | Rôle                                                                   |
-| ------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| `page` `surface` `raised` `inset` `inverse`                        | surfaces, du fond au plus élevé                                        |
-| `ink` `body` `label` `faint`                                       | texte : titres · courant · méta · **décoratif seulement**              |
-| `line` `line-strong`                                               | filets                                                                 |
-| `brand`                                                            | le geste orange : point du logo, pastilles, filets 2 px, barres, halos |
-| `brand-solid` / `brand-solid-hover` / `brand-on-solid`             | fond de bouton primaire et son texte                                   |
-| `brand-text`                                                       | orange pour du **texte** sur fond clair                                |
-| `info` `info-text` `info-subtle`                                   | bleu : liens, focus, information                                       |
-| `inverse-fg` `inverse-fg-muted` `inverse-brand` `inverse-on-brand` | jeu de couleurs sur fond encre                                         |
+Les utilitaires sont déclarés dans `@theme inline` de `app/globals.css` : les lire là plutôt
+que d'en tenir une seconde liste ici. Deux points que le CSS ne dit pas : `faint` est
+**décoratif seulement** et ne doit jamais porter de texte - utiliser `label` -, et `brand`
+est le geste orange, dont la DA n'autorise **qu'une occurrence par écran**.
 
 **Piège accessibilité :** l'orange de marque `#E9591F` ne donne que 3,5:1 avec du blanc - insuffisant pour un libellé de bouton. Le fond des boutons primaires utilise donc `brand-solid` (`#C9481A`, 4,8:1) et s'**éclaircit** vers `#E9591F` au survol, ce qui reste cohérent avec la DA (la bande CTA encre fait déjà éclaircir l'orange au survol). En dark, `brand-solid` = `#F0824B` avec du texte encre. `faint` (`#8F8F89`) ne doit jamais porter de texte : utiliser `label`.
 
 ## Composants
 
-- `components/visuals/` - illustrations. `HeroLottie` pour le hero, et des maquettes d'interface en CSS pur ailleurs (`case-sketch`, `case-card-sketch`, `case-hero-sketch`, `expertise-sketch`) : toujours `aria-hidden`, aucun asset à charger.
-- `components/primitives/` - `Container` (1240 / 760 px, marges 20/32/40), `Section` (`space` sm/md/lg pour le rythme binaire, `tone` page/surface/inverse), `Eyebrow`, `Halo`, `Reveal`.
-- `components/layout/` - `SiteHeader`, `MobileMenu` (Dialog de Base UI : focus trap, Échap, verrou de scroll fournis), `SiteFooter`, `NavLink` (lit le pathname pour `aria-current`), `ThemeToggle`, `SkipLink`, `Logo`.
-- `components/ui/button.tsx` - `Button` (action, primitive Base UI), `ButtonLink` (navigation, `next/link`), `buttonVariants` pour habiller un `Link` ad hoc. **Échelle de tailles tactile d'abord** : `md` = 44 px et c'est le défaut, `lg` = 48, `xl` = 52, `block` = pleine largeur ; `sm` = 36 px est réservé aux zones denses non tactiles. Variantes : `brand`, `secondary`, `ghost`, `link`, `outline`, `destructive`, plus `inverse` et `inverse-ghost` pour les fonds encre.
-- Le focus visible est global (`:focus-visible` dans `globals.css`) : ne jamais ajouter d'anneau propre à un composant, on en cumulerait deux.
-- `Reveal` bascule l'attribut `data-reveal` directement sur le nœud DOM, sans état React. Ne pas y remettre de `setState` dans un effet : la règle ESLint `react-hooks/set-state-in-effect` est active et le refuse.
+`ls components/` donne la carte : `layout/` (chrome du site), `primitives/`, `sections/`,
+`visuals/`, `ui/`, plus un dossier par page. Ce que la lecture des fichiers n'apprend pas :
+
+- **Le focus visible est global** (`:focus-visible` dans `globals.css`) : ne jamais ajouter
+  d'anneau propre à un composant, on en cumulerait deux.
+- **`Reveal` bascule `data-reveal` sur le nœud DOM, sans état React.** Ne pas y remettre de
+  `setState` dans un effet : `react-hooks/set-state-in-effect` est active et le refuse.
+- **`Button` a une échelle tactile d'abord** : `md` = 44 px et c'est le défaut, `sm` = 36 px
+  est réservé aux zones denses non tactiles.
+- **`LottieScene` est le seul lecteur Lottie**, et `MediaDropzone` le seul dépôt de fichier.
 
 ## La page 404
 
@@ -117,45 +108,25 @@ fréquente serait un écran sans chemin de retour.
 
 ## Transition de page
 
-`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, fait apparaître un voile encre en fondu avec l'illustration Lottie en son centre, navigue écran couvert, puis lève le voile pendant que la page entrante monte se mettre en place.
+`PageCurtain` (dans le layout) intercepte les clics sur les liens internes, fait apparaître
+un voile encre avec l'illustration Lottie en son centre, navigue écran couvert, puis lève le
+voile pendant que la page entrante monte se mettre en place.
 
-**Trois pièces, deux propriétés.** Le voile (`opacity`), l'illustration (`opacity`) et `main` (`opacity` + `transform`) : rien d'autre. Tout est composé par le GPU, il n'y a ni mise en page ni peinture pendant l'animation, donc rien qui puisse saccader. Les versions précédentes - voile à crêtes arrondies, puis traits en lentille balayant en diagonale sur six couches de grande taille - sont restées perçues comme sèches malgré un profil d'images propre à la mesure. **Ne pas y revenir sans une raison forte.**
+**Trois interdictions, chacune payée par une mesure** - le détail est dans le skill
+`animations` :
 
-Le détail qui fait l'élégance : la montée de la page (560 ms) dure plus longtemps que le lever du voile (400 ms), si bien qu'elle finit de se poser à découvert. C'est ce décalage qui donne une impression d'arrivée plutôt que d'apparition. `REVEAL_MS` doit donc couvrir la plus longue des deux animations, sinon elle serait retirée en plein vol.
+- **Ne pas animer la page sortante.** Mesuré à 140 ms de blocage au clic, là où la
+  réactivité compte le plus.
+- **Ne pas revenir aux versions à crêtes arrondies ni aux traits en lentille.** Perçues
+  comme sèches malgré un profil d'images propre.
+- **Pas de `framer-motion`.** Tout porte sur `opacity` et `transform`, déjà composés par le
+  GPU : la bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
 
-**Seule l'arrivée est animée, pas le départ.** Animer aussi la page sortante obligeait le navigateur à promouvoir `main` - plusieurs milliers de pixels de haut - au moment même du clic : 140 ms de blocage mesurés, précisément là où la réactivité compte le plus. Sur l'arrivée, cette promotion tombe pendant le répit, écran couvert, donc invisible. Et on ne perd presque rien : la page sortante est recouverte aussitôt.
+Sans JavaScript et sous `prefers-reduced-motion`, les liens naviguent normalement.
 
-Quatre points la maintiennent propre :
-
-1. **Interception en phase de capture.** `next/link` navigue dans son propre `onClick` et n'abandonne que si l'évènement est déjà préempté ; en phase de bulle, la navigation a déjà eu lieu et le voile ne se déclenche jamais. La propagation n'est pas coupée, pour que les `onClick` portés par les liens continuent de s'exécuter (c'est ainsi que le menu mobile se ferme).
-2. **`data-scroll-behavior="smooth"` sur `<html>`.** Sans lui, Next anime le retour en haut de page à chaque navigation, et ce scroll animé entre en concurrence avec le voile. Next l'annonce en clair dans le log de dev.
-3. **Un répit avant le lever** (`SETTLE_MS`, 140 ms). Le voile ne doit pas se lever au moment où React commite la page entrante : sa mise en page, sa peinture et son hydratation tomberaient sur les premières images de l'animation. Ce répit se passe écran couvert, donc invisible.
-4. **Le contenu entrant n'anime pas par-dessus le voile.** `PageCurtain` pose la phase dans `data-curtain` sur `<html>` - c'est ce qui permet au CSS d'animer `main` sans qu'aucun composant de page ait à le savoir. `Reveal` lit ce drapeau **au moment où il révèle** - pas au montage, sinon les blocs sous la ligne de flottaison perdraient leur apparition au scroll - et pose `data-reveal-now`, qui coupe le fondu. Le geste de page est la transition ; empiler trente fondus de 600 ms par-dessus rend l'arrivée confuse.
-
-Un filet de sécurité rouvre le voile si la navigation n'aboutit pas. Sans JavaScript et sous `prefers-reduced-motion`, les liens naviguent normalement.
-
-Pas de `framer-motion` : tout porte sur `opacity` et `transform`, déjà composés par le GPU. La bibliothèque n'améliorerait pas la fluidité et ajouterait du poids.
-
-### Illustration Lottie
-
-`public/animated-illustrations/loading-animation-white.json` (7,3 ko, quatre calques vectoriels, 1,9 s par cycle, sans expressions) est jouée par `lottie-web`, centrée dans le voile.
-
-- **Chargement à la demande.** `lottie-web/build/player/lottie_light` (~168 ko, la variante sans expressions suffit puisque le fichier n'en contient aucune) est importé dynamiquement dans un `requestIdleCallback`, jamais avant : il ne pèse pas sur le premier rendu, et il n'est pas téléchargé du tout sous `prefers-reduced-motion`. Si le chargement échoue ou n'a pas eu le temps d'aboutir, la transition se joue sans illustration.
-- **La taille se porte sur le conteneur, pas sur le SVG.** `lottie-web` pose `width: 100%` en style inline sur le SVG qu'il crée : une règle CSS visant le SVG est perdue. D'où le `div.hel-curtain-lottie` intermédiaire.
-- **L'illustration est enfant du voile**, donc son opacité se multiplie à la sienne : elle s'efface avec lui au lever, sans règle dédiée. Elle n'a qu'un retard d'apparition, le temps que le voile devienne franchement opaque.
-- **`COVERED_MS` (520 ms) est le réglage qui compte** : c'est lui qui donne à l'illustration le temps d'être lue. Avec `LOTTIE_SPEED` à 1,6 le cycle tombe à 1,2 s, dont on voit environ la moitié. Une transition plus vive se règle en baissant `COVERED_MS`, au prix d'une illustration plus fugace.
-- L'animation est mise en pause au retour à `idle` : rien ne tourne en fond entre deux navigations.
-- La lecture Lottie se fait sur le thread principal, mais les animations du voile et de `main` portent sur des propriétés composées : elles ne peuvent pas être bloquées par elle. Mesuré, cinq passages avec l'illustration active : aucune frame au-delà de 24 ms.
-
-### Mesurer la fluidité, ne pas la juger à l'œil
-
-Des captures ne disent rien du nombre d'images perdues. Installer un enregistreur `requestAnimationFrame` qui note à chaque frame l'horodatage **et** la valeur de `data-phase`, déclencher la navigation, puis agréger les écarts par phase. L'agrégation par phase est ce qui compte : une pause de 150 ms pendant que l'écran est couvert est invisible, la même pause pendant le lever est un défaut. Référence en production : médiane 8,3 ms, maximum 9,4 ms, **aucune frame au-delà de 24 ms** sur `cover` comme sur `reveal`.
-
-Trois pièges de méthode, tous rencontrés :
-
-- **Chrome headless annonce `prefers-reduced-motion: reduce` par défaut**, ce qui désactive toute la transition. Forcer `no-preference` via `Emulation.setEmulatedMedia`, sinon on mesure une page sans animation.
-- **Un `next start` resté en vie sert un build périmé.** Les chunks répondent alors en 500, l'hydratation échoue, la transition ne tourne pas - et la mesure affiche une fluidité parfaite qui ne mesure rien. Vérifier qu'un chunk référencé par le HTML répond en 200, et surveiller `Network.responseReceived` pour les statuts ≥ 400. Le `data-phase` du DOM est rendu côté serveur : sa présence ne prouve pas que le composant client a pris la main.
-- **`element.click()` ne déclenche pas `pointerdown`.** Sans conséquence sur l'implémentation actuelle, mais à savoir si un jour un comportement en dépend : émettre la séquence `pointerdown` → `pointerup` → `click`.
+Avant de toucher à `components/layout/page-curtain.tsx` ou de juger une animation à l'œil,
+charger le skill **`animations`** : il porte les réglages, les quatre points qui maintiennent
+la transition propre et la méthode de mesure image par image.
 
 ## Vérification visuelle
 
@@ -223,172 +194,22 @@ Après avoir ajouté une route dynamique, régénérer les types : `pnpm exec ne
 
 ## Référencement, et référencement génératif
 
-Trois couches, dans l'ordre où elles comptent.
+**Deux règles qui ne se négocient pas, et qui restent ici parce qu'une seule omission ne se
+voit ni au build, ni au typecheck, ni à l'écran :**
 
-**`lib/seo.ts` - `pageMetadata()`.** Titre, description, canonique, OpenGraph et carte
-Twitter en un appel. **Toute page publique doit passer par lui**, y compris les routes
-dynamiques : les deux qui composaient leurs métadonnées à la main - la page d'article et
-la page d'expertise - y perdaient toutes les deux leur **URL canonique**, ce qui ne se
-voit ni au build ni à l'écran. `absoluteTitle` existe pour l'accueil, dont le titre porte
-déjà le nom du studio et qui sortirait « Heliara - … - Heliara » avec le gabarit du
-layout.
+- **Toute page publique passe par `pageMetadata()`** de `lib/seo.ts`, routes dynamiques
+  comprises. Les deux qui composaient leurs métadonnées à la main y perdaient toutes les
+  deux leur URL canonique.
+- **Le balisage reprend mot pour mot ce que la page montre.** Un fil balisé plus profond que
+  celui qu'on affiche, ou une FAQ balisée absente de l'écran, est un écart signalable.
 
-**`lib/schema.ts` - les données structurées.** Un graphe par page, aux `@id` stables, avec
-`organizationNode` et `websiteNode` posés une fois dans le layout du groupe `(site)`. La
-couverture : `Article` sur un article, `Article` sur une réalisation, `Service` plus
-`FAQPage` sur une expertise, `CollectionPage` sur les trois listings, et un
-`BreadcrumbList` partout où un fil est affiché.
+**`lib/origin.ts` est la source unique des URL absolues**, et tout passe par elle :
+canonique, OpenGraph, plan du site, `robots.txt`, `llms.txt`, `@id` du graphe. Ne jamais
+bâtir une URL absolue sur `site.url` en dur, ni deviner l'origine depuis l'en-tête `Host`.
 
-Deux règles qui ne se négocient pas :
-
-- **Le balisage reprend mot pour mot ce que la page montre.** Un fil balisé plus profond
-  que celui qu'on affiche, ou une FAQ balisée absente de l'écran, est un écart
-  signalable - d'où le `faqNode` conditionné à `service.faq.length > 0`.
-- **`FAQPage` est conservé bien que Google en ait retiré le résultat enrichi en 2023.**
-  La raison qui reste : des paires question-réponse explicites sont ce qu'un moteur
-  génératif reprend le plus volontiers, n'ayant rien à reformuler.
-
-**Le titre et la description d'un listing sont hissés en constante `page`**, lue par
-`pageMetadata` **et** par `collectionPageNode`. Les écrire deux fois garantirait qu'ils
-divergent, et un balisage qui contredit la page est un écart, pas un détail.
-
-### Les cartes de partage
-
-`lib/og.tsx` génère la carte, et chaque segment a son `opengraph-image.tsx`.
-
-**Un fichier par segment, et ce n'est pas de la redondance : la convention n'est pas
-héritée.** Mesuré - une carte unique dans `app/` ne couvrait rien du tout, et déplacée
-dans `app/(site)/` elle ne couvrait que l'accueil. Toutes les autres pages sortaient sans
-vignette. Chaque page porte donc la sienne, ce qui lui vaut au passage son propre titre.
-
-**La hiérarchie des images, et elle fonctionne dans cet ordre** : une réalisation ou un
-article qui porte une image de tête la donne en carte de partage, écrite explicitement par
-`pageMetadata`, ce qui **prend le pas** sur la convention de fichier. La carte générée
-n'est donc que le défaut. Une capture de l'interface livrée vaut mieux qu'un titre sur
-fond encre.
-
-**Comment les regarder** - `pnpm og`, parce qu'une URL d'image n'est pas devinable :
-Next suffixe la route d'une empreinte (`/methode/opengraph-image-oupj1r?f76b0f56`) et ne
-sert **que** cette adresse, `/methode/opengraph-image` répondant 404. L'empreinte change à
-chaque modification du fichier. La seule source fiable est la balise `og:image` de la page,
-et c'est ce que le script va lire.
-
-```text
-pnpm og                              # les pages représentatives
-pnpm og --open                       # et les ouvre
-pnpm og /methode /contact            # des chemins précis
-pnpm og --base=https://heliara.fr /  # une autre origine, une fois déployé
-```
-
-**Il demande l'image séparément et rapporte son statut**, ce qui est le plus utile des
-deux : une balise juste qui pointe vers une adresse injoignable donne une page parfaite et
-aucun aperçu. Un `200` est la vérification qui compte. Le rendu tel qu'un réseau le
-compose se voit ensuite dans le *post inspector* de LinkedIn ou le *sharing debugger* de
-Facebook - dont WhatsApp reprend la carte, en la mettant en cache par URL : pour retester
-un lien déjà partagé, il faut lui ajouter un paramètre.
-
-**Les polices sont des TTF versionnés dans `assets/fonts/`**, pas `next/font/google`.
-Satori - le moteur derrière `next/og` - n'accepte ni WOFF2 ni police variable, or c'est
-exactement ce que `next/font` émet. Schibsted Grotesk est sous OFL-1.1, dont le texte est
-joint : redistribuable à condition de garder la licence. Un fichier du dépôt ne dépend
-d'aucun accès réseau au rendu.
-
-**Deux pièges de satori, tous deux invisibles dans le JSX** - il faut regarder l'image :
-
-- **Il aplatit les `span` imbriqués en éléments de flex.** Le point orange écrit à la
-  suite du titre se posait au bout de la **première** ligne, contre le bord droit de la
-  carte. Le titre est donc décomposé en un mot par élément avec `flexWrap`, l'espace porté
-  par une marge : le point redevient un élément de plus, collé au dernier mot.
-- **`display: block` fait échouer le rendu.** La route répond alors une réponse vide, pas
-  une erreur. C'était la correction évidente au défaut précédent ; elle ne marche pas.
-
-### `robots.txt`, et ce qu'il ne dit pas
-
-**`/admin` n'y est pas interdit, volontairement.** `robots.txt` est public : y nommer
-l'administration en annoncerait l'existence, ce qui défait le choix de répondre 404 plutôt
-que 403. Il n'y a rien à interdire, tout `/admin` répondant 404 sur le déploiement public.
-
-**Les explorateurs des moteurs génératifs ne sont pas bloqués, et ne sont pas nommés.**
-`User-agent: *` avec `Allow: /` les couvre tous ; une douzaine de règles `Allow`
-nominatives n'aurait **aucun effet** et donnerait l'illusion d'un réglage à tenir à jour.
-`Google-Extended` et `Applebot-Extended` ne servent qu'à refuser : leur absence est
-l'autorisation. Si l'entraînement devait être refusé - décision commerciale - c'est là que
-les `Disallow` viendraient.
-
-### `/llms.txt`
-
-Généré par `app/llms.txt/route.ts`, lu en base avec le même repli que le reste. Un fichier
-figé annoncerait des services supprimés et tairait les nouveaux, sans que personne le voie
-puisque aucun visiteur ne le lit.
-
-**Ce qu'il porte et qui ne se lit nulle part ailleurs aussi nettement, c'est ce que le
-studio ne fait pas** : la pile par défaut n'est pas une obligation, l'e-commerce passe par
-Shopify plutôt que par un moteur de paiement maison, et **aucun résultat chiffré n'est
-publié**. Ce sont exactement les trois points sur lesquels un modèle inventerait. Un
-fichier destiné à être repris textuellement est le dernier endroit où mettre une
-affirmation qu'on ne peut pas justifier.
-
-`## Optional` reste en anglais : c'est un nom de section que la spécification
-(llmstxt.org) réserve pour marquer le contenu secondaire, le traduire le rendrait muet.
-
-### `SITE_ORIGIN` : l'origine des URL absolues
-
-**Un défaut trouvé en production, et le plus silencieux de tous.** Les métadonnées étaient
-bâties sur `site.url`, `https://heliara.fr` en dur. Sur un déploiement d'essai la page se
-servait très bien, mais annonçait ses URL absolues vers un domaine qui ne répondait pas
-encore : **aucun aperçu de lien ne s'affichait**. WhatsApp allait chercher
-`https://heliara.fr/opengraph-image-…` et ne trouvait rien, alors que la même image
-répondait 200 sur l'hôte réel. Les balises étaient présentes, complètes et bien formées -
-elles pointaient ailleurs. Rien dans le build, le typecheck ou les journaux ne pouvait le
-voir.
-
-Le même défaut rendait faux, sur un tel hôte : le `canonical`, `og:url`, le plan du site,
-l'adresse du sitemap dans `robots.txt`, les liens de `llms.txt` et les `@id` du graphe
-schema.org.
-
-`lib/origin.ts` est désormais la source unique, et **tout** passe par elle.
-
-- **`SITE_ORIGIN` sans préfixe `NEXT_PUBLIC_`, donc lue à l'exécution.** Une même image
-  applicative sert plusieurs origines sans reconstruction.
-- **`NEXT_PUBLIC_SITE_ORIGIN` n'est délibérément pas lue**, alors qu'elle désigne à peu
-  près la même chose. Elle sert les liens de l'administration vers le site public et vaut
-  `http://localhost:3000` en développement : la lire ferait qu'un build de production
-  lancé sur une machine de développement - donc avec un `.env` local présent - produise
-  des canoniques vers `localhost`. Vérifié, c'est bien ce qui arrivait. Deux variables qui
-  se ressemblent ne sont pas une raison de les confondre.
-- **Réserve** : les pages étant prérendues, le HTML des premières requêtes porte la valeur
-  du build, reprise au premier `revalidate` - une minute. Régler la variable au build aussi
-  pour que ce soit juste dès la première requête.
-- **Le repli est le domaine de production, jamais l'en-tête `Host`.** Une origine devinée
-  depuis la requête se laisserait dicter par l'appelant, et un `canonical` choisi par
-  l'appelant ouvre la porte à l'empoisonnement d'index.
-- `ORGANIZATION_ID` et `WEBSITE_ID` sont devenus `organizationId()` et `websiteId()` :
-  une constante de module figerait la valeur au premier import.
-
-Sur une préproduction, penser aussi à `noIndex` ou à un `robots.txt` restrictif au niveau
-de l'hôte : un canonical juste ne suffit pas à éviter qu'elle soit indexée.
-
-**`S3_PUBLIC_URL` porte la seconde moitié du problème, et le symptôme est identique.** Une
-réalisation ou un article qui a une image de tête donne **cette URL** comme carte de
-partage. Un stockage objet joignable seulement depuis le serveur donne donc des pages qui
-s'affichent parfaitement et ne produisent aucun aperçu de lien - la cause est ailleurs que
-dans `SITE_ORIGIN`, et se cherche en récupérant l'`og:image` de la page puis en tentant de
-la charger de l'extérieur. En HTTP sur un site HTTPS, c'est du contenu mixte, que plusieurs
-explorateurs refusent sans le dire.
-
-### `sitemap.ts`
-
-**`lastModified` est omis plutôt qu'inventé.** Les entrées venues du contenu statique et
-les pages fixes n'ont pas de date honnête : leur donner celle du jour annoncerait une
-modification qui n'a pas eu lieu, et un moteur qui recrawle pour rien apprend à ne plus y
-croire. 24 des 32 URL en portent une, les 8 pages fixes non.
-
-**Un objet interpolé dans un gabarit ne lève jamais au typecheck.** `listPublicCaseSlugs`
-et `listPublicServiceSlugs` sont passés de `string[]` à `{ slug, updatedAt }[]` - les
-procédures rendaient `updated_at` depuis toujours, seule la couche d'accès le jetait. Les
-trois appelants ont alors produit `/realisations/[object Object]` : aucune erreur de
-compilation, aucun avertissement. `tests/unit/navigation.test.ts` porte désormais une
-assertion explicite là-dessus.
+Avant de toucher aux métadonnées, aux cartes de partage, au plan du site ou à `llms.txt`,
+charger le skill **`referencement`** : il porte les trois couches, les pièges de satori, le
+fonctionnement de `pnpm og` et ce que `robots.txt` ne dit délibérément pas.
 
 ## Icônes et manifeste
 
@@ -475,115 +296,31 @@ Limite connue et acceptée : les flèches de ce fichier sont en `#090814` et per
 
 ## Illustrations Lottie
 
-**Tous les fichiers vivent dans `public/animated-illustrations/`**, et pas à la racine de
-`public/`. Sept JSON mêlés aux logos, aux icônes et aux illustrations SVG rendaient le
-dossier illisible ; un sous-dossier les nomme pour ce qu'ils sont. Les chemins passés à
-`LottieScene` et à `loadLottieData` sont donc préfixés - un fichier ajouté à la racine ne
-serait pas trouvé.
+**Tous les fichiers vivent dans `public/animated-illustrations/`**, et six illustrations
+passent par **un seul composant**, `components/visuals/lottie-scene.tsx`. Ne pas réécrire un
+lecteur ailleurs, ne pas poser un fichier à la racine de `public/`.
 
+Deux règles qui coûtent cher à redécouvrir :
 
-Six illustrations, **un seul composant** : `components/visuals/lottie-scene.tsx`. Ne pas réécrire un lecteur ailleurs, tout passe par lui.
+- **La taille se porte sur le conteneur, jamais sur le SVG** : `lottie-web` pose
+  `width: 100%` en style inline sur le SVG qu'il crée, une règle CSS le visant serait perdue.
+- **La variante `lottie_light` suffit**, et c'est voulu : les seules expressions de nos
+  fichiers sont des formules de rebond élastique, que la DA interdit de toute façon.
 
-`lib/lottie.ts` centralise le chargement : `loadLottie()` mémorise l'import dynamique de `lottie-web/build/player/lottie_light`, `loadLottieData(url)` mémorise le `fetch` du JSON, `whenIdle()` diffère avec repli sur un délai pour Safari. Un seul chunk, un seul téléchargement par fichier, quel que soit le nombre de scènes.
-
-### `LottieScene`, et sa politique de chargement
-
-`load` est le réglage qui compte :
-
-- **`"visible"` (défaut)** : téléchargement à l'approche du champ, marge de 300 px. Un visiteur qui ne descend pas jusqu'à la section ne télécharge rien. Vérifié : sur `/le-groupe`, les 778 ko de la chaîne de valeur ne partent qu'au défilement.
-- **`"eager"`** : dès le montage. Réservé à ce qui est au-dessus de la ligne de flottaison, c'est-à-dire l'illustration du hero d'accueil, et à rien d'autre.
-- **`"idle"`** : quand le navigateur est inoccupé. Pour ce qui doit être prêt sans être visible, comme le sélecteur de thème du footer.
-
-Les autres garanties sont communes à toutes les scènes, et c'est la raison d'être du composant : boîte dimensionnée avant chargement (aucun décalage de mise en page), lecture arrêtée hors du champ et jamais relancée hors du champ, image représentative figée sous `prefers-reduced-motion` plutôt qu'une absence, et boîte vide sans casse si le fichier n'arrive pas.
-
-`holdMs` pilote la boucle à la main quand il faut tenir une pause entre deux cycles : Lottie ne sait pas le faire.
-
-### Trois règles apprises à l'usage
-
-- **La variante `lottie_light` suffit** : aucun de nos fichiers n'utilise d'expressions utiles, et le build complet pèse près de 140 ko de plus. Le fichier du hero en contient deux, qui sont des formules de rebond élastique - la DA interdit le rebond, ne pas les évaluer est donc un gain.
-- **La taille se porte sur le conteneur, jamais sur le SVG** : `lottie-web` pose `width: 100%` en style inline sur le SVG qu'il crée, une règle CSS visant le SVG serait perdue.
-- **Un fichier sans marqueur demande un relevé image par image.** C'est le cas du sélecteur de thème : les repères ont été trouvés en rendant la séquence, puis consignés en constantes.
-
-### Inventaire
-
-| Fichier                               | Usage                       | Chargement                       | Notes                                         |
-| ------------------------------------- | --------------------------- | -------------------------------- | --------------------------------------------- |
-| `hero-product.json` (47 ko)           | hero d'accueil              | `eager`                          | 0,44× et arrêt de 2,2 s : cycle mesuré à 10 s |
-| `loading-animation-white.json` (7 ko) | transition de page          | à la demande, dans `PageCurtain` | en boucle, 1,6×                               |
-| `theme-toggle.json` (56 ko)           | sélecteur de thème          | `idle`                           | segments relevés à la main, 2,2×              |
-| `chain-former.json` (227 ko)          | chaîne de valeur, Former    | `visible`                        | 0,7×                                          |
-| `chain-concevoir.json` (177 ko)       | chaîne de valeur, Concevoir | `visible`                        | 0,75×                                         |
-| `chain-operer.json` (374 ko)          | chaîne de valeur, Opérer    | `visible`                        | 0,75×                                         |
-| `error-404.json` (94 ko)              | page 404                    | `eager`                          | 0,9× et arrêt de 1,2 s                        |
-
-Les artboards ont des proportions et des marges internes différentes : chaque scène porte une échelle en `transform` pour équilibrer les tailles apparentes, jamais une largeur, afin de ne pas toucher à la mise en page.
-
-### `public/animated-illustrations/hero-product.json` - illustration du hero
-
-48 ko, trois calques nommés `wireframe`, `code`, `hi-fidelity` : les trois fenêtres s'empilent, tiennent la pose, puis recommencent. C'est le propos du studio montré plutôt qu'écrit, et cela reste dans la règle de la DA - illustration abstraite, volumes simples, jamais de photo ni de 3D gadget. Elle a remplacé la fenêtre produit en CSS pur et ses trois cartes flottantes (`hero-stage`, `product-window`, `parallax`, supprimés).
-
-- **Le rythme est ralenti et la boucle marque un temps d'arrêt.** Lecture à 0,44× (3,5 s d'origine portées à 8 s) et `loop: false` plus un délai de 2,2 s en fin de cycle, Lottie ne sachant pas tenir une pause entre deux boucles. La pause perçue est plus longue que ce délai : la fin du fichier compte environ une seconde sans changement visible. Mesuré sur le rendu - cycle de 10 s, dont 6,7 s de mouvement et 3,3 s d'arrêt. C'est cette respiration, plus que la lenteur, qui rend l'illustration calme.
-- **Seul usage chargé sans attendre l'inoccupation** : l'illustration est au-dessus de la ligne de flottaison. Le chargement reste posté après le premier rendu, et le LCP est le titre rendu côté serveur, donc il n'est pas retardé.
-- **La boîte est dimensionnée avant le chargement** : aucun décalage de mise en page à l'arrivée de l'illustration.
-- **La lecture s'arrête hors du champ** (`IntersectionObserver`), et le cycle ne se relance pas hors champ : rien n'occupe le processeur pendant le reste du défilement. Si le cycle s'est terminé pendant l'absence, il repart du début plutôt que de reprendre sur la dernière image.
-- **Sous `prefers-reduced-motion`, l'illustration est figée sur sa dernière image** plutôt qu'absente : on garde le visuel, on retire le mouvement.
-- **La mise à l'échelle est un `transform`**, pas une largeur : l'artboard porte de larges marges internes, et un transform leur fait rendre l'espace sans toucher à la mise en page ni provoquer de débordement horizontal.
-- Les 11 expressions du fichier sont deux formules de **rebond élastique**, que `lottie_light` n'évalue pas. C'est voulu : la DA interdit le rebond. Le rendu a été comparé image par image contre le build complet - identique par ailleurs.
-- Le fichier fonctionne tel quel sur les deux thèmes : sur l'encre, ses panneaux clairs se lisent comme des écrans allumés. Aucune recoloration.
-
-### `public/animated-illustrations/theme-toggle.json` - sélecteur de thème
-
-57 ko, 19 calques, 60 i/s, 481 images. Le fichier enchaîne les deux bascules avec de longues tenues entre elles, **sans marqueur** : les repères ont été relevés en rendant la séquence image par image, et sont consignés en constantes dans `theme-toggle.tsx` (`LIGHT_REST` 40, `DARK_REST` 305, `TO_DARK` [40, 120], `TO_LIGHT` [305, 400]). On ne joue que les transitions, à 2,2× - 2 s d'origine par bascule serait bien trop lent pour une commande - et l'on se repose sur l'image de tenue d'où part la transition suivante. Les tenues étant visuellement identiques, le saut de l'une à l'autre ne se voit pas.
-
-Deux pièges rencontrés, à ne pas réintroduire :
-
-- **Suivre `resolvedTheme`, pas le clic.** Le thème change aussi par le raccourci clavier de `ThemeProvider` et par la préférence système ; un interrupteur piloté par le clic se désynchronise.
-- **Mémoriser le thème précédent même quand le lecteur n'est pas encore chargé.** Sinon la première bascule est prise pour un premier rendu et saute à l'état final au lieu de s'animer. C'est un bug qui ne se voit qu'en capturant la séquence, jamais en lisant le code.
+Avant d'ajouter une scène ou de régler une existante, charger le skill **`animations`** : il
+porte l'inventaire des sept fichiers, la politique de chargement `visible` / `eager` / `idle`
+et les réglages relevés à la main.
 
 ## Architecture du dépôt
 
-```text
-app/                      routes App Router. Un dossier par route, `page.tsx` en
-                          Server Component, `actions.ts` pour les actions serveur.
-  page.tsx                accueil
-  realisations/           liste + [slug]
-  expertises/             liste + [slug]
-  ressources/             liste + [slug] + actions.ts (capture newsletter)
-  methode/ a-propos/ contact/ le-groupe/
-  mentions-legales/ confidentialite/
-  layout.tsx              polices, ThemeProvider, PageCurtain, header, main, footer
-  globals.css             la totalité des tokens et des keyframes
-  sitemap.ts robots.ts
-  favicon.ico icon0.svg icon1.png apple-icon.png manifest.json
+`ls` donne la structure. Les trois seuls emplacements qu'elle ne dit pas :
 
-components/
-  layout/                 chrome du site : header, footer, nav, menu mobile,
-                          sélecteur de thème, voile de transition, logo, skip link
-  primitives/             Container, Section, Eyebrow, Halo, Reveal
-  sections/               blocs réutilisés entre pages : PageHero, CtaBand,
-                          FinalCta, Faq, Breadcrumb, LegalArticle
-  home/ realisations/ ressources/ contact/   blocs propres à une page
-  visuals/                illustrations : LottieScene (le seul lecteur Lottie),
-                          HeroLottie, et les maquettes d'UI en CSS pur
-  ui/                     shadcn : Button, ButtonLink, buttonVariants
-  theme-provider.tsx
-
-lib/
-  content/                contenu éditorial, données statiques typées. Une source
-                          par domaine : cases, expertises, articles, group, team,
-                          method, testimonials, clients, guarantees,
-                          kpis, legal
-  schemas/                schémas zod partagés client / serveur
-  site.ts                 nav, CTA, coordonnées, endossement de groupe
-  lottie.ts utils.ts
-
-db/init/                  monté dans /docker-entrypoint-initdb.d, exécuté une
-                          seule fois sur volume vierge
-docs/plan-admin.md        plan de l'administration des contenus, avancement inclus
-reference/claude-design/  maquettes exportées. Hors du dépôt, lecture seule,
-                          jamais de code repris
-public/                   logos, illustrations SVG, fichiers Lottie
-```
+- `lib/content/*.ts` - contenu éditorial typé, désormais **repli et source d'amorçage**
+  seulement pour les six collections administrables.
+- `db/init/` - monté dans `/docker-entrypoint-initdb.d`, **exécuté une seule fois sur
+  volume vierge**. Un fichier déjà joué ne se rejoue pas tout seul : `pnpm db:migrate`.
+- `reference/claude-design/` - maquettes exportées, **hors du dépôt** (`.gitignore`),
+  lecture seule, aucun code repris.
 
 ## Administration des contenus
 
@@ -593,14 +330,6 @@ articles. Le plan détaillé, son avancement et les décisions actées vivent da
 **`docs/plan-admin.md`** : le consulter avant de reprendre le chantier.
 
 ### Infrastructure locale
-
-```text
-pnpm db:up        # MariaDB + MinIO + création du seau
-pnpm db:down      # arrêt, volumes conservés
-pnpm db:reset     # détruit les volumes et rejoue db/init - perte de données
-pnpm db:shell     # console SQL en db_admin
-pnpm db:logs
-```
 
 - MariaDB est publiée sur **3307**, pas 3306 : le port par défaut est souvent
   pris par une base locale. MinIO expose l'API sur 9000 et sa console sur 9001.
@@ -615,17 +344,18 @@ pnpm db:logs
   le reste demeure privé. Conséquence assumée : les images d'un brouillon sont
   accessibles à qui connaît leur URL, qui n'est ni listée ni devinable.
 
-### Trois comptes base, un seul pour l'application
+### Quatre comptes base, deux pour l'application
 
 | Compte       | Privilèges                            | Usage                             |
 | ------------ | ------------------------------------- | --------------------------------- |
 | `db_admin`   | `ALL`                                 | maintenance. Jamais l'application |
-| `db_migrate` | DDL, routines, DML                    | migrations et seed, déploiement   |
-| `app_exec`   | **`EXECUTE` seul**, aucun accès table | l'application, et rien d'autre    |
+| `db_migrate` | DDL, routines, DML                    | migrations, amorçage, déploiement  |
+| `app_read`   | `EXECUTE` sur les seules `pub_*`      | le site public                    |
+| `app_write`  | `EXECUTE` sur toutes les procédures   | l'administration                  |
 
-Vérifié sur la base en marche : `app_exec` se voit refuser `SELECT` comme
-`CREATE` sur toute table. Une injection SQL réussie chez lui ne donne accès qu'à
-la surface des procédures existantes.
+**Aucun des deux comptes applicatifs n'a d'accès table**, en lecture comme en écriture :
+vérifié sur la base en marche, et verrouillé par `tests/db/separation.test.ts`. Une injection
+SQL réussie chez eux ne donne accès qu'à la surface des procédures existantes.
 
 ### Conventions SQL non négociables
 
@@ -880,574 +610,34 @@ Fusionner base et statique à la lecture a été écarté : cela installerait un
 ambiguïté permanente, puisqu'il deviendrait impossible de supprimer une fiche
 statique depuis l'administration.
 
-## Administration
+## Administration : l'interface
 
-`app/admin/layout.tsx` ne porte **pas** de garde : il couvre aussi `/admin/login`,
-qui doit rester atteignable sans session. La garde vit dans
-`app/admin/(protected)/layout.tsx`, ce qui évite la boucle de redirection qu'un
-contrôle posé plus haut provoquerait.
+`app/admin/layout.tsx` ne porte **pas** de garde : il couvre aussi `/admin/login`, qui doit
+rester atteignable sans session. La garde vit dans `app/admin/(protected)/layout.tsx`.
 
-**L'autorisation est refaite dans chaque action serveur.** Une action serveur est
-une route publique : le layout protège le rendu des pages, pas les actions. Toutes
-commencent par `requireSession()`, sans exception, et rejouent leur schéma zod.
+**Quatre règles qui ne se négocient pas**, parce qu'une seule omission ouvre un trou que
+rien ne signale :
 
-```text
-pnpm admin:create   # premier compte, mot de passe saisi sans écho
-pnpm db:migrate     # rejoue schéma, procédures ET privilèges
-pnpm db:seed        # amorce la base depuis le contenu statique
-pnpm db:export [d]  # exporte le contenu réel : SQL + objets du stockage + manifeste
-pnpm db:import <d>  # rejoue un export ailleurs, et vérifie ses comptes
-pnpm db:resync-expertises <slug>...   # repousse en base la fiche d'un service
-pnpm db:import-cases <fichier.json>   # importe des réalisations rédigées hors de l'outil
-```
-
-**`pnpm db:seed` amorce depuis le dépôt, `pnpm db:export` transporte le réel. Ne pas les
-confondre : c'est la différence entre une production plausible et une production fidèle.**
-Le premier ne connaît que `lib/content/*.ts` et `public/` ; tout ce qui est passé par
-l'administration - images de tête déposées, textes corrigés, témoignages - lui est
-invisible. Mesuré : cinq des neuf réalisations ont une couverture qui n'existe pas dans le
-dépôt, et `db:seed` les recréerait sans image. Le repli sur le croquis fait que rien ne
-casse et que personne ne le voit.
-
-Deux pièges de cet outillage, tous deux trouvés en le construisant :
-
-- **`--hex-blob` est la condition pour que le dump soit juste.** Les identifiants sont des
-  `BINARY(16)` : sans elle, le fichier mélange texte et octets bruts, et le relire en UTF-8
-  remplace chaque octet invalide par U+FFFD. Des clés primaires distinctes deviennent alors
-  identiques, `REPLACE INTO` écrase les lignes l'une après l'autre, et **neuf réalisations
-  arrivent à deux** - sans qu'aucune erreur ne soit levée.
-- **Un import partiel ne lève rien.** Les contraintes sont satisfaites, les instructions
-  passent, il manque simplement des lignes. D'où le manifeste de comptes par table et sa
-  vérification à l'import, qui est ce qui a rendu le défaut ci-dessus visible.
-
-Le schéma et les procédures ne sont pas exportés - ils viennent du dépôt, par
-`pnpm db:migrate`, joué avant l'import. Ni les comptes ni les sessions non plus, et les
-colonnes d'auteur sont remises à `NULL` : un hash de développement n'a rien à faire en
-production.
-
-**`pnpm db:import-cases` existe pour la reprise de contenu, pas pour l'usage courant.**
-Des fiches rédigées ailleurs - le format est spécifié dans `docs/brief-realisation.md` -
-entrent en une commande plutôt qu'en une heure de recopie, et une heure de recopie fait
-toujours une faute de frappe quelque part. Il importe **en brouillon uniquement**,
-est idempotent par slug, et **rejoue le schéma zod de l'administration** : `caseFields`
-et ses collections, la même validation que l'écran, y compris la liste fermée de balises
-HTML. Un import plus permissif que l'éditeur créerait des fiches impossibles à modifier
-ensuite, et le défaut ne se verrait qu'au premier enregistrement.
-
-C'est ce partage qui a fait éclater `caseSchema` en deux : zod 4 refuse `.omit()` sur un
-schéma affiné, et l'import doit retirer quatre réglages d'affichage pour leur donner une
-valeur par défaut. D'où `caseFields` pour la forme et `withTestimonialRule()` pour la
-règle du tout ou rien, appliquée des deux côtés. Redéclarer la forme dans le script
-aurait donné deux définitions à tenir d'accord, ce qu'un schéma partagé sert à éviter.
-
-Les marqueurs du genre `[À COMPLÉTER]` sont **importés tels quels et signalés en fin
-d'exécution**. Les effacer ferait disparaître la question qu'ils posent.
+- **L'autorisation est refaite dans chaque action serveur.** Une action serveur est une
+  route publique : le layout protège le rendu des pages, pas les actions. Toutes commencent
+  par `requireSession()`, sans exception, et rejouent leur schéma zod.
+- **Valider le texte riche, jamais le nettoyer.** Un nettoyeur transforme ce qu'il ne
+  comprend pas et laisse passer ce qu'il a mal compris. Le pire cas doit être un refus.
+- **Le fichier ne traverse jamais l'application.** Un dépôt d'image passe par une URL
+  présignée : l'action signe, le navigateur envoie l'octet au stockage, une seconde action
+  confirme. Seule exception, `seedMedia()` de l'amorçage.
+- **`pnpm db:migrate` après tout `DROP PROCEDURE`.** Les privilèges vivent dans
+  `mysql.procs_priv` et rien ne les restaure : rejouer un fichier de procédures à la main
+  révoque silencieusement l'accès des comptes applicatifs.
 
 Six collections sont administrables : **Réalisations**, **Articles**, **Expertises**,
-**Références clientes**, **Équipe** et **Témoignages**. C'est **tout ce qui change à un
-rythme humain** : ce qui reste dans `lib/content/*.ts` - méthode, engagements, principes,
-groupe, textes de sections, pages légales - a été écarté volontairement, pour les raisons
-consignées dans `docs/plan-admin.md`.
-
-### Références clientes
-
-Le bandeau « Ils nous font confiance » de l'accueil, à `/admin/references`.
-
-**Un tableau et non l'éditeur à étapes**, à la différence des trois autres collections. Une
-référence a quatre champs et pas de page à elle : le rail d'étapes, le panneau de
-publication et les aperçus de placement seraient une coque autour de rien. On voit la bande
-entière dans son ordre, ce qui est exactement ce qu'on vient vérifier.
-
-**Le logo est montré à la hauteur qu'il aura dans la bande**, sur la même surface. C'est la
-seule façon de voir qu'un fichier est trop chargé, mal détouré ou déséquilibré par rapport à
-ses voisins ; un aperçu confortable mentirait sur le résultat.
-
-**« En ligne » veut dire « l'autorisation est obtenue ».** C'est le seul écran où publier
-engage autre chose que la qualité du contenu : un logo est une marque, et l'afficher sous
-« ils nous font confiance » est une affirmation commerciale qui se couvre par un accord
-écrit. Aucune base ne peut le vérifier, d'où le rappel à côté de l'interrupteur et le sens
-particulier que prend `status` dans cette table.
-
-**`seedMedia()` est la seule exception à « le fichier ne traverse jamais l'application ».**
-L'amorçage a dû pousser les huit logos du dépôt vers le stockage objet, et il n'y a pas de
-navigateur pour recevoir une URL présignée. La surface est nulle - les fichiers viennent du
-dépôt - mais `putObject()` ne doit pas servir dans une action serveur : faire passer un
-téléversement d'usager par l'application, c'est reprendre à sa charge la taille, le type,
-le temps de transfert et la mémoire, tout ce que la signature déporte sur le stockage.
-
-**Les dimensions des logos restent nulles en base**, et c'est un choix. La bande borne la
-hauteur de chaque image et laisse la largeur suivre, `shape` décidant de cette hauteur :
-aucun rendu ne consomme les dimensions, les lire demanderait une bibliothèque de décodage,
-et un SVG n'en a pas. C'est l'inverse d'une couverture de réalisation, dont la boîte prend
-le rapport du fichier.
-
-**Corriger un contenu administrable dans `lib/content/*.ts` ne change rien au site.**
-Réalisations, articles et expertises sont lus en base ; ces fichiers ne sont plus que le
-repli et la source d'amorçage. Et `pnpm db:seed` ne rattrapera pas la correction : il est
-idempotent et laisse intact tout élément dont le slug existe déjà - ce qui est exactement
-ce qu'on veut de lui, rejouer l'amorçage ne doit pas défaire une saisie.
-
-D'où `pnpm db:resync-expertises <slug>...`, pour une correction de fond relue dans le
-dépôt qu'on ne veut ni ressaisir à la main ni réamorcer en bloc. Il remplace la fiche,
-les livrables, les choix techniques et les objections des **seuls services nommés**, par
-les procédures stockées, sous le compte d'amorçage - donc traçable dans l'audit. Aucun
-slug par défaut, volontairement : lancé sans argument, il n'écrase rien. Il n'existe pas
-d'équivalent pour les réalisations ni les articles : leur correction passe par
-l'administration.
-
-**`pnpm db:migrate` n'est pas un confort.** `DROP PROCEDURE` emporte avec lui les
-privilèges accordés sur cette procédure - ils vivent dans `mysql.procs_priv` et
-rien ne les restaure. Rejouer un fichier de procédures à la main révoque donc
-silencieusement l'accès des comptes applicatifs, et l'application répond « execute
-command denied » sur une procédure qui existe pourtant. Le symptôme est déroutant,
-la cause invisible.
-
-**`SQL SECURITY DEFINER` sur toutes les procédures**, et c'est ce qui rend le
-modèle possible : en `INVOKER`, la procédure s'exécute avec les droits de
-l'appelant, donc un compte sans droit de table échoue à l'intérieur même de la
-procédure. Aucune clause `DEFINER = ...` explicite, pour ne pas exiger `SET USER`.
-
-### L'équipe
-
-Les personnes de `/a-propos`, dont les associés que `/contact` présente, à `/admin/equipe`.
-Un tableau comme les références, pas l'éditeur à étapes.
-
-**Une seule table pour deux listes.** Le contenu statique en portait deux, `team` étant
-`[...partners, une personne de plus]`. Les dédoubler en base rendrait possible qu'une
-personne figure dans l'une et pas l'autre, ou deux fois avec des textes divergents.
-`is_partner` distingue les usages sans dupliquer la personne, et les deux pages lisent le
-**même appel** - `listPublicTeam()` rend `{ all, partners }`.
-
-**Ce drapeau engage.** `/contact` promet une réponse d'un associé sous 48 heures et
-affiche cette liste : le lever pour quelqu'un qui ne répond pas aux messages rendrait la
-promesse fausse. Ce n'est pas un rang honorifique, d'où le rappel à côté de
-l'interrupteur.
-
-**La teinte de la pastille est déduite de la position**, et il n'existe **aucune colonne
-`accent`** : 1re personne orange, 2e bleue, 3e et suivantes encre. La DA n'autorise qu'un
-geste orange par écran, donc sur une grille de cartes une seule répartition est correcte,
-et un champ dont une seule valeur est juste n'est pas un réglage. `accentOfIndex` vit dans
-`lib/content/team.ts` - c'est une règle de la DA, pas une règle de lecture - et trois
-appelants la partagent. Conséquence assumée : **réordonner change les couleurs**, ce que
-l'écran écrit en tête de liste et à côté de chaque ligne.
-
-**La publication exige les deux portraits**, en plus des initiales et du parcours. Aucun
-fichier ne tient sur les deux thèmes : un détourage sur blanc posé sur une carte encre
-devient un pavé lumineux. Publier sans le portrait sombre laisse un trou qu'on ne voit
-qu'en basculant le thème, c'est-à-dire jamais avant un visiteur - c'est la seule exigence
-de ce genre du projet.
-
-**D'où les deux aperçus côte à côte dans l'écran**, chacun sur la surface figée en dur du
-thème auquel il est destiné (`#fafaf9`, `#101012`), au cadrage exact de la carte. `bg-page`
-suivrait le thème de l'administration : en sombre, l'aperçu du portrait clair se poserait
-sur l'encre, montrant l'inverse de ce qu'on vient vérifier. Le libellé « clair » / « sombre »
-est **hors** du cadre, sur la surface de l'écran : à l'intérieur, il aurait fallu deux
-couleurs figées elles aussi, dont l'une devenait illisible.
-
-**Aucun champ de texte alternatif**, et c'est le bon partage : la carte rend ces images en
-`alt=""`, le nom de la personne étant écrit juste dessous. Une alternative le répéterait à
-voix haute.
-
-**Les spécialités se répartissent par `member_id`**, jamais en suivant l'ordre des
-personnes. Elles arrivent dans un second jeu de résultats, et l'ordre seul ne dit pas où
-finit la liste de l'une. Le défaut a été rencontré ; `tests/db/team.test.ts` le verrouille
-avec deux personnes de longueurs inégales.
-
-Le titre de section, le manifeste et les convictions **restent dans `lib/content/team.ts`**.
-Les rendre administrables demanderait une table de réglages clé / valeur, forme nouvelle
-qui appellerait ensuite tous les textes fixes du site.
-
-### Les témoignages
-
-La section « Ils en parlent mieux que nous » de l'accueil, à `/admin/temoignages`. Un
-tableau, comme les références et l'équipe.
-
-**Le champ qui compte n'est pas le verbatim, c'est la trace de l'accord.** `consent_at`
-et `consent_note` - la date de la validation écrite, et où cet écrit se trouve - sont
-exigées par `publish_testimonial`. Deux colonnes plutôt qu'une case à cocher : une case
-répond « oui » sans dire quand ni où, ce qui ne vaut rien le jour où un auteur demande le
-retrait de sa citation. Aucune base ne peut vérifier qu'un accord existe ; elle peut
-refuser de publier tant qu'on ne l'a pas déclaré. Ni l'une ni l'autre ne sort de
-`pub_list_testimonials` : ce sont des données internes.
-
-**La section ne se rend pas quand la liste est vide**, et c'est ce qui a permis de la
-rétablir. Elle affichait trois verbatims inventés, attribués à des personnes nommées avec
-leur fonction et leur employeur ; elle a été retirée avec eux. Le composant est celui
-d'origine, repris dans l'historique, et il reprend sa place dans l'arc de l'accueil :
-preuve, **pairs**, demande. Tant qu'aucune citation n'est en ligne, l'accueil est
-identique à ce qu'il était.
-
-**Le repli statique est vide, et c'est voulu.** Une base muette fait disparaître la
-section au lieu d'en servir une version périmée : c'est le seul contenu du site où le
-repli ne doit rien ressusciter.
-
-**Les chevrons sont posés par la vue, jamais stockés**, et avec des **espaces
-insécables**. Les laisser à la saisie ferait dépendre le rendu de ce que la personne a
-recopié depuis sa messagerie - guillemets droits, courbes ou absents selon le passage. Et
-avec des espaces ordinaires, le chevron fermant passait seul à la ligne, mesuré à l'écran
-sur la carte du milieu.
-
-**Modifier un témoignage publié ne le dépublie pas.** Une correction de coquille ne doit
-pas retirer une citation du site. La conséquence - l'accord porte sur le texte tel qu'il
-était validé - est portée par le journal d'audit, qui garde l'ancienne valeur en entier,
-et par le rappel de l'écran. Une dépublication automatique ferait disparaître la section
-sans que personne comprenne pourquoi.
-
-**Aucune clé unique sur le nom**, à la différence des références clientes et de l'équipe :
-la même personne peut témoigner deux fois, sur deux projets, et rien ne permet de dire que
-la seconde est une erreur de saisie.
-
-Pas d'amorçage : il n'y a rien à amorcer, et c'est le but.
-
-### L'image de tête, et deux défauts qui ne se voyaient pas
-
-`CaseCover` rend la couverture d'une réalisation aux **quatre** endroits qui l'affichent :
-hero de la fiche, carte du hub, carte de l'accueil, et l'aperçu de brouillon - qui
-construit sa vue à la main et l'aurait donc oubliée. **Sans média, il rend le croquis
-d'origine** (`CaseHeroSketch`, `CaseCardSketch`, `CaseSketch`) : une fiche sans image ne
-change pas d'un pixel.
-
-L'image remplace **le contenu de la fenêtre, pas la fenêtre** : le halo, le cadre
-flottant, son ombre et son débord restent. C'est la profondeur par les couches, et c'est
-ce qui fait qu'une capture de site se lit comme un écran allumé plutôt qu'une photo
-collée. Pas de halo sur le hero, sa section en portant déjà un.
-
-Deux défauts se cumulaient, et **aucun ne se voyait au build, au typecheck ou dans les
-journaux** :
-
-1. **`heroMedia` n'était consommé nulle part.** La chaîne était complète - MinIO, la
-   ligne `media`, `hero_media_id`, les colonnes des procédures `pub_*`, `heroMedia`
-   construit par `lib/db/public-cases.ts` - et les trois vues dessinaient toujours le
-   croquis. Déposer une image n'avait aucun effet. `CaseSketch` portait depuis l'origine
-   le commentaire « à remplacer par les captures réelles ». Le même défaut valait pour le
-   texte alternatif : `set_media_alt`, son privilège et l'action `setMediaAlt` existaient,
-   sans rien pour les appeler. **Une donnée qui arrive jusqu'au composant et qu'il ignore
-   ne produit aucun signal** : c'est le mode de panne à suspecter quand une écriture
-   réussit et ne se voit pas.
-2. **`next/image` refusait le fichier, deux fois.** `remotePatterns` portait le `pathname`
-   `/heliara`, comparé de façon exacte, alors qu'une image est à `/heliara/public/…` :
-   d'où le `/**`. Et **Next 16 refuse par défaut toute image distante dont l'hôte résout
-   sur une IP privée** (`dangerouslyAllowLocalIP: false`), ce qui vise MinIO en
-   développement. Le piège est que ce refus rend **le même 400 `"url" parameter is not
-   allowed` qu'un motif absent** : on cherche dans `remotePatterns` un défaut qui n'y est
-   pas, et la cause ne se lit que dans le journal du serveur, « resolved to private ip ».
-   Le drapeau est ouvert **selon l'hôte et non selon `NODE_ENV`**, pour qu'un stockage
-   réellement public reste protégé même sur un build de production lancé en local, et le
-   risque reste borné par `remotePatterns`.
-
-**Un changement de `next.config.ts` demande un vrai redémarrage.** Le serveur de dev
-recharge le rendu mais garde la configuration de son optimiseur d'images : l'un passe,
-l'autre continue de répondre 400. Ne pas conclure que le correctif est faux.
-
-**Le rapport de la boîte vient du fichier, pas d'une constante.** `media.width` et
-`media.height` sont lus à l'envoi et stockés : la couverture de lecture d'un article et
-chaque image de galerie prennent donc le rapport réel du fichier, ce qui les affiche
-entières **et** garde la boîte dimensionnée avant le chargement - donc aucun décalage de
-mise en page. Un rapport imposé rognait les côtés d'une capture de site, c'est-à-dire
-coupait le logo du client : exactement ce qu'une couverture doit montrer. Les deux seuls
-endroits qui gardent un `object-cover` rognant sont ceux dont la hauteur est imposée par
-autre chose - la fenêtre de `CaseCover` et la moitié de carte du hub des ressources - et
-ils s'ancrent alors en haut à gauche, une vignette devant montrer le début du contenu.
-
-**Il n'y a pas de champ de texte alternatif pour la galerie**, seulement la légende, et
-c'est le bon partage : la légende est visible donc lue par tout le monde, et une
-alternative qui la répéterait ferait entendre deux fois la même phrase.
-
-`ArticleCardSketch` a été sorti de `app/(site)/ressources/page.tsx` pour devenir le repli
-de la carte « à la une ». Il reste un **repli** et non une illustration : il dessine la
-grille de décision d'un article précis, et s'affichait sous n'importe quel article mis en
-avant.
-
-**Ne pas lancer un troisième serveur de dev pour vérifier.** `NEXT_DIST_DIR` permet deux
-processus, pas trois : un troisième corrompt le cache Turbopack, et le symptôme est un
-« Parsing CSS source code failed » sur `app/globals.css` avec des octets abîmés dans le
-CSS **généré**. La source est intacte, le correctif est `rm -rf .next-read .next-write`
-puis un redémarrage. Vérifier une page se fait par CDP sur les serveurs déjà en marche.
-
-`curl` ne suffit pas pour vérifier un rendu : la réponse contient surtout la charge RSC,
-et une section absente du HTML récupéré n'est pas une section absente de la page.
-
-La **galerie** d'une réalisation se rend par `CaseGallery`, **après le récit et avant les
-résultats** : on lit l'histoire, on voit ce qui a été livré, puis on mesure. Avant le
-récit ce seraient des captures sans contexte ; après les résultats, elle arriverait la
-démonstration déjà faite.
-
-L'**image de tête d'un article** se rend par `ArticleCover`, sous le bloc auteur et avant
-le corps - la placer au-dessus du titre repousserait le `h1` sous le pli, ce qui coûterait
-le LCP pour un gain d'atmosphère. Deux replis différents et c'est voulu : la carte « à la
-une » retombe sur `ArticleCardSketch`, sa moitié visuelle ne pouvant pas être vide sans
-déséquilibrer la grille ; la vue de lecture ne rend **rien**, un article sans image étant
-un article et non un article incomplet.
-
-Traitement plus sobre que celui des réalisations, volontairement : `CaseCover` garde la
-fenêtre flottante de son croquis parce qu'il montre une interface livrée, alors qu'une
-image d'article peut être un schéma comme une photo - un cadre de fenêtre mentirait sur
-la nature du contenu.
-
-**La page article était la seule route dynamique à composer ses métadonnées à la main**,
-et elle y perdait l'URL canonique et l'image de partage. Elle passe désormais par
-`pageMetadata`, avec l'image de tête en carte de partage quand elle existe - même règle
-que les réalisations. Un article se partage plus que toute autre page du site, ce qui en
-faisait l'endroit le plus coûteux pour cet oubli.
-
-Limite connue : les **cartes du flux** de `/ressources` restent sans vignette. Ce sont des
-cartes de texte compactes en trois colonnes ; y ajouter une image ne se ferait bien qu'en
-en mettant sur toutes, et une grille où certaines en ont et d'autres pas se lit comme un
-défaut. À rouvrir comme une décision de mise en page, pas comme un branchement.
-
-### Aperçu de brouillon
-
-`/admin/realisations/[slug]/apercu`, servi par l'administration, **et il ne peut
-pas en être autrement** : le déploiement public utilise `app_read`, à qui la base
-refuse de lire un brouillon. Un aperçu servi par le site public exigerait de percer
-cette séparation, ce qui annulerait la garantie qu'elle apporte. Il est donc
-derrière la session et le VPN : aucun lien signé à faire expirer.
-
-`CaseStudyView` est partagé par la page publique et l'aperçu : **le même rendu, les
-mêmes composants, le même CSS.** Il ne peut pas diverger, il n'y a rien à tenir en
-double.
-
-### Interface
-
-Les trois éditeurs - réalisations, articles, expertises - partagent **un seul moule**.
-Ajouter une quatrième collection, c'est décrire ses étapes, pas réécrire un écran.
-
-| Pièce                    | Rôle                                                                     |
-| ------------------------ | ------------------------------------------------------------------------ |
-| `editor-state.ts`        | l'état de saisie, hissé au-dessus des panneaux, et ce qu'une étape enregistre |
-| `step-editor.tsx`        | le rail d'étapes et la barre d'enregistrement                            |
-| `publish-panel.tsx`      | ce qu'il manque pour publier, **avant** le clic                          |
-| `placement.tsx`          | le bloc du site dessiné à côté du champ qui le remplit                   |
-| `form-kit.tsx`           | champ, groupe, sélecteur, interrupteur, compteur, liste vide, erreur de ligne |
-| `editor-header.tsx`      | fil d'Ariane, statut, aperçu, lien public, suppression en deux temps      |
-| `create-dialog.tsx`      | la coque des créations, et le champ d'identifiant d'URL avec son aperçu   |
-
-**Des étapes, mais pas un assistant.** Un assistant impose l'ordre et verrouille ce qui
-n'a pas été validé : il faut ça pour une première saisie, c'est insupportable ensuite
-quand on revient corriger une phrase. Les étapes sont numérotées, portent leur état et
-proposent « Enregistrer et continuer », mais toutes restent atteignables d'un clic.
-
-**Hisser l'état hors des panneaux est ce qui autorise le découpage.** Tant qu'un onglet
-était un formulaire, le découpage suivait les procédures d'écriture :
-`update_case_study` prend la fiche entière, donc ses trente champs devaient tenir dans
-un seul écran. L'état vivant dans l'éditeur, une étape peut n'en montrer que quatre et
-enregistrer le tout. Une étape enregistre **tout ce qu'elle touche**, ce qui peut viser
-plusieurs procédures en séquence (`commitAll`) - un bouton par procédure était fidèle à
-la plomberie et incompréhensible à l'usage.
-
-**Les aperçus de placement suivent la frappe, l'état des étapes non.** Le premier doit
-répondre à la saisie ; le second est calculé sur les données **enregistrées**, parce que
-la publication interroge la base et qu'une pastille qui verdirait à la frappe
-promettrait ce que la base refuserait encore. Le panneau de publication duplique
-volontairement les exigences des procédures `publish_*` : la base reste l'autorité, ce
-miroir n'achète que le confort de savoir avant d'essayer.
-
-**`data-active`, pas `data-selected`.** C'est l'attribut que pose cette version de Base
-UI. Les quatre barres d'onglets de l'administration visaient `data-selected` : elles
-n'avaient donc **aucune** marque d'onglet actif, et l'on ne repérait la position qu'à
-l'anneau de focus. Un sélecteur Tailwind qui ne correspond à rien ne produit ni erreur
-ni avertissement - ce défaut ne se voit qu'en relevant les attributs dans le DOM.
-
-- **Glisser-déposer d'images** : `MediaDropzone`. Le fichier ne traverse pas
-  l'application - l'action signe une URL, le navigateur envoie l'octet directement
-  à MinIO, une seconde action confirme. `XMLHttpRequest` et non `fetch`, seule API
-  qui rapporte la progression d'un envoi. Le média n'est `ready` qu'après
-  confirmation : un envoi interrompu ne laisse rien d'affichable.
-- **Le texte alternatif de l'image de tête** se saisit dans l'étape Visuels, et
-  l'étape écrit **deux procédures en séquence** : `update_case_study` rattache l'image,
-  `set_media_alt` la décrit - l'alternative appartient au média, pas à la fiche.
-  L'écriture est conditionnée à un changement réel, sans quoi chaque enregistrement de
-  n'importe quelle étape déposerait une ligne `media.set_alt` dans l'audit ; la
-  comparaison porte sur le média **de même identifiant**, l'alternative en base après un
-  remplacement d'image étant celle du nouveau fichier. Il est légitime de le laisser
-  vide : la couverture est posée sous le titre, qui nomme déjà le projet.
-- **Éditeur riche** : `RichText`, sur Tiptap. Jeu de marques volontairement court -
-  gras, italique, lien, listes, citation. Ni titres ni couleurs : la hiérarchie et
-  la typographie appartiennent à la DA, pas à la personne qui rédige.
-  `immediatelyRender: false` est obligatoire dans l'App Router.
-- **Réordonnancement** : `SortableList`, sur dnd-kit, **à la souris et au clavier**.
-  C'est la raison de la dépendance : l'API de glisser-déposer du navigateur n'a
-  aucun équivalent clavier.
-- **Chaque étape s'enregistre séparément** : une saisie invalide dans une étape ne fait
-  pas perdre le travail fait dans une autre, et changer d'étape ne perd rien.
-- **Les chapitres d'une réalisation sont en accordéon, un seul ouvert à la fois** -
-  huit éditeurs riches empilés faisaient plusieurs écrans de haut, on perdait le plan
-  de la fiche, et huit instances de Tiptap tournaient pour une seule qu'on utilisait.
-  **Les blocs d'un article, non**, et la différence est délibérée : un chapitre porte un
-  titre, donc replié il reste identifiable et la liste fait sommaire ; un paragraphe
-  d'article n'a que son texte, et rédiger de la prose demande de passer sans cesse d'un
-  paragraphe au suivant. Un accordéon y coûterait un clic par phrase déplacée.
-- **Créer n'exige que le minimum** - titre, adresse, et le champ sans lequel la fiche
-  n'a pas de place (secteur, catégorie, famille). La complétude est exigée à la
-  publication : réclamer tout à la création obligerait à préparer le contenu hors de
-  l'outil.
-- **`lib/slug.ts` reproduit `Slugify()` en SQL**, uniquement pour montrer l'adresse
-  avant d'enregistrer. La valeur qui compte est produite par la base quand le champ est
-  laissé vide, et c'est le test d'intégration qui la vérifie.
-- `useOptimistic` pour le réordonnancement, jamais un `useState` recopié des props :
-  React retombe seul sur la valeur du serveur, donc ni rollback à écrire ni
-  synchronisation par effet - ce que `react-hooks/set-state-in-effect` refuse.
-- La colonne de navigation est `sticky` avec sa hauteur propre. Sans cela elle
-  s'étire à la hauteur du contenu et le bloc du compte part hors de vue.
-
-### Articles
-
-Le corps reste en **blocs typés** - paragraphe, intertitre, encadré, liste
-numérotée - et non en HTML. Un encadré porte un chapô distinct de son texte, une
-liste numérotée des triplets numéro / titre / texte : aucun champ de texte riche ne
-saurait exprimer ces deux formes, et les écraser en HTML ferait perdre deux formes
-de la DA. Le corps de chaque paragraphe passe malgré tout par l'éditeur riche - à
-l'intérieur d'un bloc, gras, italique et liens ont leur place.
-
-**Une exception à la règle « jamais un JSON opaque ».** Elle vise les collections
-dont les éléments sont des entités qu'on veut requêter et réordonner. Les entrées
-d'un bloc numéroté n'en sont pas : sans identité, jamais lues séparément du bloc,
-disparaissant avec lui. Elles sont la charge d'un bloc, d'où `article_block.items`
-en JSON validé.
-
-Deux dates, et ce n'est pas une redondance : `published_on` en ISO trie et alimente
-le plan du site, `date_label` s'affiche en français. Formater l'un depuis l'autre en
-SQL dépendrait de la locale du serveur, et « été 2026 » est parfois plus juste
-qu'une date exacte.
-
-**Un jour de calendrier ne se ramène jamais en ISO par `toISOString()`.** `mysql2` rend
-une colonne `DATE` en `Date` positionnée à minuit **local** ; la reconvertir en UTC la
-fait reculer d'un jour partout à l'est de Greenwich. Le défaut était en production et
-silencieux : la base contenait le 12 juillet, l'éditeur affichait le 11, et enregistrer
-la fiche écrivait le 11 - la date d'un article reculait d'un jour à chaque passage dans
-l'éditeur, et le détail des vues quotidiennes était décalé d'autant. `lib/date.ts`
-(`isoDay`, `todayIso`) ne raisonne qu'en composantes locales, et `tests/unit/date.test.ts`
-le verrouille dans n'importe quel fuseau. Ni le build ni le typecheck ne voyaient quoi
-que ce soit, et le commentaire d'origine affirmait l'inverse - qu'un formatage local
-risquerait de décaler.
-
-Le détail des trente jours est **reconstitué côté écran**, tous les jours y compris
-ceux sans vue. La base ne rend que les jours qui ont une ligne, ce qui est juste pour
-elle et faux à l'affichage : avec un seul jour de trafic, l'unique barre en `flex-1`
-prenait toute la largeur et l'histogramme se lisait comme un mois entier au maximum.
-
-**La mise en avant est exclusive**, portée par `set_article_featured` et non par le
-formulaire : le flux public affiche un article en tête et l'exclut de la grille, donc
-deux mises en avant en feraient disparaître une sans que personne comprenne pourquoi.
-
-### Expertises, et la navigation du site
-
-Deux niveaux : une **famille** regroupe des services et porte une entrée du menu ; un
-**service** est une page. C'est la seule collection dont une écriture peut casser la
-navigation, présente sur chaque page - d'où trois garde-fous en base :
-`nav_service_slug` doit désigner un service existant, une famille non vide ne se
-supprime pas, un service cible de nav ne se supprime pas.
-
-**Les pages d'expertise vendent la conception, pas la technologie.** Le titre « Des
-choix techniques assumés » coiffait des cartes qui nommaient des outils. Deux effets,
-tous deux mauvais : le décideur - non technique - décrochait, et celui qui lisait
-comprenait qu'on lui imposait une pile. La section s'appelle désormais « Une technologie
-au service de votre projet » et dit ce que ces choix apportent. La pile réelle vit **en
-FAQ**, où elle répond à « suis-je enfermé ? » au lieu d'annoncer une contrainte - et
-c'est aussi là que la cherche le lecteur technique du comité d'achat.
-
-**`whyCustom` - « Pourquoi du sur-mesure ? »** La section qui **qualifie** au lieu de
-vendre : les signes qui indiquent qu'une plateforme spécifique se justifie, puis une
-dernière phrase qui admet le cas contraire. C'est ce renoncement qui rend crédible tout
-ce qui précède. Trois particularités :
-
-- **Elle ne s'affiche que complète.** Un chapô sans signe annoncerait une liste vide,
-  des signes sans conclusion laisseraient le visiteur sans la réponse qui compte. La
-  couche de lecture publique rend `undefined` dès qu'une pièce manque ; le schéma zod,
-  lui, accepte tout vide - refuser un enregistrement partiel empêcherait de sauvegarder
-  un brouillon en cours de rédaction.
-- **Un seul enregistrable pour trois pièces.** Une première version tenait le chapô dans
-  un `useFieldSet` et les signes dans un `useCollection` : chaque `commit` devait lire
-  l'autre pour reconstituer l'envoi, donc les deux se référençaient en cercle et le
-  typage refusait. Le défaut était de conception - `set_expertise_why_custom` écrit tout
-  dans une transaction, il n'y a qu'un enregistrable, et les signes sont un champ de ce
-  jeu.
-- **Facultative par service.** Tous ne se décident pas sur cette question.
-
-**Un défaut de conception corrigé.** Le contenu statique faisait pointer chaque entrée
-de nav vers `/expertises/<slug de la famille>`, ce qui ne fonctionnait que parce que
-trois services portaient par coïncidence le même slug que leur famille. Renommer un
-service cassait la nav en silence. La famille désigne désormais explicitement sa
-cible, et `update_expertise_service` la fait suivre en cas de renommage.
-
-**Les familles sans service publié sont écartées de la nav comme du hub.** Les garder
-en les faisant mener au hub paraissait prudent, et c'était une erreur : deux familles
-vides donnaient deux entrées vers la même adresse, et le visiteur y aurait trouvé un
-hub où la famille n'apparaît pas. Une entrée de menu sans destination propre est une
-impasse.
-
-La nav est lue dans `app/(site)/layout.tsx` et passée à l'en-tête et au pied de page.
-`lib/site.ts` n'en garde qu'un **repli** (`expertiseNavFallback`), et ce repli compte
-double : une base muette ne doit pas vider le menu de toutes les pages.
-
-### Texte riche : validé, jamais nettoyé
-
-Les corps de chapitre et les paragraphes d'article sont saisis dans Tiptap, donc
-stockés en HTML, donc affichés par `dangerouslySetInnerHTML` - via `RichHtml`. Cela
-n'est acceptable qu'à une condition : **rien d'autre que ce fragment ne peut entrer en
-base**, ce que `lib/rich-text.ts` garantit.
-
-**Valider plutôt que nettoyer.** Un nettoyeur transforme ce qu'il ne comprend pas et
-laisse passer ce qu'il a mal compris ; les contournements de nettoyeurs écrits à la
-main remplissent des rapports de vulnérabilité. La validation échoue en cas de doute :
-toute balise hors liste, tout attribut inconnu, tout `<` non reconnu, tout commentaire
-HTML fait rejeter l'enregistrement. Le pire cas est un refus, pas une injection.
-24 tests couvrent les tentatives usuelles.
-
-La liste des balises reprend **exactement** ce que l'éditeur sait produire. L'étendre
-d'un côté sans l'autre ouvre une porte que personne n'emprunte, ou fait rejeter du
-contenu légitime.
-
-Défaut constaté en production avant correction : le corps des chapitres affichait
-`<p>` et `</p>` en clair, la vue le rendant comme du texte.
-
-### Comptage des vues
-
-**Compter une vue est une écriture, et le site public ne peut pas écrire.** C'est
-là que le modèle par procédure paie : `pub_count_article_view` est la **seule**
-procédure d'écriture accordée à `app_read`, et le pire qu'un appelant hostile en
-tire est un chiffre gonflé - elle ne lit aucun contenu, ne rend aucune ligne,
-n'accepte qu'un slug, et ne touche que deux compteurs. Un `GRANT EXECUTE ON
-heliara.*` aurait tout ouvert d'un coup ; le grant par procédure permet d'ouvrir un
-millimètre.
-
-Le déclenchement vient du **navigateur** et non du rendu : les fiches sont prérendues
-et leur code ne s'exécute pas à chaque visite, donc un compteur incrémenté au rendu
-ne compterait qu'une visite sur beaucoup. `ViewCounter` attend deux secondes, ne
-compte qu'une fois par article et par session, s'abstient si l'onglet est caché ou
-sous automatisation. Le chiffre reste approximatif et gonflable, comme tout compteur
-public : il est présenté comme une indication de lecture, jamais comme une mesure
-d'audience.
-
-Deux niveaux de stockage : un total dénormalisé sur `article`, pour que la liste
-l'affiche sans un `SUM` par ligne, et un agrégat quotidien à part, parce qu'un total
-depuis toujours ne dit pas si l'article est lu **aujourd'hui**. Les deux écritures
-sont dans la même transaction - dénormaliser impose de tenir le total à jour au même
-instant que son détail.
-
-### Deux pièges SQL rencontrés sur les articles
-
-- **`LEAVE` exige un bloc étiqueté** en MariaDB : une sortie anticipée s'écrit
-  comme une condition, pas comme un saut.
-- **`IFNULL(STR_TO_DATE(...), colonne)` ne protège de rien** : en mode strict,
-  MariaDB lève sur une entrée illisible au lieu de rendre `NULL`. La forme se
-  vérifie par une expression régulière **avant** la conversion. Et côté schéma,
-  `Date.parse` ne suffit pas non plus - il accepte 2026-02-30 en le reportant au 2
-  mars, d'où le contrôle par aller-retour.
-
-### Rédiger une fiche : le brief à donner
-
-`docs/brief-realisation.md` liste tous les champs d'une réalisation, ce que la
-publication exige et ce qu'elle n'exige pas, avec les limites de longueur reprises des
-colonnes. Il est écrit pour être donné tel quel à un assistant qui rédige une fiche, et
-il porte les deux contraintes qu'on oublie : le corps des chapitres est du HTML validé
-contre une liste fermée de treize balises, et les images ne se fournissent pas par écrit
-puisqu'un identifiant de média vient du dépôt de fichiers.
-
-### Ce qui est facultatif dans une fiche
-
-Le chiffre, le témoignage, l'étiquette de hero, la fiche technique, les résultats
-et les enseignements. **Chaque bloc est conditionné à son contenu** dans les vues
-publiques : toute mission ne se résume pas à une mesure, et en réclamer une
-pousserait à en inventer. La publication n'exige que le titre, le secteur, les deux
-résumés et au moins un chapitre.
+**Références clientes**, **Équipe** et **Témoignages**. C'est tout ce qui change à un rythme
+humain ; ce qui reste dans `lib/content/*.ts` a été écarté volontairement, les raisons sont
+dans `docs/plan-admin.md`.
+
+**Corriger un contenu administrable dans `lib/content/*.ts` ne change rien au site** :
+ces fichiers ne sont plus que le repli et la source d'amorçage.
+
+Avant de toucher à `app/admin/**`, `components/admin/**`, `lib/db/**` ou aux procédures
+d'écriture, charger le skill **`admin-contenus`** : il porte le moule des éditeurs, les
+conventions SQL, les particularités de chaque collection et les défauts déjà rencontrés.
