@@ -1,0 +1,16 @@
+dist/
+node_modules/
+.next/
+.turbo/
+coverage/
+pnpm-lock.yaml
+.pnpm-store/
+# Tout répertoire de build alternatif, réglé par NEXT_DIST_DIR. Un motif plutôt que
+# deux noms : un répertoire oublié se faisait sinon formater comme du source.
+.next-*
+
+# Les illustrations Lottie sont minifiées, et doivent le rester : les reformater
+# triplerait leur poids pour des fichiers que seul `lottie-web` lit. `pnpm format` ne
+# vise que le TypeScript et ne les touche pas, mais un `prettier --write .` lancé à la
+# main les abîmerait sans que rien ne le signale.
+public/animated-illustrations/

@@ -1,0 +1,699 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   Heliara - Direction Artistique v2 « Lumière d'écran »
+   Couche 1 : variables CSS brutes (--hel-*), commutées par la classe .dark
+   Couche 2 : @theme inline, qui les expose comme utilitaires Tailwind
+   ========================================================================== */
+
+:root {
+  /* --- Surfaces ---------------------------------------------------------- */
+  --hel-page: #fafaf9;
+  --hel-surface: #ffffff;
+  --hel-raised: #ffffff;
+  --hel-inset: #f4f4f2;
+  --hel-inverse: #101012;
+  --hel-gradient-surface: linear-gradient(180deg, #ffffff 0%, #fafaf9 100%);
+
+  /* --- Texte ------------------------------------------------------------- */
+  --hel-ink: #151517; /* titres */
+  --hel-body: #57574f; /* texte courant - 6.9:1 sur page */
+  --hel-label: #6f6f69; /* labels & méta - 4.8:1, seuil AA tenu */
+  --hel-faint: #8f8f89; /* décoratif uniquement (barres, placeholders) */
+
+  /* --- Filets ------------------------------------------------------------ */
+  --hel-line: #e7e7e3;
+  --hel-line-strong: #d6d6d1;
+
+  /* --- Orange vital ------------------------------------------------------ */
+  --hel-brand: #e9591f; /* le geste : point, pastilles, filets, halos */
+  --hel-brand-solid: #c9481a; /* fond de bouton - 4.8:1 avec du blanc */
+  --hel-brand-solid-hover: #e9591f;
+  --hel-brand-on-solid: #ffffff;
+  --hel-brand-text: #c24512; /* orange lisible sur fond clair - 4.8:1 */
+  --hel-brand-subtle: #fdece5;
+
+  /* --- Bleu profond : liens, focus, information -------------------------- */
+  --hel-info: #2f52c7;
+  --hel-info-text: #2f52c7; /* 6.7:1 sur blanc */
+  --hel-info-subtle: #eaeffb;
+  /* Fond de pastille bleue, et son texte. Même mécanique que `brand-solid` : les deux
+     valeurs s'inversent ensemble entre les thèmes, ce qui garde le contraste dans les
+     deux sens. `bg-info` ne convient pas pour cet usage - en sombre il devient un bleu
+     clair, et du blanc dessus tombe à 2,67:1. Mesuré, pas supposé. */
+  --hel-info-solid: #2f52c7; /* 6.7:1 avec du blanc */
+  --hel-info-on-solid: #ffffff;
+
+  /* --- Sémantiques ------------------------------------------------------- */
+  --hel-success: #1f9254;
+  --hel-success-text: #157243;
+  --hel-success-subtle: #e6f4ec;
+  --hel-danger: #c4321f;
+  --hel-danger-text: #a82a19;
+  --hel-danger-subtle: #fbeae7;
+
+  /* --- Sur fond encre (bandes de rupture, footer) ------------------------ */
+  --hel-inverse-fg: #f2f2f0;
+  --hel-inverse-fg-muted: #a3a39d;
+  --hel-inverse-fg-faint: #7e7e78;
+  --hel-inverse-line: #26262a;
+  --hel-inverse-brand: #f0824b; /* orange éclairci, lisible sur encre */
+  --hel-inverse-on-brand: #151517;
+
+  /* --- Halos : radiaux, ≤ 8 % en light, un seul par écran ---------------- */
+  --hel-halo-warm: radial-gradient(
+    ellipse 68% 55% at 78% 6%,
+    rgb(233 89 31 / 0.08),
+    transparent 70%
+  );
+  --hel-halo-cool: radial-gradient(
+    ellipse 58% 48% at 10% 22%,
+    rgb(47 82 199 / 0.06),
+    transparent 70%
+  );
+  --hel-halo-inverse: radial-gradient(
+    ellipse 55% 60% at 50% 100%,
+    rgb(233 89 31 / 0.13),
+    transparent 70%
+  );
+  /* Éclairage du hero : deux lobes, une seule couche - la règle « un halo par
+     écran » reste tenue au sens strict. */
+  --hel-halo-hero:
+    radial-gradient(
+      ellipse 68% 55% at 78% 6%,
+      rgb(233 89 31 / 0.08),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 48% at 8% 26%,
+      rgb(47 82 199 / 0.06),
+      transparent 70%
+    );
+
+  /* --- Élévation : quatre niveaux, douce et stratifiée ------------------- */
+  --hel-shadow-1:
+    0 1px 2px -1px rgb(21 21 23 / 0.06), 0 1px 3px 0 rgb(21 21 23 / 0.04);
+  --hel-shadow-2:
+    0 2px 4px -2px rgb(21 21 23 / 0.06), 0 6px 12px -3px rgb(21 21 23 / 0.06);
+  --hel-shadow-3:
+    0 4px 8px -4px rgb(21 21 23 / 0.07), 0 14px 28px -8px rgb(21 21 23 / 0.09);
+  --hel-shadow-4:
+    0 8px 16px -8px rgb(21 21 23 / 0.08), 0 28px 56px -12px rgb(21 21 23 / 0.14);
+  --hel-shadow-glow: 0 4px 24px -2px rgb(233 89 31 / 0.34);
+
+  /* --- Mouvement : signature expo-out ----------------------------------- */
+  --hel-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --hel-ease-io: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Grandes surfaces, dans les deux sens. Symétrique : départ lent, accélération,
+     arrivée lente. Une courbe « out » y est à éviter - appliquée à une
+     apparition elle fait claquer la forme, à une disparition elle l'arrache. */
+  --hel-ease-inout: cubic-bezier(0.45, 0, 0.55, 1);
+
+  /* Compat shadcn : rayon de référence */
+  --radius: 18px;
+}
+
+.dark {
+  --hel-page: #101012;
+  --hel-surface: #17171a;
+  --hel-raised: #1d1d21;
+  --hel-inset: #202024;
+  --hel-inverse: #0b0b0d;
+  --hel-gradient-surface: linear-gradient(180deg, #1d1d21 0%, #17171a 100%);
+
+  --hel-ink: #f2f2f0;
+  --hel-body: #a3a39d;
+  --hel-label: #7e7e78; /* 4.7:1 sur encre */
+  --hel-faint: #73736d;
+
+  --hel-line: #26262a;
+  --hel-line-strong: #33333a;
+
+  --hel-brand: #f0824b;
+  --hel-brand-solid: #f0824b;
+  --hel-brand-solid-hover: #f79a6b;
+  --hel-brand-on-solid: #151517;
+  --hel-brand-text: #f0824b; /* 6.9:1 sur encre */
+  --hel-brand-subtle: #2a1a13;
+
+  --hel-info: #7e9bf2;
+  --hel-info-text: #9bb2f7;
+  --hel-info-subtle: #171d33;
+  --hel-info-solid: #7e9bf2; /* 8.9:1 avec de l'encre */
+  --hel-info-on-solid: #151517;
+
+  --hel-success: #3fb277;
+  --hel-success-text: #6cd09b;
+  --hel-success-subtle: #12251a;
+  --hel-danger: #e0664f;
+  --hel-danger-text: #f08d79;
+  --hel-danger-subtle: #2b1512;
+
+  --hel-inverse-fg: #f2f2f0;
+  --hel-inverse-fg-muted: #a3a39d;
+  --hel-inverse-fg-faint: #7e7e78;
+  --hel-inverse-line: #1f1f23;
+
+  /* Halos légèrement plus présents en dark (10 %) */
+  --hel-halo-warm: radial-gradient(
+    ellipse 68% 55% at 78% 6%,
+    rgb(240 130 75 / 0.1),
+    transparent 70%
+  );
+  --hel-halo-cool: radial-gradient(
+    ellipse 58% 48% at 10% 22%,
+    rgb(126 155 242 / 0.08),
+    transparent 70%
+  );
+  --hel-halo-inverse: radial-gradient(
+    ellipse 55% 60% at 50% 100%,
+    rgb(240 130 75 / 0.14),
+    transparent 70%
+  );
+  --hel-halo-hero:
+    radial-gradient(
+      ellipse 68% 55% at 78% 6%,
+      rgb(240 130 75 / 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 48% at 8% 26%,
+      rgb(126 155 242 / 0.08),
+      transparent 70%
+    );
+
+  --hel-shadow-1: 0 1px 2px -1px rgb(0 0 0 / 0.5), 0 1px 3px 0 rgb(0 0 0 / 0.4);
+  --hel-shadow-2:
+    0 2px 4px -2px rgb(0 0 0 / 0.5), 0 6px 12px -3px rgb(0 0 0 / 0.45);
+  --hel-shadow-3:
+    0 4px 8px -4px rgb(0 0 0 / 0.55), 0 14px 28px -8px rgb(0 0 0 / 0.5);
+  --hel-shadow-4:
+    0 8px 16px -8px rgb(0 0 0 / 0.6), 0 28px 56px -12px rgb(0 0 0 / 0.6);
+  --hel-shadow-glow: 0 4px 24px -2px rgb(240 130 75 / 0.4);
+}
+
+@theme inline {
+  /* --- Typographie ------------------------------------------------------ */
+  --font-display: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-spline), ui-monospace, monospace;
+
+  /* --- Couleurs Heliara ------------------------------------------------- */
+  --color-page: var(--hel-page);
+  --color-surface: var(--hel-surface);
+  --color-raised: var(--hel-raised);
+  --color-inset: var(--hel-inset);
+  --color-inverse: var(--hel-inverse);
+
+  --color-ink: var(--hel-ink);
+  --color-body: var(--hel-body);
+  --color-label: var(--hel-label);
+  --color-faint: var(--hel-faint);
+
+  --color-line: var(--hel-line);
+  --color-line-strong: var(--hel-line-strong);
+
+  --color-brand: var(--hel-brand);
+  --color-brand-solid: var(--hel-brand-solid);
+  --color-brand-solid-hover: var(--hel-brand-solid-hover);
+  --color-brand-on-solid: var(--hel-brand-on-solid);
+  --color-brand-text: var(--hel-brand-text);
+  --color-brand-subtle: var(--hel-brand-subtle);
+
+  --color-info: var(--hel-info);
+  --color-info-solid: var(--hel-info-solid);
+  --color-info-on-solid: var(--hel-info-on-solid);
+  --color-info-text: var(--hel-info-text);
+  --color-info-subtle: var(--hel-info-subtle);
+
+  --color-success: var(--hel-success);
+  --color-success-text: var(--hel-success-text);
+  --color-success-subtle: var(--hel-success-subtle);
+  --color-danger: var(--hel-danger);
+  --color-danger-text: var(--hel-danger-text);
+  --color-danger-subtle: var(--hel-danger-subtle);
+
+  --color-inverse-fg: var(--hel-inverse-fg);
+  --color-inverse-fg-muted: var(--hel-inverse-fg-muted);
+  --color-inverse-fg-faint: var(--hel-inverse-fg-faint);
+  --color-inverse-line: var(--hel-inverse-line);
+  --color-inverse-brand: var(--hel-inverse-brand);
+  --color-inverse-on-brand: var(--hel-inverse-on-brand);
+
+  /* --- Mapping shadcn / base-ui sur la DA ------------------------------- */
+  --color-background: var(--hel-page);
+  --color-foreground: var(--hel-ink);
+  --color-card: var(--hel-surface);
+  --color-card-foreground: var(--hel-ink);
+  --color-popover: var(--hel-raised);
+  --color-popover-foreground: var(--hel-ink);
+  --color-primary: var(--hel-brand-solid);
+  --color-primary-foreground: var(--hel-brand-on-solid);
+  --color-secondary: var(--hel-surface);
+  --color-secondary-foreground: var(--hel-ink);
+  --color-muted: var(--hel-inset);
+  --color-muted-foreground: var(--hel-label);
+  --color-accent: var(--hel-inset);
+  --color-accent-foreground: var(--hel-ink);
+  --color-destructive: var(--hel-danger);
+  --color-border: var(--hel-line);
+  --color-input: var(--hel-line-strong);
+  --color-ring: var(--hel-info);
+
+  /* --- Rayons : 6 → 24 px ---------------------------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+
+  /* --- Élévation -------------------------------------------------------- */
+  --shadow-1: var(--hel-shadow-1);
+  --shadow-2: var(--hel-shadow-2);
+  --shadow-3: var(--hel-shadow-3);
+  --shadow-4: var(--hel-shadow-4);
+  --shadow-glow: var(--hel-shadow-glow);
+
+  /* --- Mouvement -------------------------------------------------------- */
+  --ease-expo: var(--hel-ease-expo);
+  --ease-inout: var(--hel-ease-inout);
+
+  /* --- Conteneurs & grille --------------------------------------------- */
+  --container-page: 1240px;
+  --container-reading: 760px;
+  --breakpoint-2xl: 1440px;
+  /* Bascule nav horizontale / menu plein écran (Responsive Guidelines 04) */
+  --breakpoint-menu: 900px;
+
+  /* --- Animations ------------------------------------------------------- */
+  --animate-marquee: hel-marquee 42s linear infinite;
+  --animate-float: hel-float 7s var(--hel-ease-io) infinite;
+  --animate-float-mid: hel-float 8s var(--hel-ease-io) infinite;
+  --animate-float-slow: hel-float 9s var(--hel-ease-io) infinite reverse;
+}
+
+@keyframes hel-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes hel-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ==========================================================================
+   Transition de page - voile encre, illustration Lottie, arrivée de la page
+
+   Volontairement peu de pièces : le voile (`opacity`), l'illustration centrée
+   (`opacity`) et `main` (`opacity` + `transform`). Tout est composé par le GPU,
+   il n'y a ni mise en page ni peinture pendant l'animation. Les tentatives
+   précédentes - voile à crêtes arrondies, puis traits en lentille balayant en
+   diagonale sur six couches de grande taille - sont restées perçues comme
+   sèches malgré un profil d'images propre à la mesure : ne pas y revenir sans
+   raison forte.
+
+   Le geste : le voile encre recouvre l'écran, l'illustration apparaît une fois
+   le voile opaque, la navigation a lieu à couvert, puis le voile se lève
+   pendant que la page entrante monte se mettre en place. La montée dure plus
+   longtemps que le lever du voile, si bien que la page finit de se poser à
+   découvert - c'est ce décalage qui donne une impression d'arrivée plutôt que
+   d'apparition.
+   ========================================================================== */
+
+@keyframes hel-curtain-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hel-curtain-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hel-page-enter {
+  from {
+    opacity: 0.5;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hel-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: var(--hel-inverse);
+  opacity: 0;
+  /* Ne capte jamais le pointeur : un voile ne doit pas pouvoir piéger un clic. */
+  pointer-events: none;
+}
+
+[data-phase="cover"] .hel-curtain {
+  animation: hel-curtain-in 300ms var(--hel-ease-inout) forwards;
+}
+
+[data-phase="reveal"] .hel-curtain {
+  animation: hel-curtain-out 400ms var(--hel-ease-inout) forwards;
+}
+
+/* Illustration centrée dans le voile. Enfant du voile, donc son opacité se
+   multiplie à la sienne : elle s'efface avec lui au lever, sans règle dédiée.
+   Le retard d'apparition attend que le voile soit franchement opaque. */
+.hel-curtain-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+/* lottie-web pose `width: 100%` en style inline sur le SVG qu'il crée : la
+   taille doit donc être portée par son conteneur, pas par le SVG. */
+.hel-curtain-lottie {
+  width: 6rem;
+  height: 6rem;
+}
+
+@media (min-width: 768px) {
+  .hel-curtain-lottie {
+    width: 7rem;
+    height: 7rem;
+  }
+}
+
+[data-phase="cover"] .hel-curtain-mark {
+  animation: hel-curtain-in 220ms var(--hel-ease-inout) 180ms forwards;
+}
+
+/* `data-curtain` porte la phase sur <html> : la page peut ainsi réagir sans
+   qu'un composant client ait à la toucher.
+
+   Seule l'arrivée est animée. Animer aussi le départ obligeait le navigateur à
+   promouvoir `main` - plusieurs milliers de pixels de haut - au moment même du
+   clic : 140 ms de blocage mesurés, juste là où la réactivité compte le plus.
+   Ici la promotion tombe pendant le répit, écran couvert, donc invisible. Et on
+   ne perdait presque rien : la page sortante est recouverte aussitôt. */
+[data-curtain="reveal"] main {
+  animation: hel-page-enter 560ms var(--hel-ease-inout) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   Sélecteur de thème - interrupteur Lottie
+
+   Amélioration progressive : les icônes lucide tiennent le rôle jusqu'à ce que
+   l'illustration soit chargée, puis on permute. La commande fonctionne donc dès
+   le premier rendu, et reste fonctionnelle si le lecteur n'arrive jamais.
+   -------------------------------------------------------------------------- */
+
+.hel-theme-lottie {
+  display: none;
+  /* Le pavé de l'illustration est en 16/9 ; l'interrupteur y occupe environ
+     90 % de la largeur et 70 % de la hauteur, d'où ces proportions. */
+  width: 5rem;
+  height: 2.8125rem;
+  margin-block: -0.75rem;
+}
+
+[data-lottie="ready"] .hel-theme-icon {
+  display: none;
+}
+
+[data-lottie="ready"] .hel-theme-lottie {
+  display: block;
+}
+
+@keyframes hel-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--hel-line);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--hel-page);
+    color: var(--hel-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  /* Titrage : Schibsted Grotesk, tracking serré, encre */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--hel-ink);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  /* Focus visible : anneau bleu 2 px, jamais supprimé.
+     Pas de border-radius ici : l'outline suit déjà celui de l'élément. */
+  :focus-visible {
+    outline: 2px solid var(--hel-info);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--hel-brand);
+    color: #fff;
+  }
+
+  /* Chiffres alignés, à réserver aux colonnes que l'on compare : les chiffres
+     tabulaires de Schibsted Grotesk élargissent aussi la virgule décimale, ce
+     qui abîme un « 99,98 % » isolé. */
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Apparition au scroll - l'état de repos n'est appliqué que si le JS a pris
+   la main (data-reveal-ready sur <html>), afin que le contenu reste visible
+   si le JS échoue ou n'a pas encore chargé. */
+[data-reveal] {
+  transition:
+    opacity 600ms var(--hel-ease-expo),
+    transform 600ms var(--hel-ease-expo);
+}
+
+[data-reveal-ready] [data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.hel-principle-card[data-reveal] {
+  transition:
+    opacity 500ms var(--hel-ease-expo),
+    transform 500ms var(--hel-ease-expo);
+}
+
+[data-reveal-ready] .hel-principle-card[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Bloc révélé pendant une transition de page : il apparaît sans fondu, pour ne
+   pas empiler des dizaines de transitions au moment où le rideau se lève. */
+[data-reveal-now] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  ::after,
+  ::before {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  [data-reveal-ready] [data-reveal="pending"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hel-logos {
+    overflow-x: auto;
+    mask-image: none;
+  }
+
+  .hel-logos-track {
+    animation: none !important;
+  }
+
+  .hel-logos-track > [aria-hidden="true"] {
+    display: none;
+  }
+
+  /* La commande de pause n'a plus d'objet : rien ne bouge. */
+  .hel-logos-switch {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   Bandeau de logos : la commande de pause
+   ------------------------------------------------------------
+   WCAG 2.2.2 « Pause, Stop, Hide », niveau A : tout mouvement automatique de plus de
+   cinq secondes doit pouvoir être arrêté. Le survol ne suffit pas - il n'existe ni au
+   toucher ni au clavier.
+
+   **En CSS et sans JavaScript**, par une case à cocher visuellement masquée dont le
+   libellé est la commande visible. C'est ce qui permet à la pause de fonctionner sur une
+   page non hydratée, alors qu'un bouton à état React ne serait utilisable qu'après
+   l'hydratation - or c'est précisément la période où le défilement gêne le plus, la page
+   venant d'apparaître.
+
+   Le sélecteur passe par un frère : la case est le premier enfant du conteneur, la piste
+   un descendant d'un frère suivant. C'est la seule contrainte de structure, et elle est
+   rappelée dans `client-marquee.tsx`.
+   ------------------------------------------------------------ */
+
+.hel-logos-switch:checked ~ * .hel-logos-track {
+  animation-play-state: paused;
+}
+
+/* Le libellé suit l'état : une seule des deux moitiés est rendue à la fois. */
+.hel-logos-switch:checked ~ * .hel-logos-when-running,
+.hel-logos-switch:not(:checked) ~ * .hel-logos-when-paused {
+  display: none;
+}
+
+
+
+
+/* ------------------------------------------------------------
+   Contenu riche
+   ------------------------------------------------------------
+   Style du corps produit par l'éditeur Tiptap de l'administration, et du même
+   HTML une fois rendu sur le site public. Les deux lisent ces règles, ce qui
+   garantit que ce qu'on voit en écrivant est ce qui sera publié.
+
+   Le jeu de marques est court par construction - gras, italique, lien, listes,
+   citation - parce que la hiérarchie et la typographie appartiennent à la DA,
+   pas à la personne qui rédige. Il n'y a donc pas de règle de titre ici : il n'y
+   a pas de titre à styler. */
+.hel-prose > :first-child {
+  margin-top: 0;
+}
+
+.hel-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.hel-prose p {
+  margin-block: 0.75em;
+}
+
+.hel-prose strong {
+  font-weight: 600;
+  color: var(--hel-ink);
+}
+
+.hel-prose em {
+  font-style: italic;
+}
+
+.hel-prose a {
+  color: var(--hel-info-text);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.hel-prose ul,
+.hel-prose ol {
+  margin-block: 0.75em;
+  padding-inline-start: 1.35em;
+}
+
+.hel-prose ul {
+  list-style: disc;
+}
+
+.hel-prose ol {
+  list-style: decimal;
+}
+
+.hel-prose li {
+  margin-block: 0.3em;
+}
+
+.hel-prose li::marker {
+  color: var(--hel-label);
+}
+
+/* Filet orange à gauche : le seul geste de marque du corps de texte. */
+.hel-prose blockquote {
+  margin-block: 1em;
+  border-inline-start: 2px solid var(--hel-brand);
+  padding-inline-start: 1em;
+  color: var(--hel-body);
+  font-style: italic;
+}
+
+.hel-prose code {
+  border-radius: var(--radius-xs);
+  background: var(--hel-inset);
+  padding: 0.1em 0.35em;
+  font-family: var(--font-spline), ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+/* Le substitut d'invite de Tiptap. Il n'existe que dans l'éditeur : le contenu
+   publié n'a jamais de paragraphe vide. */
+.hel-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: inline-start;
+  height: 0;
+  color: var(--hel-label);
+  pointer-events: none;
+}

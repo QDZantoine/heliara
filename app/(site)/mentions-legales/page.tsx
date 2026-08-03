@@ -1,0 +1,24 @@
+import type { Metadata } from "next"
+
+import { LegalArticle } from "@/components/sections/legal-article"
+import { legalNotice } from "@/lib/content/legal"
+import { pageMetadata } from "@/lib/seo"
+
+export const metadata: Metadata = pageMetadata({
+  title: "Mentions légales",
+  description:
+    "Éditeur, rattachement au groupe, hébergement, propriété intellectuelle et accessibilité.",
+  path: "/mentions-legales",
+  noIndex: true,
+})
+
+export default function MentionsLegalesPage() {
+  return (
+    <LegalArticle
+      eyebrow="Informations légales"
+      title="Mentions légales"
+      updatedAt="août 2026"
+      sections={legalNotice}
+    />
+  )
+}
