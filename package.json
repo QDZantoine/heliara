@@ -26,6 +26,8 @@
     "db:migrate": "bash db/migrate.sh",
     "dev:both": "bash scripts/dev-both.sh",
     "db:seed": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-seed.ts",
+    "db:export": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-export.ts",
+    "db:import": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-import.ts",
     "db:resync-expertises": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-resync-expertises.ts",
     "db:import-cases": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-import-cases.ts",
     "og": "tsx scripts/og.ts"

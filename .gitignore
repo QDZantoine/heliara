@@ -58,3 +58,7 @@ next-env.d.ts
 
 # Journaux et brouillons
 *.log
+
+# Les exports de contenu (pnpm db:export) : quelques megaoctets d'images et une
+# copie de la base. Ils se transportent hors du depot.
+/export/

@@ -85,11 +85,46 @@ procédures stockées. Vérifié par un test d'intégration.
    `db_migrate`, puis **les privilèges en `root`**.
 3. `pnpm admin:create` crée le premier compte d'administration. Le mot de passe est saisi
    sans écho, jamais passé en argument.
-4. `pnpm db:seed` amorce le contenu depuis les fichiers du dépôt. Idempotent : un élément
-   dont l'identifiant d'URL existe déjà n'est jamais écrasé.
+4. Le contenu, par **l'une des deux voies** ci-dessous. Ce ne sont pas des variantes de la
+   même chose : voir le tableau juste après.
 
 **`db/init/` n'est joué qu'une fois, sur volume vierge.** Modifier un de ces fichiers n'a
 aucun effet sur une base existante : il faut passer par `pnpm db:migrate`.
+
+### Amorcer, ou transporter : deux commandes qui ne font pas la même chose
+
+|                     | `pnpm db:seed`                        | `pnpm db:export` puis `pnpm db:import`      |
+| ------------------- | ------------------------------------- | ------------------------------------------- |
+| Source              | les fichiers du dépôt                 | une base et un stockage réels               |
+| Ce qui arrive       | le contenu de `lib/content/*.ts`      | **tout** ce que la base contient            |
+| Images              | celles de `public/`                   | celles du stockage, déposées comprises      |
+| Textes de l'admin   | non                                   | oui                                         |
+
+**Pour reproduire en production le site tel qu'il est aujourd'hui, c'est la seconde voie.**
+`db:seed` ne connaît que le dépôt : les images de tête déposées dans l'administration n'y
+sont pas, et les fiches concernées arriveraient sans couverture - cinq sur neuf au moment
+où ces lignes sont écrites. Le repli sur le croquis fait que le défaut ne casse rien et ne
+se voit qu'en comparant les deux sites.
+
+```text
+pnpm db:export [dossier]        # écrit dossier/{contenu.sql, objets/, manifeste.json}
+pnpm db:import <dossier>        # pousse les objets, puis joue le contenu
+```
+
+Trois choses à savoir :
+
+- **`pnpm db:migrate` d'abord.** L'export ne porte ni schéma ni procédures : elles
+  viennent du dépôt, et les dumper créerait une seconde source de vérité.
+- **Aucun compte n'est transporté**, et les colonnes d'auteur sont remises à `NULL`. Un
+  hash de développement n'a rien à faire en production. Le premier compte se crée avec
+  `pnpm admin:create`, avant ou après l'import.
+- **L'import vérifie ses comptes** table par table contre le manifeste, et sort en erreur
+  s'il en manque un. Ce n'est pas du zèle : un import partiel ne lève aucune erreur SQL,
+  les contraintes étant satisfaites - seul un comptage le voit. Le défaut est arrivé, neuf
+  réalisations arrivaient à deux.
+
+Le journal d'audit et les compteurs de lecture quotidiens ne sont pas exportés : des
+évènements de développement, et des chiffres qui gonfleraient l'audience d'un site neuf.
 
 ### Le piège des migrations, à connaître
 

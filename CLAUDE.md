@@ -895,9 +895,35 @@ commencent par `requireSession()`, sans exception, et rejouent leur schéma zod.
 pnpm admin:create   # premier compte, mot de passe saisi sans écho
 pnpm db:migrate     # rejoue schéma, procédures ET privilèges
 pnpm db:seed        # amorce la base depuis le contenu statique
+pnpm db:export [d]  # exporte le contenu réel : SQL + objets du stockage + manifeste
+pnpm db:import <d>  # rejoue un export ailleurs, et vérifie ses comptes
 pnpm db:resync-expertises <slug>...   # repousse en base la fiche d'un service
 pnpm db:import-cases <fichier.json>   # importe des réalisations rédigées hors de l'outil
 ```
+
+**`pnpm db:seed` amorce depuis le dépôt, `pnpm db:export` transporte le réel. Ne pas les
+confondre : c'est la différence entre une production plausible et une production fidèle.**
+Le premier ne connaît que `lib/content/*.ts` et `public/` ; tout ce qui est passé par
+l'administration - images de tête déposées, textes corrigés, témoignages - lui est
+invisible. Mesuré : cinq des neuf réalisations ont une couverture qui n'existe pas dans le
+dépôt, et `db:seed` les recréerait sans image. Le repli sur le croquis fait que rien ne
+casse et que personne ne le voit.
+
+Deux pièges de cet outillage, tous deux trouvés en le construisant :
+
+- **`--hex-blob` est la condition pour que le dump soit juste.** Les identifiants sont des
+  `BINARY(16)` : sans elle, le fichier mélange texte et octets bruts, et le relire en UTF-8
+  remplace chaque octet invalide par U+FFFD. Des clés primaires distinctes deviennent alors
+  identiques, `REPLACE INTO` écrase les lignes l'une après l'autre, et **neuf réalisations
+  arrivent à deux** - sans qu'aucune erreur ne soit levée.
+- **Un import partiel ne lève rien.** Les contraintes sont satisfaites, les instructions
+  passent, il manque simplement des lignes. D'où le manifeste de comptes par table et sa
+  vérification à l'import, qui est ce qui a rendu le défaut ci-dessus visible.
+
+Le schéma et les procédures ne sont pas exportés - ils viennent du dépôt, par
+`pnpm db:migrate`, joué avant l'import. Ni les comptes ni les sessions non plus, et les
+colonnes d'auteur sont remises à `NULL` : un hash de développement n'a rien à faire en
+production.
 
 **`pnpm db:import-cases` existe pour la reprise de contenu, pas pour l'usage courant.**
 Des fiches rédigées ailleurs - le format est spécifié dans `docs/brief-realisation.md` -
