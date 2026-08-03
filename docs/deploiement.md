@@ -1,10 +1,11 @@
 # Déployer Heliara - ce qu'il faut fournir
 
-Ce document liste ce dont l'application a besoin **au-delà des variables
-d'environnement**. Les variables elles-mêmes sont dans `.env.example`, qui les décrit une
-par une et fait référence.
+Écrit pour être lu par quelqu'un qui n'a pas le code sous les yeux, et suffisant pour
+déployer sans poser de question. `.env.example` reste la référence de détail : il décrit
+chaque variable une par une, avec la forme attendue.
 
-Écrit pour être lu par quelqu'un qui n'a pas le code sous les yeux.
+**Aucune valeur réelle ne figure dans ce document ni dans le dépôt.** Les secrets vivent
+dans le gestionnaire de secrets du déploiement.
 
 ---
 
@@ -15,13 +16,94 @@ l'administration. Ils ne diffèrent que par la variable `HELIARA_ROLE` et par le
 identifiants de base qu'ils reçoivent. Ne pas construire deux images.
 
 **La séparation lecture / écriture est portée par la base, pas par le réseau.** Le
-processus public utilise un compte SQL qui n'a le droit d'exécuter que treize procédures
-de lecture nommées une par une, plus un compteur de vues et deux fonctions de conversion
-d'identifiants - et **aucun droit de table**. Le réseau n'est que la première des trois
-barrières.
+processus public utilise un compte SQL qui n'a le droit d'exécuter que 15 procédures
+nommées une par une - 14 lectures et un compteur de vues - plus deux fonctions de
+conversion d'identifiants, et **aucun droit de table**. Le réseau n'est que la première des
+trois barrières.
 Conséquence à respecter : **le déploiement public ne doit jamais recevoir
 `DB_WRITE_PASSWORD`**. Entièrement compromis, il ne détiendrait alors aucun identifiant
 capable d'écrire.
+
+---
+
+## 0. Les services à fournir
+
+Cinq, dont trois seulement sont indispensables au démarrage.
+
+| Service                | Rôle                                        | Indispensable ?                          |
+| ---------------------- | ------------------------------------------- | ---------------------------------------- |
+| **Node.js 22 LTS**     | les deux processus applicatifs              | oui                                      |
+| **MariaDB 11.4 LTS**   | tout le contenu éditorial                   | oui - sinon le site sert son repli figé  |
+| **Stockage S3**        | images déposées dans l'administration       | oui - sinon aucune image ne s'affiche    |
+| **Reverse proxy TLS**  | terminaison HTTPS, redirections, filtrage   | oui pour la production                   |
+| **Resend**             | acheminement du formulaire de contact       | non - sans lui, le formulaire refuse net |
+
+Rien d'autre. Pas de Redis, pas de file de messages, pas de CDN obligatoire : voir la
+section 9.
+
+---
+
+## 0 bis. Les variables d'environnement, par processus
+
+Le tableau qui décide de tout. **Une variable absente de la colonne d'un processus ne doit
+pas y être placée** - ce n'est pas de la propreté, c'est le modèle de sécurité.
+
+| Variable                    | public (`read`) | admin (`write`) | Sans elle                                            |
+| --------------------------- | :-------------: | :-------------: | ---------------------------------------------------- |
+| `HELIARA_ROLE`              |     `read`      |     `write`     | vaut `read` : l'administration répondrait 404         |
+| `PORT`                      |    optionnel    |    optionnel    | 3000                                                 |
+| `DB_HOST` `DB_PORT` `DB_NAME` |       oui       |       oui       | pas de base : repli sur le contenu figé du dépôt      |
+| `DB_READ_USER` `DB_READ_PASSWORD` |    **oui**    |       oui       | idem                                                 |
+| `DB_WRITE_USER` `DB_WRITE_PASSWORD` | **jamais** |    **oui**     | l'administration ne peut rien écrire                  |
+| `S3_ENDPOINT` `S3_REGION` `S3_BUCKET` |     oui      |       oui       | aucune image ne s'affiche                            |
+| `S3_ROOT_USER` `S3_ROOT_PASSWORD` |   non\*     |     **oui**     | aucun dépôt d'image possible                         |
+| `S3_PUBLIC_URL`             |     **oui**     |       oui       | images et aperçus de lien cassés - voir la section 3 |
+| `SITE_ORIGIN`               |     **oui**     |    optionnel    | les URL absolues pointent vers `heliara.fr`          |
+| `NEXT_PUBLIC_SITE_ORIGIN`   |       non       |     **oui**     | « Voir le site » reste sur le port d'administration   |
+| `RESEND_API_KEY` `CONTACT_FROM` |    **oui**    |       non       | le formulaire refuse et affiche l'e-mail public       |
+| `CONTACT_TO`                |    optionnel    |       non       | l'adresse publique du site reçoit                    |
+| `GOOGLE_SITE_VERIFICATION` `BING_SITE_VERIFICATION` | optionnel |    non    | aucune balise émise ; la vérification DNS reste possible |
+
+\* Le processus public lit les images par leur URL publique, jamais par l'API S3 : il n'a
+donc pas besoin des identifiants du stockage. Ne pas les lui donner.
+
+**`DB_ROOT_PASSWORD`, `DB_ADMIN_PASSWORD` et `DB_MIGRATE_PASSWORD` ne vont dans aucun des
+deux processus.** Ils ne servent qu'à l'initialisation et aux migrations, depuis un poste
+d'administration ou un travail de déploiement.
+
+**Ce qui échoue silencieusement**, et qu'il faut donc vérifier après coup plutôt que de le
+supposer : `SITE_ORIGIN` et `S3_PUBLIC_URL`. Mal réglées, le site se sert parfaitement et
+annonce des adresses injoignables - aucun aperçu de lien sur les réseaux sociaux, sans
+qu'aucun journal ne le signale. La section 8 dit comment le contrôler.
+
+---
+
+## 0 ter. La séquence de commandes, dans l'ordre
+
+Un premier déploiement, de bout en bout. Chaque étape suppose la précédente réussie.
+
+```bash
+# 1. Construire - une seule fois, le même artefact sert les deux processus.
+pnpm install --frozen-lockfile
+SITE_ORIGIN=https://heliara.fr pnpm build      # au build ET à l'exécution, voir §0 bis
+
+# 2. Base : schéma, procédures, privilèges. Demande root et db_migrate.
+pnpm db:migrate
+
+# 3. Contenu. Choisir UNE des deux voies (§2).
+pnpm db:import <dossier-export>                # reproduire un site existant
+pnpm db:seed                                   # ou amorcer depuis le dépôt
+
+# 4. Le premier compte d'administration, mot de passe saisi sans écho.
+pnpm admin:create
+
+# 5. Démarrer les deux processus.
+HELIARA_ROLE=read  PORT=3000 pnpm start        # public
+HELIARA_ROLE=write PORT=3001 pnpm start        # administration, VPN seulement
+```
+
+Une mise à jour applicative ensuite : étapes 1, 2 et 5. L'étape 2 est **obligatoire à
+chaque déploiement** qui touche à `db/init/` - et sans danger sinon, elle est idempotente.
 
 ---
 
@@ -70,12 +152,20 @@ Le seul prérequis réel est `RANDOM_BYTES()`, présent depuis 11.3. **Ne pas de
 | ------------ | ------------------------------------------- | ---------------------------------- |
 | `root`       | tout, dont `GRANT OPTION`                   | l'initialisation et les privilèges |
 | `db_admin`   | `ALL` sur la base                           | maintenance humaine. Jamais l'app  |
-| `db_migrate` | DDL, routines, DML - **pas** `GRANT`        | les migrations                     |
-| `app_read`   | `EXECUTE` sur 15 routines, dont 13 lectures | le site public                     |
-| `app_write`  | `EXECUTE` sur 85 procédures                 | l'administration                   |
+| `db_migrate` | DDL, routines, DML - **pas** `GRANT`        | migrations, amorçage, import       |
+| `app_read`   | `EXECUTE` sur 17 routines, dont 14 lectures | le site public                     |
+| `app_write`  | `EXECUTE` sur 101 routines                  | l'administration                   |
+
+Ordre de grandeur du schéma : 23 tables, 98 procédures, 4 fonctions.
 
 Les comptes applicatifs n'ont **aucun droit de table** : ils ne peuvent qu'appeler des
-procédures stockées. Vérifié par un test d'intégration.
+procédures stockées. Vérifié par `tests/db/separation.test.ts`, qui contrôle aussi que
+`app_read` se voit refuser les procédures d'écriture et celles qui montreraient un
+brouillon.
+
+**La seule écriture accordée au site public est `pub_count_article_view`**, un compteur de
+lectures : elle ne rend aucune ligne, n'accepte qu'un identifiant d'URL et ne touche que
+deux compteurs. Le pire qu'un appelant hostile en tire est un chiffre gonflé.
 
 ### Initialisation, dans cet ordre
 
@@ -248,10 +338,16 @@ n'est pas celui de l'autre, une invalidation par tag ne franchit pas la frontiè
 chercher à raccourcir ce délai par un cache partagé sans mesurer d'abord si le besoin est
 réel.
 
-Le site **ne tombe pas si la base ne répond pas** : réalisations, articles, expertises et
-références clientes portent un repli sur le contenu du dépôt. Le repli est silencieux pour
-le visiteur et **bruyant dans les journaux** - une ligne « repli sur le contenu statique »
-signale un incident, pas un fonctionnement normal. À faire remonter par la supervision.
+Le site **ne tombe pas si la base ne répond pas.** Cinq des six collections
+administrables - réalisations, articles, expertises, références clientes, équipe - portent
+un repli sur le contenu figé du dépôt. Le repli est silencieux pour le visiteur et
+**bruyant dans les journaux** : une ligne « repli sur le contenu statique » signale un
+incident, pas un fonctionnement normal. À faire remonter par la supervision.
+
+Une exception à connaître : **le repli des témoignages est vide**, délibérément. Une base
+muette fait disparaître leur section de l'accueil au lieu d'en servir une version périmée -
+c'est le seul contenu du site où le repli ne doit rien ressusciter. La page reste cohérente,
+simplement plus courte.
 
 ---
 
