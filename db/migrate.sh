@@ -37,11 +37,50 @@ fi
 : "${DB_MIGRATE_PASSWORD:?DB_MIGRATE_PASSWORD manquant, voir .env.example}"
 : "${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD manquant, voir .env.example}"
 
+# ------------------------------------------------------------
+# Deux façons d'atteindre la base, et le script choisit seul
+# ------------------------------------------------------------
+# **En production, il n'y a pas de Docker** - le guide de déploiement dit même qu'il n'en
+# faut pas. Ce script passait inconditionnellement par `docker compose exec`, donc la
+# commande que ce même guide demande de jouer échouait sur un serveur.
+#
+# La détection porte sur le client local d'abord : s'il existe, c'est qu'on est sur un hôte
+# qui parle à sa base directement. Le conteneur n'est le bon chemin qu'en développement, où
+# MariaDB n'est joignable que par lui.
+#
+# `DB_CLIENT=docker` ou `DB_CLIENT=local` force le choix, pour le cas où un poste de
+# développement a les deux.
+if [ "${DB_CLIENT:-}" = "docker" ]; then
+  MODE=docker
+elif [ "${DB_CLIENT:-}" = "local" ]; then
+  MODE=local
+elif command -v mariadb >/dev/null 2>&1 || command -v mysql >/dev/null 2>&1; then
+  MODE=local
+elif docker compose ps mariadb >/dev/null 2>&1; then
+  MODE=docker
+else
+  echo "Aucun moyen d'atteindre la base : ni client mariadb local, ni conteneur." >&2
+  echo "Installer mariadb-client, ou lancer pnpm db:up." >&2
+  exit 1
+fi
+
+CLIENT=$(command -v mariadb || command -v mysql || true)
+
 run_as() {
   local user="$1" password="$2" file="$3"
-  docker compose exec -T mariadb \
-    mariadb -u "$user" -p"$password" "$DB_NAME" < "$file"
+  if [ "$MODE" = "local" ]; then
+    # `MYSQL_PWD` plutôt que `-p<mot de passe>` : un mot de passe en argument est visible
+    # de tout le système dans la liste des processus.
+    MYSQL_PWD="$password" "$CLIENT" \
+      --host="${DB_HOST:-127.0.0.1}" --port="${DB_PORT:-3306}" \
+      --user="$user" "$DB_NAME" < "$file"
+  else
+    docker compose exec -T mariadb \
+      mariadb -u "$user" -p"$password" "$DB_NAME" < "$file"
+  fi
 }
+
+echo "Accès à la base : $MODE."
 
 echo "Schéma et procédures, en db_migrate."
 # Tous les fichiers SQL numérotés, dans l'ordre. Le motif était `0[2-9]` puis
@@ -72,8 +111,19 @@ echo "ok"
 
 echo
 echo "Surface accordée :"
-docker compose exec -T mariadb mariadb -uroot -p"$DB_ROOT_PASSWORD" --table -e "
-SELECT User AS compte, COUNT(*) AS routines
+# Le même aiguillage que `run_as`, pour une requête et non un fichier. C'est le contrôle
+# qui compte après une migration : un `DROP PROCEDURE` emporte ses privilèges, et une
+# surface tombée à zéro est exactement le symptôme à voir tout de suite.
+surface="SELECT User AS compte, COUNT(*) AS routines
 FROM mysql.procs_priv
 WHERE User IN ('app_read', 'app_write')
-GROUP BY User;" 2>/dev/null
+GROUP BY User;"
+
+if [ "$MODE" = "local" ]; then
+  MYSQL_PWD="$DB_ROOT_PASSWORD" "$CLIENT" \
+    --host="${DB_HOST:-127.0.0.1}" --port="${DB_PORT:-3306}" \
+    --user=root --table -e "$surface" 2>/dev/null
+else
+  docker compose exec -T mariadb mariadb -uroot -p"$DB_ROOT_PASSWORD" \
+    --table -e "$surface" 2>/dev/null
+fi
