@@ -68,6 +68,14 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
+# **`mariadb-client` n'est pas un extra.** `pnpm db:migrate` cherche un client local, et à
+# défaut un conteneur Docker : sans lui, il refuse de partir - ce qui rendrait la base
+# impossible à migrer depuis le conteneur, c'est-à-dire au premier déploiement. Le paquet
+# fournit aussi `mariadb-dump`, dont `pnpm db:export` a besoin.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends mariadb-client \
+    && rm -rf /var/lib/apt/lists/*
+
 # `output: "standalone"` n'est pas activé, et l'image embarque donc `node_modules` en
 # entier - environ 1 Go. C'est un choix, pas un oubli : le conteneur peut ainsi jouer
 # `pnpm db:migrate`, `pnpm admin:create` et `pnpm db:import`, qui passent par `tsx` et par
