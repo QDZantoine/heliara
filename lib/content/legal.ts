@@ -164,15 +164,31 @@ export const privacyPolicy: LegalSection[] = [
       },
       {
         /*
-          Décrit ce que fait réellement `ViewCounter` : aucun outil de mesure tiers,
-          aucun cookie, un compteur par article et une clé dans le stockage de session
-          pour ne pas compter deux fois la même lecture. C'est aussi pour cela que le
-          chiffre affiché est présenté comme une indication de lecture et non comme une
-          mesure d'audience.
+          Décrit ce que fait réellement `ViewCounter` : aucun cookie, un compteur par
+          article et une clé dans le stockage de session pour ne pas compter deux fois la
+          même lecture. C'est aussi pour cela que le chiffre affiché est présenté comme une
+          indication de lecture et non comme une mesure d'audience - laquelle fait l'objet
+          de l'entrée suivante, et repose sur un mécanisme entièrement distinct.
         */
         label: "Lecture des publications",
         value:
-          "Aucun outil de mesure d'audience tiers n'est utilisé. Un compteur de lectures est tenu par article, sans identifiant de visiteur ni cookie : une clé technique est simplement déposée dans le stockage de session de votre navigateur pour ne pas compter deux fois la même lecture, et elle disparaît à la fermeture de l'onglet.",
+          "Un compteur de lectures est tenu par article, sans identifiant de visiteur ni cookie : une clé technique est simplement déposée dans le stockage de session de votre navigateur pour ne pas compter deux fois la même lecture, et elle disparaît à la fermeture de l'onglet.",
+      },
+      {
+        /*
+          **À maintenir d'accord avec `components/analytics/umami.tsx`.** Cette entrée
+          décrit un traitement réel : la modifier sans toucher au code, ou l'inverse, rend
+          la page fausse. Elle a remplacé une phrase qui affirmait qu'aucun outil de mesure
+          d'audience n'était utilisé, devenue fausse le jour où Umami a été posé.
+
+          Umami n'écrit aucun cookie et ne conserve pas l'adresse IP : il en dérive une
+          empreinte de session qui change chaque jour, ce qui interdit de suivre une même
+          personne d'un jour sur l'autre. C'est ce qui permet de s'en tenir à l'intérêt
+          légitime, sans demande de consentement.
+        */
+        label: "Mesure d'audience",
+        value:
+          "La fréquentation du site est mesurée avec Umami, un outil libre que nous hébergeons nous-mêmes : aucune donnée ne part vers une régie publicitaire ni vers un service tiers. Il ne dépose aucun cookie, ne conserve pas votre adresse IP et ne permet pas de vous suivre d'un jour sur l'autre. Seules des données agrégées sont produites : pages consultées, provenance, type d'appareil, pays. Finalité : comprendre quelles pages sont utiles. Base légale : notre intérêt légitime.",
       },
     ],
   },
@@ -207,6 +223,9 @@ export const privacyPolicy: LegalSection[] = [
     title: "Cookies",
     paragraphs: [
       "Ce site ne dépose aucun cookie publicitaire. Seuls les traceurs strictement nécessaires à son fonctionnement peuvent être utilisés, sans consentement requis. Votre préférence de thème clair ou sombre est conservée dans le stockage local de votre navigateur, et n'est jamais transmise.",
+      // La conséquence concrète du choix d'Umami, et la raison pour laquelle ce site n'a
+      // pas de bandeau de consentement : il n'y a rien à consentir.
+      "Notre mesure d'audience n'utilise pas de cookie non plus. C'est pourquoi ce site ne vous demande rien à votre arrivée : aucun traceur soumis à consentement n'y est déposé.",
     ],
   },
 ]

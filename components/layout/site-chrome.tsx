@@ -1,3 +1,4 @@
+import { Umami } from "@/components/analytics/umami"
 import { PageCurtain } from "@/components/layout/page-curtain"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -43,6 +44,12 @@ export async function SiteChrome({
           websiteNode(),
         ])}
       />
+      {/*
+        La mesure d'audience est posée ici et nulle part ailleurs : ce composant est
+        exactement l'ensemble des pages publiques, 404 comprise, et il n'entoure aucune
+        page d'administration. Elle ne rend rien si elle n'est pas configurée.
+      */}
+      <Umami />
       <PageCurtain />
       <SkipLink />
       <SiteHeader expertiseNav={expertiseNav} />

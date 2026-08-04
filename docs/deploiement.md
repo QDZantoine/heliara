@@ -62,6 +62,7 @@ pas y être placée** - ce n'est pas de la propreté, c'est le modèle de sécur
 | `NEXT_PUBLIC_SITE_ORIGIN`   |       non       |     **oui**     | « Voir le site » reste sur le port d'administration   |
 | `RESEND_API_KEY` `CONTACT_FROM` |    **oui**    |       non       | le formulaire refuse et affiche l'e-mail public       |
 | `CONTACT_TO`                |    optionnel    |       non       | l'adresse publique du site reçoit                    |
+| `UMAMI_SCRIPT_URL` `UMAMI_WEBSITE_ID` |  optionnel   |       non       | aucune mesure d'audience, aucune erreur              |
 | `GOOGLE_SITE_VERIFICATION` `BING_SITE_VERIFICATION` | optionnel |    non    | aucune balise émise ; la vérification DNS reste possible |
 
 \* Le processus public lit les images par leur URL publique, jamais par l'API S3 : il n'a
@@ -305,6 +306,62 @@ ni `script-src` ni `style-src`. Les couvrir demande un nonce par requête, donc 
 middleware qui réécrit chaque réponse. Une politique approximative se termine
 toujours en `unsafe-inline`, qui ne protège de rien tout en donnant l'apparence du
 contraire. À traiter comme un chantier à part, pas comme une ligne de configuration.
+
+### Coolify et Traefik : trois pièges mesurés sur le déploiement de référence
+
+Rien de ce qui suit n'est propre à Heliara, et rien ne se voit à la lecture d'une
+configuration : les trois se manifestent par le même **503**, qui ne distingue pas
+« mauvais réseau » de « route incomplète ».
+
+**1. Coolify tronque les clés de labels longues.** Sur le service de stockage, six labels
+Traefik sur treize sont arrivés coupés dans le conteneur, valeur vide - dont le `service=`
+du routeur. Traefik reconnaissait alors la règle `Host` sans avoir de backend à qui la
+confier, ce qui **est** la définition du 503. Ce n'est pas une affaire de longueur :
+`...entryPoints` et `...middlewares`, de taille identique, l'un passe et l'autre casse.
+
+Le contournement retenu est un fichier de **configuration dynamique** Traefik
+(`/data/coolify/proxy/dynamic/`, exposé dans l'interface sous `Servers` → `Proxy` →
+`Dynamic Configurations`), qui définit routeur, middleware et service en propre. Deux
+avantages sur les labels : il échappe au parseur, et il **survit aux redéploiements** du
+service. Le backend y est désigné par le **nom du conteneur**, jamais par son adresse IP,
+qui change à chaque déploiement.
+
+**2. Un conteneur sur plusieurs réseaux a besoin de `traefik.docker.network`.** Les
+applications Coolify n'en ont pas besoin, elles ne sont que sur le réseau du proxy. Un
+service composé l'est sur trois réseaux : sans ce label, Traefik peut retenir l'adresse
+d'un réseau qu'il ne joint pas. Même symptôme, cause différente.
+
+**3. `Restart` ne régénère pas les labels, `Deploy` seul le fait.** Un domaine ajouté puis
+suivi d'un `Restart` reste enregistré côté Coolify et absent côté Docker : l'interface
+affiche l'URL, le conteneur n'a aucun label, et le proxy connaît un nom sans backend.
+
+Deux constats de la même campagne, utiles à qui reprend ce serveur :
+
+- **L'alias court d'un service composé n'existe que sur son propre réseau.** `minio:9000`
+  n'est pas résolu depuis le réseau du proxy ; le nom complet du conteneur l'est.
+- **Le mode `Full` de Cloudflare suffit**, sans jeton d'API ni challenge DNS. Le challenge
+  HTTP-01 traverse le proxy orange, Traefik interceptant `/.well-known/acme-challenge/`
+  avant tout routeur - une redirection vers HTTPS posée sur l'entrypoint `http` ne le gêne
+  donc pas.
+
+### Vérifier le stockage sans déposer d'image
+
+Quatre requêtes suffisent, et elles distinguent chaque couche. Le préfixe et le domaine
+sont ceux de `S3_PUBLIC_URL`.
+
+| Requête                                     | Attendu | Ce qu'un autre code signifie                     |
+| ------------------------------------------- | ------- | ------------------------------------------------ |
+| `GET /minio/health/live`                     | `200`   | `503` : le proxy n'a pas de backend              |
+| `GET /<seau>/`                                | `403`   | `200` : le listing anonyme est ouvert, à fermer  |
+| `GET /<seau>/public/<objet-inexistant>`       | `404`   | `403` : le préfixe public est fermé, images muettes |
+| `OPTIONS` avec `Origin` de l'administration | `204`   | absence d'`access-control-allow-origin` : dépôts impossibles |
+
+La troisième et la quatrième sont celles qu'on oublie. Un préfixe `public/` fermé donne un
+site dont **toutes** les images manquent sans qu'aucune page n'échoue. Et un preflight CORS
+refusé rend le dépôt impossible avec un message indiscernable d'une panne réseau : le
+navigateur refuse de révéler le statut d'une réponse cross-origin sans en-tête CORS, si
+bien qu'un `503` du proxy et une coupure de connexion produisent le même symptôme à
+l'écran.
 
 ---
 
