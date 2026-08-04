@@ -1,6 +1,7 @@
 {
   "name": "heliara",
   "version": "0.0.1",
+  "packageManager": "pnpm@10.27.0",
   "type": "module",
   "private": true,
   "scripts": {

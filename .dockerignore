@@ -1,0 +1,51 @@
+# Ce qui ne doit pas entrer dans le contexte de build.
+#
+# **Sans ce fichier, 909 Mo sont envoyés au démon Docker à chaque build** : le
+# `node_modules` du poste de développement et les caches de Next en représentent l'essentiel.
+# C'est lent, et surtout c'est faux - `node_modules` doit être réinstallé dans l'image, pour
+# la bonne plateforme.
+
+# Les dépendances : réinstallées dans l'image. Celles du poste sont compilées pour macOS
+# (sharp, argon2, swc en darwin-arm64) et casseraient le hachage des mots de passe et
+# l'optimiseur d'images sur linux-x64.
+node_modules
+.pnpm-store
+
+# Les caches et sorties de build, régénérés par l'image.
+.next
+.next-read
+.next-write
+out
+coverage
+
+# Les secrets. `.env` n'est pas versionné, mais il est présent sur le poste : sans cette
+# ligne il entrerait dans une couche de l'image, d'où il ne s'effacerait plus.
+.env
+.env.*
+!.env.example
+
+# Les exports de contenu : plusieurs mégaoctets d'images qui n'ont rien à faire dans l'image.
+export
+
+# Le dépôt et l'outillage local.
+.git
+.gitignore
+.claude
+.vscode
+.idea
+*.log
+.DS_Store
+
+# Les maquettes de référence, hors du dépôt mais présentes sur le poste de l'auteur.
+reference
+
+# La documentation : utile au dépôt, inutile au conteneur.
+docs
+README.md
+CLAUDE.md
+AGENTS.md
+
+# L'infrastructure de développement.
+docker-compose.yml
+Dockerfile
+.dockerignore
