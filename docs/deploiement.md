@@ -77,6 +77,22 @@ supposer : `SITE_ORIGIN` et `S3_PUBLIC_URL`. Mal réglées, le site se sert parf
 annonce des adresses injoignables - aucun aperçu de lien sur les réseaux sociaux, sans
 qu'aucun journal ne le signale. La section 8 dit comment le contrôler.
 
+**Une seule variable a besoin d'être fournie AU BUILD : `SITE_ORIGIN`.** C'est la seule que
+le `Dockerfile` déclare en `ARG`, parce que l'origine des URL absolues est figée dans le
+HTML prérendu. Toutes les autres sont lues à l'exécution.
+
+Ce n'est pas une préférence de style. **Un secret passé en argument de build s'inscrit dans
+les couches de l'image**, où `docker history` le révèle, et dans les journaux de
+construction, qui sont conservés. Le constat a été fait sur le déploiement de référence :
+Docker émet alors un avertissement `SecretsUsedInArgOrEnv` par secret, seize sur un seul
+build, et les mots de passe des deux comptes applicatifs comme la clé d'envoi d'e-mails
+apparaissaient en clair dans les journaux. Sur les plateformes qui proposent de marquer une
+variable comme « variable de build » - Coolify le fait -, **ne cocher que `SITE_ORIGIN`**.
+
+Un secret qui a transité par un `ARG` est à considérer comme divulgué, donc à renouveler :
+`ALTER USER` pour les comptes de base, une nouvelle clé côté service d'envoi, un nouveau
+mot de passe racine côté stockage.
+
 ---
 
 ## 0 ter. La séquence de commandes, dans l'ordre
