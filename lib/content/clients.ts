@@ -36,7 +36,12 @@ export type Client = {
    * Elle suit le fichier, pas la marque.
    */
   shape: "wide" | "square"
-  /** Le site du client. Le bandeau ne fait pas de lien : c'est une preuve, pas une pub. */
+  /**
+   * Le site du client, vers lequel le logo fait lien.
+   *
+   * **Facultatif de fait** : la base peut rendre une chaîne vide, et le bandeau rend
+   * alors le logo sans ancre plutôt qu'un lien mort. Une URL complète, avec son schéma.
+   */
   site: string
 }
 
@@ -77,6 +82,30 @@ export const clients: readonly Client[] = [
     shape: "wide",
     logo: "/trusts-logos/logo-luundi.png",
     site: "https://luundi.fr",
+  },
+  {
+    name: "Allianz Uzès",
+    shape: "wide",
+    /*
+      Une paire, parce que le logotype est monochrome : un bleu unique, `#004a93`, qui
+      ne donne que 1,4:1 sur la surface encre - une mesure, pas une impression. La
+      variante sombre est le même dessin repeint en blanc, ce que l'usage de la marque
+      prévoit sur fond sombre.
+
+      **Repeint, et non inversé** : la règle de `Client.logo` tient, `invert` sur ce bleu
+      donnerait un orange qu'Allianz n'a pas. Seul le canal alpha du fichier de référence
+      est conservé, rempli de blanc, donc les contreformes du « A » et l'anneau de
+      l'emblème restent ouverts. Vérifié à l'écran sur les deux plateaux.
+
+      Le fichier de référence porte 500 x 313 px dont près de 60 % de vide vertical : les
+      deux variantes sont détourées à 480 x 126, sans quoi le logo se lirait deux fois
+      plus petit que ses voisins à hauteur égale.
+    */
+    logo: {
+      light: "/trusts-logos/logo-allianz.png",
+      dark: "/trusts-logos/logo-allianz-white.png",
+    },
+    site: "https://agence.allianz.fr/uzes-30700-530092",
   },
   // Les deux dernieres sont les marques soeurs : elles figurent ici parce que leurs sites
   // sont des projets Heliara. Si l'un cessait de l'etre, l'entree sortirait.

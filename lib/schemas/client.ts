@@ -44,9 +44,13 @@ export const clientSchema = z.object({
   logoDarkMediaId: mediaId.nullable().optional(),
   shape: z.enum(["wide", "square"]),
   /**
-   * Le site du client. Il n'est pas affiché - la bande ne fait pas de lien - mais il
-   * garde la provenance de chaque logo traçable, ce qui compte le jour où il faut
-   * redemander une autorisation.
+   * Le site du client, vers lequel son logo fait lien dans la bande. Il garde aussi la
+   * provenance de chaque référence traçable, ce qui compte le jour où il faut redemander
+   * une autorisation.
+   *
+   * **Le laisser vide est admis et n'a rien d'un défaut** : la bande rend alors le logo
+   * sans ancre. C'est ce qui permet d'afficher une référence dont on n'a pas l'adresse
+   * plutôt que de fabriquer un lien mort.
    *
    * Une URL et non du texte libre : c'est ce qui rend le champ vérifiable, et la
    * saisie d'un nom de domaine sans schéma est l'erreur la plus courante.

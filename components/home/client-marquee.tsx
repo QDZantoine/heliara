@@ -140,6 +140,13 @@ function LogoRow({
   return (
     <ul
       aria-hidden={hidden ? "true" : undefined}
+      /*
+        `inert` sur la copie, et il n'est pas décoratif : depuis que les logos font lien,
+        un `aria-hidden` seul laisserait huit ancres focalisables dans une rangée que rien
+        n'annonce - la tabulation traverserait deux fois les mêmes marques, la seconde
+        fois en silence.
+      */
+      inert={hidden}
       className="flex shrink-0 items-center gap-10 pr-10 md:gap-14 md:pr-14"
     >
       {clients.map((client) => (
@@ -167,41 +174,76 @@ function LogoRow({
  * thème est une classe sur `<html>` et non la seule préférence système, puisque le
  * sélecteur permet de le forcer : un `<picture media>` se désynchroniserait d'un choix
  * manuel. Même mécanique que les portraits d'équipe.
+ *
+ * **Le logo fait lien vers le site du client, dans un nouvel onglet.** La bande reste une
+ * preuve : c'est justement une preuve qu'un visiteur doit pouvoir aller vérifier, et le
+ * nouvel onglet lui évite de perdre la page d'accueil pour le faire.
  */
 function ClientLogo({ client }: { client: Client }) {
   const taille =
     client.shape === "square" ? "h-10 w-auto md:h-11" : "h-7 w-auto md:h-8"
+  /*
+    La couleur revient au survol **et à la prise de focus**, et la seconde moitié n'est pas
+    un ornement : depuis que le logo est un lien, il se parcourt au clavier, et un état
+    focalisé qui ne rendrait que l'anneau laisserait la marque grise pendant qu'on la
+    désigne. Les variantes sont nommées (`/logo`) pour ne pas être capturées par le
+    `group` de la piste, qui pilote la pause du défilement.
+  */
   const rendu =
-    "opacity-70 grayscale transition-[opacity,filter] duration-[200ms] ease-expo hover:opacity-100 hover:grayscale-0 dark:opacity-100 dark:grayscale-0"
+    "opacity-70 grayscale transition-[opacity,filter] duration-[200ms] ease-expo group-hover/logo:opacity-100 group-hover/logo:grayscale-0 group-focus-visible/logo:opacity-100 group-focus-visible/logo:grayscale-0 dark:opacity-100 dark:grayscale-0"
 
-  if (typeof client.logo === "string") {
-    return (
+  const images =
+    typeof client.logo === "string" ? (
       <Logo
         src={client.logo}
         alt={client.name}
         className={`${taille} ${rendu}`}
       />
+    ) : (
+      <>
+        <Logo
+          src={client.logo.light}
+          alt={client.name}
+          className={`${taille} ${rendu} dark:hidden`}
+        />
+        {/*
+          La seconde variante est décorative : le nom est déjà porté par la première, qui
+          reste dans l'arbre d'accessibilité même masquée en CSS. L'annoncer ferait lire la
+          référence en double.
+        */}
+        <Logo
+          src={client.logo.dark}
+          alt=""
+          className={`hidden ${taille} dark:block`}
+        />
+      </>
     )
+
+  /*
+    Une référence sans site reste un logo nu. La base rend une chaîne vide quand le champ
+    n'a pas été rempli, et une ancre vide mènerait à la page courante : un lien qui ne va
+    nulle part coûte plus qu'il ne rapporte.
+  */
+  if (!client.site) {
+    return images
   }
 
   return (
-    <>
-      <Logo
-        src={client.logo.light}
-        alt={client.name}
-        className={`${taille} ${rendu} dark:hidden`}
-      />
-      {/*
-        La seconde variante est décorative : le nom est déjà porté par la première, qui
-        reste dans l'arbre d'accessibilité même masquée en CSS. L'annoncer ferait lire la
-        référence en double.
-      */}
-      <Logo
-        src={client.logo.dark}
-        alt=""
-        className={`hidden ${taille} dark:block`}
-      />
-    </>
+    <a
+      href={client.site}
+      target="_blank"
+      rel="noreferrer"
+      /*
+        `min-h-11 min-w-11` : la cible fait 44 px comme le reste des commandes du site, y
+        compris pour un logotype rendu à 28 px de haut. La zone gagnée est du vide autour
+        du dessin, donc la bande ne bouge pas.
+      */
+      className="group/logo inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm"
+    >
+      {images}
+      {/* Un lien qui change de fenêtre le dit, sinon le retour arrière semble cassé. */}
+      <span className="sr-only">, voir le site (nouvel onglet)</span>
+    </a>
   )
 }
 
