@@ -30,13 +30,13 @@ capable d'écrire.
 
 Cinq, dont trois seulement sont indispensables au démarrage.
 
-| Service                | Rôle                                        | Indispensable ?                          |
-| ---------------------- | ------------------------------------------- | ---------------------------------------- |
-| **Node.js 22 LTS**     | les deux processus applicatifs              | oui                                      |
-| **MariaDB 11.4 LTS**   | tout le contenu éditorial                   | oui - sinon le site sert son repli figé  |
-| **Stockage S3**        | images déposées dans l'administration       | oui - sinon aucune image ne s'affiche    |
-| **Reverse proxy TLS**  | terminaison HTTPS, redirections, filtrage   | oui pour la production                   |
-| **Resend**             | acheminement du formulaire de contact       | non - sans lui, le formulaire refuse net |
+| Service               | Rôle                                      | Indispensable ?                          |
+| --------------------- | ----------------------------------------- | ---------------------------------------- |
+| **Node.js 22 LTS**    | les deux processus applicatifs            | oui                                      |
+| **MariaDB 11.4 LTS**  | tout le contenu éditorial                 | oui - sinon le site sert son repli figé  |
+| **Stockage S3**       | images déposées dans l'administration     | oui - sinon aucune image ne s'affiche    |
+| **Reverse proxy TLS** | terminaison HTTPS, redirections, filtrage | oui pour la production                   |
+| **Resend**            | acheminement du formulaire de contact     | non - sans lui, le formulaire refuse net |
 
 Rien d'autre. Pas de Redis, pas de file de messages, pas de CDN obligatoire : voir la
 section 9.
@@ -48,22 +48,22 @@ section 9.
 Le tableau qui décide de tout. **Une variable absente de la colonne d'un processus ne doit
 pas y être placée** - ce n'est pas de la propreté, c'est le modèle de sécurité.
 
-| Variable                    | public (`read`) | admin (`write`) | Sans elle                                            |
-| --------------------------- | :-------------: | :-------------: | ---------------------------------------------------- |
-| `HELIARA_ROLE`              |     `read`      |     `write`     | vaut `read` : l'administration répondrait 404         |
-| `PORT`                      |    optionnel    |    optionnel    | 3000                                                 |
-| `DB_HOST` `DB_PORT` `DB_NAME` |       oui       |       oui       | pas de base : repli sur le contenu figé du dépôt      |
-| `DB_READ_USER` `DB_READ_PASSWORD` |    **oui**    |       oui       | idem                                                 |
-| `DB_WRITE_USER` `DB_WRITE_PASSWORD` | **jamais** |    **oui**     | l'administration ne peut rien écrire                  |
-| `S3_ENDPOINT` `S3_REGION` `S3_BUCKET` |     oui      |       oui       | aucune image ne s'affiche                            |
-| `S3_ROOT_USER` `S3_ROOT_PASSWORD` |   non\*     |     **oui**     | aucun dépôt d'image possible                         |
-| `S3_PUBLIC_URL`             |     **oui**     |       oui       | images et aperçus de lien cassés - voir la section 3 |
-| `SITE_ORIGIN`               |     **oui**     |    optionnel    | les URL absolues pointent vers `heliara.fr`          |
-| `NEXT_PUBLIC_SITE_ORIGIN`   |       non       |     **oui**     | « Voir le site » reste sur le port d'administration   |
-| `RESEND_API_KEY` `CONTACT_FROM` |    **oui**    |       non       | le formulaire refuse et affiche l'e-mail public       |
-| `CONTACT_TO`                |    optionnel    |       non       | l'adresse publique du site reçoit                    |
-| `UMAMI_SCRIPT_URL` `UMAMI_WEBSITE_ID` |  optionnel   |       non       | aucune mesure d'audience, aucune erreur              |
-| `GOOGLE_SITE_VERIFICATION` `BING_SITE_VERIFICATION` | optionnel |    non    | aucune balise émise ; la vérification DNS reste possible |
+| Variable                                            | public (`read`) | admin (`write`) | Sans elle                                                |
+| --------------------------------------------------- | :-------------: | :-------------: | -------------------------------------------------------- |
+| `HELIARA_ROLE`                                      |     `read`      |     `write`     | vaut `read` : l'administration répondrait 404            |
+| `PORT`                                              |    optionnel    |    optionnel    | 3000                                                     |
+| `DB_HOST` `DB_PORT` `DB_NAME`                       |       oui       |       oui       | pas de base : repli sur le contenu figé du dépôt         |
+| `DB_READ_USER` `DB_READ_PASSWORD`                   |     **oui**     |       oui       | idem                                                     |
+| `DB_WRITE_USER` `DB_WRITE_PASSWORD`                 |   **jamais**    |     **oui**     | l'administration ne peut rien écrire                     |
+| `S3_ENDPOINT` `S3_REGION` `S3_BUCKET`               |       oui       |       oui       | aucune image ne s'affiche                                |
+| `S3_ROOT_USER` `S3_ROOT_PASSWORD`                   |      non\*      |     **oui**     | aucun dépôt d'image possible                             |
+| `S3_PUBLIC_URL`                                     |     **oui**     |       oui       | images et aperçus de lien cassés - voir la section 3     |
+| `SITE_ORIGIN`                                       |     **oui**     |    optionnel    | les URL absolues pointent vers `heliara.fr`              |
+| `NEXT_PUBLIC_SITE_ORIGIN`                           |       non       |     **oui**     | « Voir le site » reste sur le port d'administration      |
+| `RESEND_API_KEY` `CONTACT_FROM`                     |     **oui**     |       non       | le formulaire refuse et affiche l'e-mail public          |
+| `CONTACT_TO`                                        |    optionnel    |       non       | l'adresse publique du site reçoit                        |
+| `UMAMI_SCRIPT_URL` `UMAMI_WEBSITE_ID`               |    optionnel    |       non       | aucune mesure d'audience, aucune erreur                  |
+| `GOOGLE_SITE_VERIFICATION` `BING_SITE_VERIFICATION` |    optionnel    |       non       | aucune balise émise ; la vérification DNS reste possible |
 
 \* Le processus public lit les images par leur URL publique, jamais par l'API S3 : il n'a
 donc pas besoin des identifiants du stockage. Ne pas les lui donner.
@@ -113,6 +113,7 @@ pnpm db:seed                                   # ou amorcer depuis le dépôt
 
 # 4. Le premier compte d'administration, mot de passe saisi sans écho.
 pnpm admin:create
+pnpm admin:password                            # plus tard, s'il a été oublié
 
 # 5. Démarrer les deux processus.
 HELIARA_ROLE=read  PORT=3000 pnpm start        # public
@@ -191,7 +192,22 @@ deux compteurs. Le pire qu'un appelant hostile en tire est un chiffre gonflé.
 2. **Sur une base existante**, jouer `pnpm db:migrate`. Il rejoue schéma et procédures en
    `db_migrate`, puis **les privilèges en `root`**.
 3. `pnpm admin:create` crée le premier compte d'administration. Le mot de passe est saisi
-   sans écho, jamais passé en argument.
+   sans écho, jamais passé en argument. **`pnpm admin:password` le réinitialise** si
+   personne ne s'en souvient - c'est la seule voie de secours, l'administration n'ayant
+   pas d'écran de gestion des comptes et le site n'envoyant aucun courriel de
+   réinitialisation. Elle révoque au passage toutes les sessions du compte.
+
+   Pour savoir ce qui existe déjà, depuis le conteneur d'administration :
+
+   ```bash
+   mariadb -h "$DB_HOST" -P "$DB_PORT" -u "$DB_WRITE_USER" -p"$DB_WRITE_PASSWORD" \
+     "$DB_NAME" -t -e "CALL list_users();"
+   ```
+
+   `seed@heliara.local` y figure dès qu'un amorçage a tourné : c'est l'acteur technique
+   du journal d'audit, créé avec un mot de passe aléatoire jamais communiqué. **Ce n'est
+   pas un compte utilisable**, et le prendre pour tel fait chercher longtemps.
+
 4. Le contenu, par **l'une des deux voies** ci-dessous. Ce ne sont pas des variantes de la
    même chose : voir le tableau juste après.
 
@@ -200,12 +216,12 @@ aucun effet sur une base existante : il faut passer par `pnpm db:migrate`.
 
 ### Amorcer, ou transporter : deux commandes qui ne font pas la même chose
 
-|                     | `pnpm db:seed`                        | `pnpm db:export` puis `pnpm db:import`      |
-| ------------------- | ------------------------------------- | ------------------------------------------- |
-| Source              | les fichiers du dépôt                 | une base et un stockage réels               |
-| Ce qui arrive       | le contenu de `lib/content/*.ts`      | **tout** ce que la base contient            |
-| Images              | celles de `public/`                   | celles du stockage, déposées comprises      |
-| Textes de l'admin   | non                                   | oui                                         |
+|                   | `pnpm db:seed`                   | `pnpm db:export` puis `pnpm db:import` |
+| ----------------- | -------------------------------- | -------------------------------------- |
+| Source            | les fichiers du dépôt            | une base et un stockage réels          |
+| Ce qui arrive     | le contenu de `lib/content/*.ts` | **tout** ce que la base contient       |
+| Images            | celles de `public/`              | celles du stockage, déposées comprises |
+| Textes de l'admin | non                              | oui                                    |
 
 **Pour reproduire en production le site tel qu'il est aujourd'hui, c'est la seconde voie.**
 `db:seed` ne connaît que le dépôt : les images de tête déposées dans l'administration n'y
@@ -365,11 +381,11 @@ Deux constats de la même campagne, utiles à qui reprend ce serveur :
 Quatre requêtes suffisent, et elles distinguent chaque couche. Le préfixe et le domaine
 sont ceux de `S3_PUBLIC_URL`.
 
-| Requête                                     | Attendu | Ce qu'un autre code signifie                     |
-| ------------------------------------------- | ------- | ------------------------------------------------ |
-| `GET /minio/health/live`                     | `200`   | `503` : le proxy n'a pas de backend              |
-| `GET /<seau>/`                                | `403`   | `200` : le listing anonyme est ouvert, à fermer  |
-| `GET /<seau>/public/<objet-inexistant>`       | `404`   | `403` : le préfixe public est fermé, images muettes |
+| Requête                                     | Attendu | Ce qu'un autre code signifie                                 |
+| ------------------------------------------- | ------- | ------------------------------------------------------------ |
+| `GET /minio/health/live`                    | `200`   | `503` : le proxy n'a pas de backend                          |
+| `GET /<seau>/`                              | `403`   | `200` : le listing anonyme est ouvert, à fermer              |
+| `GET /<seau>/public/<objet-inexistant>`     | `404`   | `403` : le préfixe public est fermé, images muettes          |
 | `OPTIONS` avec `Origin` de l'administration | `204`   | absence d'`access-control-allow-origin` : dépôts impossibles |
 
 La troisième et la quatrième sont celles qu'on oublie. Un préfixe `public/` fermé donne un
