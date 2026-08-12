@@ -11,6 +11,12 @@ import { cta } from "@/lib/site"
  * les convaincus contactent, les prudents vont vers la preuve.
  * Le texte est en premier dans le DOM : c’est lui le LCP, la scène produit
  * passe sous le pli sur mobile.
+ *
+ * **Les quatre blocs entrent en `immediate`, et c'est ce qui rend la phrase ci-dessus
+ * vraie.** Une apparition au scroll ordinaire les masque jusqu'à l'hydratation : le
+ * titre n'était alors peint qu'à 808 ms et le LCP tombait sur un logo du bandeau
+ * clients, 34 fois plus petit. Ils sont dans le champ au chargement, il n'y a rien à
+ * observer.
  */
 function Hero() {
   return (
@@ -18,12 +24,15 @@ function Hero() {
       <Halo variant="hero" />
       <Container className="relative grid items-center gap-8 pt-14 pb-16 md:gap-12 md:pt-24 md:pb-15 lg:min-h-[82svh] lg:grid-cols-[1.05fr_1fr]">
         <div>
-          <Reveal className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.78rem] font-medium text-body shadow-1">
+          <Reveal
+            immediate
+            className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.78rem] font-medium text-body shadow-1"
+          >
             <span className="size-1.5 rounded-full bg-brand" />
             Studio de conception de plateformes numériques
           </Reveal>
 
-          <Reveal delay={60}>
+          <Reveal immediate delay={60}>
             <h1 className="mb-7 text-[clamp(2.125rem,9.5vw,5.5rem)] leading-[0.98] font-extrabold tracking-[-0.035em]">
               Votre métier, traduit en produit
               <span className="text-brand">.</span>
@@ -31,6 +40,7 @@ function Hero() {
           </Reveal>
 
           <Reveal
+            immediate
             delay={120}
             className="mb-9 max-w-[28.75rem] text-[1.0625rem] leading-relaxed text-body md:text-lg"
           >
@@ -40,6 +50,7 @@ function Hero() {
           </Reveal>
 
           <Reveal
+            immediate
             delay={180}
             className="flex flex-col gap-3 sm:flex-row sm:items-center"
           >

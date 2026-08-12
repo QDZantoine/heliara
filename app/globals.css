@@ -526,6 +526,32 @@
   transform: translateY(14px);
 }
 
+/* Bloc déjà dans le champ au chargement : une animation qui part au premier rendu,
+   au lieu d'attendre l'hydratation et l'observer.
+
+   **Translation seule, sans fondu, et c'est tout l'objet de la règle.** Chrome n'élit
+   au LCP qu'un élément peint à une opacité non nulle, et il ne réexamine pas celui
+   qu'il a écarté une fois. Un titre qui entre en fondu part donc à opacité zéro et
+   sort définitivement du calcul, quelle que soit sa taille : mesuré, le titre de
+   l'accueil - 147 525 px², le plus grand élément de la page - n'apparaissait plus dans
+   aucune entrée LCP, qui restaient sur un logo du bandeau clients de 4 320 px².
+
+   La translation, elle, ne coûte rien : le bloc est peint dès la première image, à sa
+   place définitive quatorze pixels plus bas. Le geste reste celui de la DA, amputé du
+   fondu sur les seuls blocs du hero.
+
+   Comme l'état de repos, la règle est sous `data-reveal-ready` : sans JavaScript, rien
+   ne bouge et rien n'est masqué. */
+@keyframes hel-reveal-in {
+  from {
+    transform: translateY(14px);
+  }
+}
+
+[data-reveal-ready] [data-reveal="entering"] {
+  animation: hel-reveal-in 600ms var(--hel-ease-expo) both;
+}
+
 .hel-principle-card[data-reveal] {
   transition:
     opacity 500ms var(--hel-ease-expo),
@@ -559,6 +585,14 @@
   [data-reveal-ready] [data-reveal="pending"] {
     opacity: 1;
     transform: none;
+  }
+
+  /* La règle générique ci-dessus ramène toute animation à 0,01 ms, mais pas son
+     décalage : sans cette ligne, un bloc à `animationDelay: 180ms` resterait invisible
+     180 ms avant d'apparaître d'un coup. C'est exactement le mouvement qu'on a promis
+     de ne pas produire. */
+  [data-reveal-ready] [data-reveal="entering"] {
+    animation: none;
   }
 
   .hel-logos {
@@ -607,9 +641,6 @@
 .hel-logos-switch:not(:checked) ~ * .hel-logos-when-paused {
   display: none;
 }
-
-
-
 
 /* ------------------------------------------------------------
    Contenu riche

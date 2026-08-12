@@ -63,6 +63,45 @@ describe("Reveal", () => {
     })
   })
 
+  describe("en immediate, pour un bloc déjà dans le champ", () => {
+    it("est peint d'emblée, sans passer par l'état en attente", () => {
+      // C'est ce qui rend le bloc éligible au LCP : masqué jusqu'à
+      // l'hydratation, il n'est mesuré qu'une fois le JavaScript exécuté.
+      render(<Reveal immediate>hero</Reveal>)
+      expect(screen.getByText("hero")).toHaveAttribute(
+        "data-reveal",
+        "entering"
+      )
+    })
+
+    it("n'installe aucun observateur : il n'y a rien à attendre", () => {
+      render(<Reveal immediate>hero</Reveal>)
+      expect(observers).toHaveLength(0)
+    })
+
+    it("décale l'animation et non la transition, sans perdre les autres styles", () => {
+      render(
+        <Reveal immediate delay={120} style={{ color: "red" }}>
+          hero
+        </Reveal>
+      )
+      const block = screen.getByText("hero")
+      expect(block.style.animationDelay).toBe("120ms")
+      expect(block.style.transitionDelay).toBe("")
+      expect(block.style.color).toBe("red")
+    })
+
+    it("garde son état même sous prefers-reduced-motion, que le CSS neutralise", () => {
+      media.reducedMotion = true
+      render(<Reveal immediate>hero</Reveal>)
+      expect(screen.getByText("hero")).toHaveAttribute(
+        "data-reveal",
+        "entering"
+      )
+      expect(observers).toHaveLength(0)
+    })
+  })
+
   it("révèle immédiatement quand IntersectionObserver n'existe pas", () => {
     vi.stubGlobal("IntersectionObserver", undefined)
     render(<Reveal>bloc</Reveal>)
