@@ -8,6 +8,7 @@ import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { contactSteps, pastilleAccent } from "@/lib/content/team"
 import { listPublicTeam } from "@/lib/db/public-team"
+import { buttonVariants } from "@/components/ui/button"
 import { pageMetadata } from "@/lib/seo"
 import { site } from "@/lib/site"
 import { cn } from "@/lib/utils"
@@ -53,6 +54,32 @@ export default async function ContactPage() {
             Décrivez votre besoin avec vos mots, pas besoin de cahier des
             charges. Un associé vous répond personnellement sous 48 heures
             ouvrées.
+          </Reveal>
+
+          {/*
+            La seconde porte, et le mot compte : elle est visible et de plein droit, mais
+            elle reste seconde. Le bouton est `secondary` et non `brand` - le geste orange
+            de cet écran est déjà pris par le point du titre et le bouton d'envoi, et un
+            troisième ferait de la page un carrefour au lieu d'un chemin.
+          */}
+          <Reveal delay={150} className="mb-9">
+            <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+              <div>
+                <p className="text-[0.9rem] font-semibold text-ink">
+                  Vous préférez en parler de vive voix ?
+                </p>
+                <p className="text-[0.845rem] leading-relaxed text-body">
+                  Choisissez un créneau dans notre agenda, entre 15 et 60 minutes,
+                  en visio ou sur place.
+                </p>
+              </div>
+              <BookingLink
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "md" }),
+                  "shrink-0 max-sm:w-full"
+                )}
+              />
+            </div>
           </Reveal>
 
           <Reveal className="mb-9">
@@ -132,17 +159,6 @@ export default async function ContactPage() {
                 {site.phone}
               </a>{" "}
               - du lundi au vendredi, 9 h - 18 h
-            </p>
-            {/*
-              Le rendez-vous en troisième, du même poids que les deux autres et non en
-              bouton : le formulaire reste la voie par défaut de cette page, lui seul
-              apporte le contexte du projet. Un geste orange de plus ici concurrencerait
-              le point du titre et le bouton d'envoi.
-            */}
-            <p>
-              Ou prenez rendez-vous :{" "}
-              <BookingLink className="text-info-text hover:underline" /> - de 15
-              à 60 minutes, en visio ou sur place
             </p>
           </Reveal>
         </div>
