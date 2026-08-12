@@ -15,7 +15,8 @@ import { SESSION_COOKIE } from "@/lib/auth/cookie"
  *           un 403 confirmerait qu'une administration existe à cette adresse.
  *   `write` sur le port 3001, joignable par VPN seulement. Il ne sert que
  *           `/admin` ; tout le reste y répond 404, pour qu'une URL publique
- *           divulguée ne serve pas de porte d'entrée.
+ *           divulguée ne serve pas de porte d'entrée. Seule `/` y fait exception
+ *           et redirige vers `/admin` - voir le détail plus bas.
  *
  * Ce n'est que la première des trois barrières, et la plus faible. Les deux autres
  * sont dans `lib/db/pool.ts` : le pool d'écriture refuse de s'ouvrir hors du rôle
@@ -44,6 +45,28 @@ export function proxy(request: NextRequest) {
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/")
 
   if (isWriteRole) {
+    /*
+      La racine mène à l'administration, et c'est la seule exception au 404.
+
+      Sur ce déploiement, `/` est la porte que tout le monde pousse en premier - on
+      tape un domaine, pas un chemin - et il n'y a rien d'autre à y servir. Un 404 y
+      était juste au sens strict et impraticable au quotidien.
+
+      **Une redirection et non une réécriture** : l'adresse affichée devient celle où
+      l'on est, donc l'onglet se met en favori correctement et la page de connexion
+      reçoit sa `suite` au tour suivant.
+
+      Rien n'est divulgué par là : l'existence d'une administration sur un domaine qui
+      s'appelle `admin.` n'est pas un secret, et **tout autre chemin continue de
+      répondre 404** - c'est ce qui compte, puisque le risque visé est l'URL publique
+      recopiée par erreur sur ce déploiement.
+    */
+    if (pathname === "/") {
+      const url = request.nextUrl.clone()
+      url.pathname = "/admin"
+      return NextResponse.redirect(url)
+    }
+
     // Le déploiement d'administration ne sert que l'administration.
     if (!isAdminPath) {
       return notFound()
