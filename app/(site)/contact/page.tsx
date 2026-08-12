@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { BookingLink } from "@/components/contact/booking-link"
 import { ContactForm } from "@/components/contact/contact-form"
 import { Container } from "@/components/primitives/container"
 import { Eyebrow } from "@/components/primitives/eyebrow"
@@ -49,7 +50,7 @@ export default async function ContactPage() {
             delay={120}
             className="mb-9 max-w-[26.25rem] text-[1.0625rem] leading-relaxed text-body"
           >
-            Décrivez votre besoin avec vos mots - pas besoin de cahier des
+            Décrivez votre besoin avec vos mots, pas besoin de cahier des
             charges. Un associé vous répond personnellement sous 48 heures
             ouvrées.
           </Reveal>
@@ -131,6 +132,17 @@ export default async function ContactPage() {
                 {site.phone}
               </a>{" "}
               - du lundi au vendredi, 9 h - 18 h
+            </p>
+            {/*
+              Le rendez-vous en troisième, du même poids que les deux autres et non en
+              bouton : le formulaire reste la voie par défaut de cette page, lui seul
+              apporte le contexte du projet. Un geste orange de plus ici concurrencerait
+              le point du titre et le bouton d'envoi.
+            */}
+            <p>
+              Ou prenez rendez-vous :{" "}
+              <BookingLink className="text-info-text hover:underline" /> - de 15
+              à 60 minutes, en visio ou sur place
             </p>
           </Reveal>
         </div>

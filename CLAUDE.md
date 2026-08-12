@@ -39,7 +39,7 @@ Le `.prettierrc` du projet fait loi, y compris quand il contredit une préféren
 Autres règles :
 
 - Nommage de fichiers en `kebab-case`, composants en `PascalCase`.
-- Server Components par défaut. `"use client"` réservé à : menu mobile, sélecteur de thème, filtres de réalisations, formulaire de contact, apparitions au scroll.
+- Server Components par défaut. `"use client"` réservé à : menu mobile, sélecteur de thème, filtres de réalisations, formulaire de contact, apparitions au scroll, lien de prise de rendez-vous.
 - Contenu éditorial : données statiques typées dans `lib/content/*.ts`, jamais en dur dans le JSX.
 - **Aucun cadratin ni demi-cadratin, jamais** : ni `—` ni `–`, y compris dans le contenu éditorial, les commentaires de code et les messages de commit. Un tiret simple `-` partout où un séparateur est nécessaire. Les maquettes de référence en sont pleines : les transcrire suppose de les convertir au passage.
 
@@ -86,10 +86,10 @@ l'endroit où le visiteur arrive par accident.
 `app/not-found.tsx` et `app/(site)/not-found.tsx` le rendent. Un visiteur ne doit pas voir
 deux écrans différents selon la façon dont il s'est perdu.
 
-| Fichier                     | Attrape                                              | Chrome                      |
-| --------------------------- | ---------------------------------------------------- | --------------------------- |
-| `app/not-found.tsx`         | les URL qui ne correspondent à **aucune** route      | le pose lui-même            |
-| `app/(site)/not-found.tsx`  | les `notFound()` d'une page du site : slug inconnu   | hérité du layout du groupe  |
+| Fichier                    | Attrape                                            | Chrome                     |
+| -------------------------- | -------------------------------------------------- | -------------------------- |
+| `app/not-found.tsx`        | les URL qui ne correspondent à **aucune** route    | le pose lui-même           |
+| `app/(site)/not-found.tsx` | les `notFound()` d'une page du site : slug inconnu | hérité du layout du groupe |
 
 **Deux pièges, tous deux mesurés dans le DOM, aucun visible à la lecture du code :**
 
@@ -225,10 +225,10 @@ l'onglet du navigateur, l'endroit où l'icône est le plus vue - le mot devient 
 bavure grise et le pictogramme se retrouve écrasé dans la moitié haute du carré.
 Mesuré en rendant les deux versions à 16, 20, 32 et 64 px.
 
-| Fichier                                         | Contenu                          |
-| ----------------------------------------------- | -------------------------------- |
-| `favicon.ico` (16/32/48), `icon0.svg`, `icon1.png` | **pictogramme seul, recentré**   |
-| `apple-icon.png` (180), les deux PNG du manifeste | logo complet, mot-symbole compris |
+| Fichier                                            | Contenu                           |
+| -------------------------------------------------- | --------------------------------- |
+| `favicon.ico` (16/32/48), `icon0.svg`, `icon1.png` | **pictogramme seul, recentré**    |
+| `apple-icon.png` (180), les deux PNG du manifeste  | logo complet, mot-symbole compris |
 
 Le pictogramme seul est dérivé du logo : le mot-symbole est un unique chemin du SVG
 (`M73.9 248.8…`, y 219 → 271), le reste du dessin occupe y 34 → 223. Le retirer puis
@@ -251,6 +251,32 @@ squircle, la zone sûre est respectée.
 Les icônes échappent au proxy - son `matcher` exclut `favicon.ico` et toute URL en
 `.svg`, `.png`, `.ico`, `.json` - donc elles sont servies par les **deux**
 déploiements, y compris celui de l'administration où tout le reste répond 404.
+
+## La prise de rendez-vous
+
+Cal.com, sur `/contact`, en troisième voie après le formulaire et le téléphone - jamais
+en bouton, jamais avant eux : le formulaire apporte le contexte du projet, un créneau
+n'apporte qu'un créneau.
+
+**Rien de Cal.com n'est chargé avant le clic, et c'est ce qui rend la page tenable.** Le
+composant officiel contacte `app.cal.com` dès le rendu : l'adresse IP du visiteur partirait
+chez un tiers sans qu'il ait rien demandé, sur un site qui ne pose aujourd'hui aucune
+question de consentement. `BookingLink` est donc une ancre ordinaire vers l'adresse
+publique - elle fonctionne sans JavaScript - dont le clic installe le chargeur officiel puis
+ouvre la fenêtre. Mesuré : avant le clic, `localhost` est le seul hôte contacté.
+
+**`lib/content/legal.ts` décrit ce traitement et doit rester d'accord avec le composant.**
+Poser l'embed au rendu rendrait faux le paragraphe qui dit qu'aucun traceur n'est déposé à
+l'arrivée - le même défaut que celui rencontré avec Umami.
+
+Les couleurs passent par `cssVarsPerTheme`, en **valeurs littérales** : l'iframe est servie
+par Cal.com et n'hérite d'aucune de nos variables CSS. C'est la seule duplication de la
+palette du projet. `cal-brand` est bien pilotable ainsi - vérifié à l'écran, le jour
+sélectionné du calendrier ressort en `#c9481a`.
+
+Deux limites du plan gratuit, à ne pas confondre : la personnalisation **du compte** (page
+Apparence de Cal.com) est réservée au plan Teams, et le badge « Propulsé par Cal.com » reste
+affiché. La configuration de l'embed, elle, est côté navigateur et ne dépend d'aucun plan.
 
 ## Formulaires
 
@@ -346,12 +372,12 @@ articles. Le plan détaillé, son avancement et les décisions actées vivent da
 
 ### Quatre comptes base, deux pour l'application
 
-| Compte       | Privilèges                            | Usage                             |
-| ------------ | ------------------------------------- | --------------------------------- |
-| `db_admin`   | `ALL`                                 | maintenance. Jamais l'application |
-| `db_migrate` | DDL, routines, DML                    | migrations, amorçage, déploiement  |
-| `app_read`   | `EXECUTE` sur les seules `pub_*`      | le site public                    |
-| `app_write`  | `EXECUTE` sur toutes les procédures   | l'administration                  |
+| Compte       | Privilèges                          | Usage                             |
+| ------------ | ----------------------------------- | --------------------------------- |
+| `db_admin`   | `ALL`                               | maintenance. Jamais l'application |
+| `db_migrate` | DDL, routines, DML                  | migrations, amorçage, déploiement |
+| `app_read`   | `EXECUTE` sur les seules `pub_*`    | le site public                    |
+| `app_write`  | `EXECUTE` sur toutes les procédures | l'administration                  |
 
 **Aucun des deux comptes applicatifs n'a d'accès table**, en lecture comme en écriture :
 vérifié sur la base en marche, et verrouillé par `tests/db/separation.test.ts`. Une injection

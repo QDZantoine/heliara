@@ -28,6 +28,23 @@ export const site = {
 } as const
 
 /**
+ * La prise de rendez-vous, chez Cal.com.
+ *
+ * **Une troisième voie, jamais la première.** Le formulaire reste la porte par défaut de
+ * `/contact` : il apporte le contexte du projet, un créneau n'apporte qu'un créneau. Le
+ * rendez-vous se propose à côté de l'e-mail et du téléphone, dans le même bloc et du même
+ * poids.
+ *
+ * `url` est l'adresse publique, celle que suit un visiteur sans JavaScript. `calLink` est
+ * la même chose amputée du domaine, forme qu'attend l'API de l'embed.
+ */
+export const booking = {
+  url: "https://cal.com/antoine-quendez-gcmupq",
+  calLink: "antoine-quendez-gcmupq",
+  label: "Réserver un créneau",
+} as const
+
+/**
  * Les profils publics du studio, pour le `sameAs` des données structurées.
  *
  * **C'est ce qui relie « Heliara » à une entité et non à un mot.** Un moteur - et

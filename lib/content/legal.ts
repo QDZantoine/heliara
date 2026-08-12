@@ -190,6 +190,21 @@ export const privacyPolicy: LegalSection[] = [
         value:
           "La fréquentation du site est mesurée avec Umami, un outil libre que nous hébergeons nous-mêmes : aucune donnée ne part vers une régie publicitaire ni vers un service tiers. Il ne dépose aucun cookie, ne conserve pas votre adresse IP et ne permet pas de vous suivre d'un jour sur l'autre. Seules des données agrégées sont produites : pages consultées, provenance, type d'appareil, pays. Finalité : comprendre quelles pages sont utiles. Base légale : notre intérêt légitime.",
       },
+      {
+        /*
+          **À maintenir d'accord avec `components/contact/booking-link.tsx`.** Cette entrée
+          décrit un traitement réel, et surtout le moment où il commence.
+
+          Le lien de prise de rendez-vous est une ancre ordinaire tant qu'on ne clique pas :
+          **rien n'est chargé depuis Cal.com au rendu de la page**, ce qui est précisément ce
+          qui permet de fonder le traitement sur le clic plutôt que d'ouvrir la question
+          d'un bandeau de consentement. Poser l'embed au rendu rendrait ce paragraphe faux
+          et le reste de la section avec.
+        */
+        label: "Prise de rendez-vous",
+        value:
+          "La page de contact propose de réserver un créneau par Cal.com. Rien n'est chargé depuis ce service tant que vous ne cliquez pas : c'est l'ouverture de la fenêtre de réservation, et elle seule, qui établit une connexion vers cal.com - lequel reçoit alors votre adresse IP et peut déposer ses propres traceurs. Les informations que vous y saisissez, nom, adresse électronique et créneau choisi, sont traitées par Cal.com en qualité de sous-traitant. Finalité : convenir d'un rendez-vous. Base légale : votre consentement, matérialisé par ce clic. Vous pouvez vous en dispenser : le formulaire, l'adresse électronique et le téléphone mènent au même endroit.",
+      },
     ],
   },
   {
@@ -203,7 +218,7 @@ export const privacyPolicy: LegalSection[] = [
     title: "Destinataires et sous-traitants",
     paragraphs: [
       "Vos données ne sont ni vendues, ni cédées, ni utilisées à des fins de prospection automatisée.",
-      "Elles sont traitées par nos sous-traitants techniques dans le seul cadre de leur mission, sous contrat conforme au règlement général sur la protection des données : hébergement, acheminement des messages électroniques. La liste détaillée est disponible sur demande.",
+      "Elles sont traitées par nos sous-traitants techniques dans le seul cadre de leur mission, sous contrat conforme au règlement général sur la protection des données : hébergement, acheminement des messages électroniques, prise de rendez-vous. La liste détaillée est disponible sur demande.",
     ],
   },
   {
@@ -226,6 +241,12 @@ export const privacyPolicy: LegalSection[] = [
       // La conséquence concrète du choix d'Umami, et la raison pour laquelle ce site n'a
       // pas de bandeau de consentement : il n'y a rien à consentir.
       "Notre mesure d'audience n'utilise pas de cookie non plus. C'est pourquoi ce site ne vous demande rien à votre arrivée : aucun traceur soumis à consentement n'y est déposé.",
+      /*
+        La nuance qui garde le paragraphe précédent vrai. « À votre arrivée » y fait tout
+        le travail : le seul tiers du site n'est joint qu'après un clic délibéré, donc
+        aucune arrivée sur une page ne dépose quoi que ce soit.
+      */
+      "Une seule exception, et elle dépend de vous : si vous ouvrez la fenêtre de prise de rendez-vous, Cal.com peut y déposer ses propres traceurs. Ne pas cliquer suffit à s'en tenir à l'écart.",
     ],
   },
 ]
