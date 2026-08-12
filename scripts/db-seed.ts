@@ -19,9 +19,16 @@
  * D'où cette commande : elle amorce la base avec le contenu existant, une fois,
  * pour que la bascule se fasse sans rien perdre.
  *
- * **Idempotente** : une fiche dont le slug existe déjà est laissée telle quelle,
- * jamais écrasée. Rejouer la commande après avoir modifié un contenu dans
- * l'administration ne défait donc pas le travail fait.
+ * **Idempotente, et strictement additive** : une entrée qui existe déjà - par slug pour
+ * les réalisations, les articles et les services, par nom pour les références clientes
+ * et l'équipe - est laissée telle quelle, jamais écrasée. Rejouer la commande après
+ * avoir modifié un contenu dans l'administration ne défait donc pas le travail fait, et
+ * ne redépose aucun fichier déjà déposé.
+ *
+ * **La règle n'a pas toujours été tenue** : les familles d'expertise étaient réécrites
+ * à chaque passage, sans que le compte-rendu le dise. Toute écriture ajoutée ici doit
+ * donc être précédée d'un test d'existence - voir `seedExpertises`, qui porte la seule
+ * mise à jour du script et la réserve aux familles qu'il vient de créer.
  */
 import "@/scripts/env"
 
@@ -268,6 +275,15 @@ async function seedArticles(actor: Buffer) {
  * service qui existe - et elle reprend la coïncidence du contenu statique, où le
  * service porte le même slug que sa famille. C'est précisément cette coïncidence que
  * `nav_service_slug` rend explicite.
+ *
+ * **Une famille qui existe déjà n'est jamais réécrite**, et c'est la seule partie de
+ * l'amorçage où la règle a dû être rétablie : les deux boucles ci-dessous appelaient
+ * `update_expertise_family` sans condition, donc un second passage ramenait titre,
+ * résumé, tag, halo et les trois barres du croquis à la version du dépôt. La première
+ * boucle allait plus loin encore, en posant une cible de nav vide - restaurée par la
+ * seconde, mais laissée telle quelle si le script s'interrompait entre les deux.
+ *
+ * Rien ne signalait cette réécriture : le compte-rendu n'affiche que les créations.
  */
 async function seedExpertises(actor: Buffer) {
   const existingFamilies = new Map(
@@ -284,25 +300,33 @@ async function seedExpertises(actor: Buffer) {
   let families = 0
   let services = 0
   let skipped = 0
+  let skippedFamilies = 0
+  /*
+    Les familles que ce passage vient de créer, et elles seules. C'est ce qui autorise
+    les deux `update_expertise_family` : ils ne peuvent alors rien écraser, puisqu'il
+    n'y avait rien avant eux.
+  */
+  const created = new Set<string>()
 
   for (const family of expertiseFamilies) {
-    let id = existingFamilies.get(family.slug)
-
-    if (!id) {
-      const row = await write.rowStrict<{ id: Buffer }>(
-        "create_expertise_family",
-        [family.slug, family.label, actor, null]
-      )
-      id = row.id
-      existingFamilies.set(family.slug, id)
-      families += 1
-      stdout.write(`  + famille ${family.slug}\n`)
+    if (existingFamilies.has(family.slug)) {
+      skippedFamilies += 1
+      continue
     }
+
+    const row = await write.rowStrict<{ id: Buffer }>(
+      "create_expertise_family",
+      [family.slug, family.label, actor, null]
+    )
+    existingFamilies.set(family.slug, row.id)
+    created.add(family.slug)
+    families += 1
+    stdout.write(`  + famille ${family.slug}\n`)
 
     // La cible de nav est laissée vide à cette étape : elle est posée plus bas,
     // quand les services existent.
     await write.void("update_expertise_family", [
-      id,
+      row.id,
       family.slug,
       family.label,
       family.title,
@@ -373,8 +397,17 @@ async function seedExpertises(actor: Buffer) {
     stdout.write(`  + ${service.slug}\n`)
   }
 
-  // La cible de nav, maintenant que les services existent.
+  /*
+    La cible de nav, maintenant que les services existent - et seulement pour les
+    familles que ce passage a créées. Une famille déjà en base a déjà la sienne, posée
+    à son propre amorçage ou changée depuis dans l'administration : la réécrire serait
+    au mieux inutile, au pire défaire un choix.
+  */
   for (const family of expertiseFamilies) {
+    if (!created.has(family.slug)) {
+      continue
+    }
+
     const id = existingFamilies.get(family.slug)
     const hasTwin = expertiseServices.some(
       (service) => service.slug === family.slug
@@ -398,7 +431,7 @@ async function seedExpertises(actor: Buffer) {
     }
   }
 
-  return { families, services, skipped }
+  return { families, services, skipped, skippedFamilies }
 }
 
 /**
@@ -626,8 +659,17 @@ async function main() {
   stdout.write(
     `  ${skills.families} famille(s), ${skills.services} service(s) créé(s)`
   )
+  /*
+    Les familles laissées telles quelles sont annoncées, et pas seulement les services.
+    Le compte-rendu se taisait sur elles à l'époque où l'amorçage les réécrivait : c'est
+    précisément ce silence qui rendait la réécriture invisible.
+  */
+  const intactes = [
+    skills.skippedFamilies && `${skills.skippedFamilies} famille(s)`,
+    skills.skipped && `${skills.skipped} service(s)`,
+  ].filter(Boolean)
   stdout.write(
-    skills.skipped ? `, ${skills.skipped} déjà présent(s).\n` : ".\n"
+    intactes.length ? `, ${intactes.join(" et ")} inchangé(s).\n` : ".\n"
   )
   stdout.write("\nRéférences clientes\n")
   const refs = await seedClients(actor)
