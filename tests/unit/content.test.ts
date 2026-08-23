@@ -9,6 +9,8 @@ import {
   feedArticles,
   getArticle,
   getRelatedArticles,
+  isStudioByline,
+  studioByline,
 } from "@/lib/content/articles"
 import {
   caseHref,
@@ -284,6 +286,29 @@ describe("expertises", () => {
 })
 
 describe("articles", () => {
+  /*
+    Les six articles étaient signés par cinq personnes inventées, avec fonction précise -
+    les mêmes noms de démonstration que ceux déjà retirés de l'équipe. Ils avaient
+    survécu là : sous chaque article, dans l'`author` des données structurées, et
+    jusque dans le flux RSS.
+
+    Ces deux tests nomment les cinq pour qu'un copier-coller de gabarit échoue plutôt
+    que de remettre en ligne une signature opposable à un homonyme réel.
+  */
+  it("ne fait pas revenir les auteurs inventés du contenu de démonstration", () => {
+    const inventes =
+      /Léa Roussel|Marc Bianchi|Awa Traoré|Nora Belkacem|Julien Pérez/i
+    expect(inventes.test(JSON.stringify(articles))).toBe(false)
+  })
+
+  it("est signé du studio, sans fonction : une équipe n'en a pas", () => {
+    for (const article of articles) {
+      expect(article.author, article.slug).toBe(studioByline.author)
+      expect(isStudioByline(article.author), article.slug).toBe(true)
+      expect(article.authorRole || "", article.slug).toBe("")
+    }
+  })
+
   it("a des slugs uniques et bien formés", () => {
     expect(duplicates(articles.map((article) => article.slug))).toEqual([])
     for (const article of articles) {

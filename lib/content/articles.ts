@@ -23,7 +23,14 @@ export type Article = {
   /** Chapô : la promesse de l'article, en une phrase ou deux. */
   lead: string
   author: string
-  authorRole: string
+  /**
+   * La fonction de l'auteur, **facultative**.
+   *
+   * Vide sur un article signé par le studio : « L'équipe Heliara, Heliara » n'aurait
+   * aucun sens, et les trois endroits qui l'affichent sautent la ligne quand elle
+   * manque plutôt que d'imprimer une virgule seule.
+   */
+  authorRole?: string
   authorInitials: string
   /** Date lisible, telle qu'affichée. */
   date: string
@@ -36,6 +43,43 @@ export type Article = {
   relatedCase?: string
 }
 
+/**
+ * La signature du studio.
+ *
+ * **Elle a remplacé cinq auteurs inventés** - Léa Roussel, Marc Bianchi, Awa Traoré,
+ * Nora Belkacem et Julien Pérez -, chacun avec une fonction précise et un article ou
+ * deux à son nom. C'étaient les mêmes noms de démonstration que ceux déjà retirés de
+ * l'équipe, et ils avaient survécu ici : visibles sous chaque article, dans l'`author`
+ * des données structurées, et repris par le flux RSS.
+ *
+ * **Attribuer un texte à une personne nommée est une affirmation opposable.** Un
+ * homonyme réel suffit à créer un préjudice, et l'article n'a de toute façon pas été
+ * écrit par la personne citée. Le studio signe donc, ce qui est vrai.
+ *
+ * **`authorRole` est vide et le reste** : une équipe n'a pas de fonction. Les trois
+ * affichages sautent la ligne quand elle manque.
+ *
+ * Une signature nommée redevient possible le jour où quelqu'un écrit et assume son
+ * texte : le champ existe toujours dans l'administration, et `isStudioByline` est ce
+ * qui distingue les deux cas là où le balisage en dépend.
+ */
+export const studioByline = {
+  author: "L'équipe Heliara",
+  authorRole: "",
+  /* Une pastille d'initiales attend deux caractères au plus : la marque, seule. */
+  authorInitials: "H",
+} as const
+
+/**
+ * Vrai quand l'article est signé du studio et non d'une personne.
+ *
+ * Lu par la page d'article, qui balise alors l'organisation - `author: { "@id": … }` -
+ * au lieu d'un `Person` dont le nom serait « L'équipe Heliara ».
+ */
+export function isStudioByline(author: string) {
+  return author.trim() === studioByline.author
+}
+
 export const articles: Article[] = [
   {
     slug: "acheter-ou-construire",
@@ -43,9 +87,7 @@ export const articles: Article[] = [
     title:
       "Faut-il un logiciel du marché ou une plateforme sur mesure ? La grille de décision honnête.",
     lead: "Sur mesure n'est pas toujours la bonne réponse, et nous vivons pourtant du sur-mesure. Voici les sept questions qui tranchent, avec les cas où nous recommandons d'acheter.",
-    author: "Léa Roussel",
-    authorRole: "Associée, direction produit",
-    authorInitials: "LR",
+    ...studioByline,
     date: "12 juillet 2026",
     publishedAt: "2026-07-12",
     readingTime: "18 min",
@@ -129,9 +171,7 @@ export const articles: Article[] = [
     title:
       "L'IA dans les outils métiers : ce qui marche déjà, ce qui reste du théâtre",
     lead: "Trois usages tiennent en production aujourd'hui, deux relèvent encore de la démonstration. Comment distinguer les deux avant d'engager un budget.",
-    author: "Marc Bianchi",
-    authorRole: "Associé, architecture et sécurité",
-    authorInitials: "MB",
+    ...studioByline,
     date: "3 juillet 2026",
     publishedAt: "2026-07-03",
     readingTime: "11 min",
@@ -164,9 +204,7 @@ export const articles: Article[] = [
     title:
       "Tester une interface avec des gants de manutention : ce que l'atelier nous a appris",
     lead: "Deux hypothèses invalidées en une après-midi, et une saisie vocale ajoutée au périmètre. Le compte rendu d'une séance de test en conditions réelles.",
-    author: "Awa Traoré",
-    authorRole: "Designer produit",
-    authorInitials: "AT",
+    ...studioByline,
     date: "19 juin 2026",
     publishedAt: "2026-06-19",
     readingTime: "8 min",
@@ -194,9 +232,7 @@ export const articles: Article[] = [
     title:
       "RGAA en pratique : rendre un back-office accessible sans le ralentir",
     lead: "L'accessibilité d'un outil interne se joue sur cinq décisions, prises au cadrage. Prises après, elles coûtent dix fois plus.",
-    author: "Nora Belkacem",
-    authorRole: "Ingénieure logiciel",
-    authorInitials: "NB",
+    ...studioByline,
     date: "5 juin 2026",
     publishedAt: "2026-06-05",
     readingTime: "14 min",
@@ -220,9 +256,7 @@ export const articles: Article[] = [
     title:
       "La dette technique n'est pas une fatalité : la mesurer, la négocier, la rembourser",
     lead: "Une dette qu'on ne chiffre pas est une dette qu'on ne rembourse jamais. Trois indicateurs suffisent à la rendre discutable en comité.",
-    author: "Julien Pérez",
-    authorRole: "Ingénieur logiciel",
-    authorInitials: "JP",
+    ...studioByline,
     date: "22 mai 2026",
     publishedAt: "2026-05-22",
     readingTime: "10 min",
@@ -246,9 +280,7 @@ export const articles: Article[] = [
     title:
       "Souveraineté numérique : ce que les nouvelles obligations changent pour vos plateformes",
     lead: "Hébergement, sous-traitance, transferts hors UE : le point sur ce qui s'applique déjà et ce qui arrive.",
-    author: "Marc Bianchi",
-    authorRole: "Associé, architecture et sécurité",
-    authorInitials: "MB",
+    ...studioByline,
     date: "7 mai 2026",
     publishedAt: "2026-05-07",
     readingTime: "6 min",

@@ -202,6 +202,12 @@ voit ni au build, ni au typecheck, ni à l'écran :**
   deux leur URL canonique.
 - **Le balisage reprend mot pour mot ce que la page montre.** Un fil balisé plus profond que
   celui qu'on affiche, ou une FAQ balisée absente de l'écran, est un écart signalable.
+- **Les villes d'intervention ne sont pas des adresses.** `serviceAreas` de `lib/site.ts`
+  porte Montpellier, Béziers, Nîmes et Paris ; elles sont **affichées** - pied de page de
+  chaque écran, `/contact`, `llms.txt` - avant d'être reprises en `areaServed`. Jamais de
+  `PostalAddress` par ville, jamais de `LocalBusiness`, jamais de page « développeur web
+  à Montpellier » : le studio n'a pas d'agence dans chacune, et un établissement déclaré
+  qui n'existe pas est le premier motif de sanction en référencement local.
 
 **`lib/origin.ts` est la source unique des URL absolues**, et tout passe par elle :
 canonique, OpenGraph, plan du site, `robots.txt`, `llms.txt`, `@id` du graphe. Ne jamais
@@ -277,6 +283,52 @@ sélectionné du calendrier ressort en `#c9481a`.
 Deux limites du plan gratuit, à ne pas confondre : la personnalisation **du compte** (page
 Apparence de Cal.com) est réservée au plan Teams, et le badge « Propulsé par Cal.com » reste
 affiché. La configuration de l'embed, elle, est côté navigateur et ne dépend d'aucun plan.
+
+## La bulle WhatsApp
+
+En bas à droite de **toutes** les pages publiques, 404 comprise, posée par `SiteChrome`
+comme le pied de page. Elle déplie deux actions : écrire sur WhatsApp, ou appeler le
+même numéro. Une seule des deux aurait tranché à la place du visiteur.
+
+**Aucun JavaScript, et c'est le point de conception.** L'ouverture repose sur
+`<details>` : le navigateur porte l'état, le clavier et l'annonce « développé / replié ».
+Un composant client aurait ajouté du script sur chaque page du site pour deux liens qui
+n'en demandent pas. Contrepartie assumée : le dépliant ne se referme ni au clic à côté
+ni sur `Échap` - un second clic sur la bulle suffit, et les deux actions quittent la
+page.
+
+**Rien n'est chargé depuis Meta avant le clic** : deux ancres ordinaires, pas de widget
+officiel, pas d'iframe. Même exigence que Cal.com, et pour la même raison -
+`lib/content/legal.ts` l'affirme, et le poser autrement rendrait cette page fausse.
+
+**Deux numéros sur le site, jamais sur le même écran.** `site.phone` est la ligne du
+studio (`/contact`, mentions légales) ; `whatsapp.number` est le mobile professionnel,
+le seul qui porte un compte WhatsApp, et la bulle est le seul endroit qui le montre.
+Il s'écrit **en chiffres seuls, indicatif compris** : un `+`, un espace ou un `0` de
+tête donnent une page d'erreur de WhatsApp et non une conversation.
+
+**Habillage surface, glyphe vert, jamais `brand`.** Le geste orange de chaque écran est
+déjà pris par le CTA primaire. Le vert reste cantonné au glyphe et vient de la palette
+du projet (`success-text`), pas du vert de la marque WhatsApp - dont le contraste tombe
+sous le seuil AA sur nos deux fonds. Vérifié à l'écran dans les deux thèmes.
+
+`z-100` : au-dessus du contenu, sous l'en-tête collant (`z-200`), sous le menu plein
+écran (`z-400`) qui doit la couvrir, loin sous le voile de transition (`z-900`).
+
+**48 px collés au coin, et les rangées de filtres lui réservent la place.** Un élément
+fixe traverse toutes les positions verticales au défilement : ce qu'il recouvre ne dépend
+donc que de la **largeur de sa bande depuis le bord** - 64 px sur mobile, 72 px au-delà.
+Mesuré avant correction : la dernière pastille de filtre de `/realisations` et
+`/ressources` était recouverte sur 32 à 48 px, une cible de 53 px l'étant presque
+entièrement. Les deux rangées portent donc un `pr-16 md:pr-12 2xl:pr-0` - au-delà de
+1440 px la gouttière du conteneur suffit et les pastilles retrouvent le bord de la
+grille. **Ne pas déplacer la bulle à gauche** : à 390 px, la bande gauche croise seize
+petites cibles contre cinq à droite, mesuré.
+
+Reste recouvert de 32 à 40 px, et assumé : « S'abonner » de la lettre d'information et
+le lien « Heliara, une marque du groupe » du pied de page, tous deux larges de plus de
+120 px. Et sur mobile, la pastille qui se trouve sous la bulle au repos - la rangée est
+un défileur horizontal, un glissement la dégage.
 
 ## Formulaires
 
@@ -553,10 +605,18 @@ première chose à vérifier avant d'écrire quoi que ce soit d'éditorial.
 
 **Ce qui a été retiré, et ne doit pas revenir.** Huit noms de clients inventés dans le
 bandeau de l'accueil, quatre statistiques non vérifiables (« 47 produits livrés »,
-« 87 % de clients qui reviennent »). Restent en place, et restent à traiter : trois
+« 87 % de clients qui reviennent »), six membres d'équipe fictifs, et les **cinq auteurs
+d'articles** qui portaient les mêmes noms. Restent en place, et restent à traiter : trois
 témoignages signés de personnes nommées avec fonction et employeur, six autres dans les
-fiches de réalisation, six membres d'équipe avec parcours détaillés, et vingt-quatre
-résultats chiffrés.
+fiches de réalisation, et vingt-quatre résultats chiffrés.
+
+**Les articles sont signés du studio, et `authorRole` reste vide.** `studioByline` de
+`lib/content/articles.ts` porte « L'équipe Heliara » ; les trois affichages sautent la
+ligne de fonction quand elle manque, et `isStudioByline` fait que la page d'article
+balise l'**organisation** par son `@id` au lieu d'un `Person` nommé « L'équipe Heliara ».
+Les cinq noms inventés avaient survécu là après avoir été retirés de l'équipe : visibles
+sous chaque article, dans les données structurées, et jusque dans le flux RSS. Une
+signature nommée redevient possible le jour où quelqu'un écrit **et assume** son texte.
 
 **Attribuer un verbatim inventé à une personne nommée chez une entreprise nommée est le
 point le plus exposé du site.** Si un homonyme existe, le préjudice est réel. Ce n'est
@@ -662,7 +722,13 @@ humain ; ce qui reste dans `lib/content/*.ts` a été écarté volontairement, l
 dans `docs/plan-admin.md`.
 
 **Corriger un contenu administrable dans `lib/content/*.ts` ne change rien au site** :
-ces fichiers ne sont plus que le repli et la source d'amorçage.
+ces fichiers ne sont plus que le repli et la source d'amorçage. `pnpm db:seed` ne
+rattrapera pas la correction non plus - il est idempotent et laisse intacte toute entrée
+dont le slug existe déjà. Deux scripts comblent ce trou, et **n'agissent que sur les
+slugs qu'on leur nomme** : `pnpm db:resync-expertises` pour une fiche d'expertise,
+`pnpm db:resync-article-authors` pour la signature d'un article - ce dernier relit toutes
+les autres valeurs en base et les repasse telles quelles, pour ne pas défaire ce qui a
+été retouché dans l'administration.
 
 Avant de toucher à `app/admin/**`, `components/admin/**`, `lib/db/**` ou aux procédures
 d'écriture, charger le skill **`admin-contenus`** : il porte le moule des éditeurs, les

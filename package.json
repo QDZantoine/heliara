@@ -31,6 +31,7 @@
     "db:export": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-export.ts",
     "db:import": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-import.ts",
     "db:resync-expertises": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-resync-expertises.ts",
+    "db:resync-article-authors": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-resync-article-authors.ts",
     "db:import-cases": "HELIARA_ROLE=write tsx --conditions=react-server scripts/db-import-cases.ts",
     "og": "tsx scripts/og.ts"
   },

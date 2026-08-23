@@ -32,7 +32,7 @@ export type ArticleView = {
   title: string
   lead: string
   author: string
-  authorRole: string
+  authorRole?: string
   authorInitials: string
   date: string
   readingTime: string
@@ -195,9 +195,16 @@ function ArticleReadingView({
             <span className="block text-[0.9rem] font-semibold text-ink">
               {article.author}
             </span>
-            <span className="block text-[0.82rem] text-label">
-              {article.authorRole}, Heliara
-            </span>
+            {/*
+              Sautée quand la fonction manque - c'est le cas d'un article signé du
+              studio. « , Heliara » seul sous « L'équipe Heliara » se lirait comme un
+              défaut d'affichage.
+            */}
+            {article.authorRole ? (
+              <span className="block text-[0.82rem] text-label">
+                {article.authorRole}, Heliara
+              </span>
+            ) : null}
           </span>
         </Reveal>
       </Container>
