@@ -35,6 +35,24 @@ export const site = {
  * suivant - et la regex recopiée est exactement le genre de détail qui finit par
  * diverger d'une copie à l'autre.
  */
+/**
+ * Le titre de l'accueil dans un onglet et dans un résultat de recherche.
+ *
+ * **Il ne reprend plus la baseline, et c'est une décision de référencement.** « Heliara -
+ * Votre métier, traduit en produit » ne contient aucun mot de catégorie : rien n'y dit
+ * qu'il s'agit de développement. Or « Heliara » est déjà le nom d'une autrice-compositrice
+ * d'Ottawa présente sur Spotify, Apple Music et la presse musicale, plus celui d'une
+ * société sans lien au registre. Un moteur qui doit trancher entre plusieurs entités du
+ * même nom se sert d'abord de ce que la page dit d'elle-même.
+ *
+ * La baseline n'est pas perdue : elle reste le `h1` du hero, à l'endroit où elle est lue
+ * par un humain plutôt que par un désambiguïsateur.
+ *
+ * Longueur tenue sous 65 caractères, au-delà desquels Google coupe. Si la coupe tombe
+ * quand même, elle laisse « Heliara - Studio de développement web… », qui reste juste.
+ */
+export const homeTitle = `${site.name} - Studio de développement web et de produits numériques`
+
 export const phoneE164 = site.phone.replace(/[^+\d]/g, "")
 export const phoneTel = `tel:${phoneE164}`
 

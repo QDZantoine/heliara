@@ -11,7 +11,7 @@ import { listPublicCases } from "@/lib/db/public-cases"
 import { listPublicClients } from "@/lib/db/public-clients"
 import { listPublicTestimonials } from "@/lib/db/public-testimonials"
 import { pageMetadata } from "@/lib/seo"
-import { site } from "@/lib/site"
+import { homeTitle, site } from "@/lib/site"
 
 import type { Metadata } from "next"
 
@@ -25,7 +25,7 @@ import type { Metadata } from "next"
  * de campagne - et chacune se présenterait sinon comme une page distincte.
  */
 export const metadata: Metadata = pageMetadata({
-  title: `${site.name} - ${site.baseline.replace(/\.$/, "")}`,
+  title: homeTitle,
   description: site.description,
   path: "/",
   absoluteTitle: true,

@@ -202,6 +202,12 @@ voit ni au build, ni au typecheck, ni à l'écran :**
   deux leur URL canonique.
 - **Le balisage reprend mot pour mot ce que la page montre.** Un fil balisé plus profond que
   celui qu'on affiche, ou une FAQ balisée absente de l'écran, est un écart signalable.
+- **Le titre de l'accueil porte le metier, pas la baseline**, et c'est une decision de
+  referencement : `homeTitle` de `lib/site.ts`, lu par l'accueil **et** par le `default`
+  du layout. « Heliara » est aussi le nom d'une autrice-compositrice presente sur
+  Spotify, Apple Music et la presse : un moteur qui doit trancher entre deux entites du
+  meme nom se sert d'abord de ce que la page dit d'elle-meme. La baseline reste le `h1`
+  du hero.
 - **Les villes d'intervention ne sont pas des adresses.** `serviceAreas` de `lib/site.ts`
   porte Montpellier, Béziers, Nîmes et Paris ; elles sont **affichées** - pied de page de
   chaque écran, `/contact`, `llms.txt` - avant d'être reprises en `areaServed`. Jamais de

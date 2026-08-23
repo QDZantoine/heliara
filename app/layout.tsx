@@ -9,7 +9,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { siteOrigin } from "@/lib/origin"
-import { site } from "@/lib/site"
+import { homeTitle, site } from "@/lib/site"
 
 const fontDisplay = Schibsted_Grotesk({
   subsets: ["latin", "latin-ext"],
@@ -35,7 +35,9 @@ export const metadata: Metadata = {
   */
   metadataBase: new URL(siteOrigin()),
   title: {
-    default: `${site.name} - ${site.baseline.replace(/\.$/, "")}`,
+    // Le même titre que celui de l'accueil, pour qu'une page sans titre propre ne
+    // reparte pas sur une formulation abandonnée. Voir `homeTitle`.
+    default: homeTitle,
     template: `%s - ${site.name}`,
   },
   description: site.description,

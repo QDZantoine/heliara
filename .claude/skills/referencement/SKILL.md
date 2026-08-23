@@ -220,6 +220,27 @@ Deux points qui ne se voient pas à la lecture :
   le `<link rel="alternate" type="application/rss+xml">` sur `/ressources`, et c'est la
   seule déclaration : l'adresse n'est ni devinable ni listée ailleurs, `llms.txt` excepté.
 
+### Le `robots.txt` servi n'est pas forcement le notre
+
+Mesure en production : Cloudflare injectait un bloc « Managed content » **avant** le notre,
+avec `Content-Signal: ai-train=no` et des `Disallow` pour GPTBot, ClaudeBot, CCBot,
+Google-Extended, Applebot-Extended, Bytespider, meta-externalagent et Amazonbot. Tout le
+referencement generatif etait donc inerte - les moteurs generatifs n'avaient pas le droit
+de lire `llms.txt` ni les donnees structurees - **sans qu'aucune ligne du depot ne le
+dise**. Googlebot, lui, n'etait pas bloque : `Google-Extended` ne concerne que
+l'entrainement et le grounding de Gemini, pas la recherche.
+
+Le reglage vit cote Cloudflare, zone par zone, dans `Securite > Parametres` filtre sur
+`Bot traffic` : « block training in robots.txt » pour le fichier injecte, « AI bot
+policies » pour le blocage reel - ce dernier distingue *Search*, *Agent* et *Training*, ce
+qui permet d'autoriser la lecture au moment de repondre tout en refusant l'entrainement.
+Les menus de la page « Vue d'ensemble » de la zone sont en lecture seule, et un role de
+compte insuffisant les laisse inertes.
+
+**Verifier le fichier servi, pas le code**, apres toute modification de zone :
+`curl -s https://heliara.fr/robots.txt`. Aucun test ne peut l'attraper, le depot n'ayant
+aucune visibilite sur ce que le bord ajoute.
+
 ### `sitemap.ts`
 
 **`lastModified` est omis plutôt qu'inventé.** Les entrées venues du contenu statique et
