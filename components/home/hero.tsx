@@ -3,6 +3,7 @@ import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
+import { LinkedInLink } from "@/components/ui/linkedin-link"
 import { HeroLottie } from "@/components/visuals/hero-lottie"
 import { cta } from "@/lib/site"
 
@@ -70,6 +71,10 @@ function Hero() {
             >
               {cta.secondary.label}
             </ButtonLink>
+            {/* Troisième porte, volontairement muette : elle sort du site, elle ne
+                doit donc pas peser autant que les deux CTA. `self-start` la garde
+                carrée sous 640 px, où les boutons s'empilent en pleine largeur. */}
+            <LinkedInLink className="size-12 self-start" />
           </Reveal>
         </div>
 

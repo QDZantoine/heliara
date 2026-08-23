@@ -3,7 +3,10 @@ import Link from "next/link"
 import { Logo } from "@/components/layout/logo"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Container } from "@/components/primitives/container"
-import { footerNav, group, legalNav, site } from "@/lib/site"
+import { footerNav, group, legalNav, serviceAreaLine, site } from "@/lib/site"
+
+const linkClassName =
+  "inline-flex min-h-11 items-center text-sm text-inverse-fg-muted transition-colors duration-100 hover:text-inverse-fg md:min-h-0 md:py-1"
 
 /**
  * Filet de sécurité + endossement (Architecture UX, S10).
@@ -51,6 +54,16 @@ function SiteFooter({
             <p className="mt-3 max-w-60 text-sm leading-relaxed text-inverse-fg-faint">
               {site.baseline}
             </p>
+            {/*
+              Les villes d'intervention, affichées avant d'être balisées : le nœud
+              `areaServed` des données structurées reprend cette même liste, et une
+              ville balisée mais absente de l'écran est un écart signalable. Le pied de
+              page est le seul endroit qui les porte sur chaque écran, ce qui en fait
+              l'endroit juste - une mention par page serait du remplissage.
+            */}
+            <p className="mt-3 max-w-60 text-[0.78rem] leading-relaxed text-inverse-fg-faint">
+              {serviceAreaLine}
+            </p>
           </div>
 
           {/* La colonne « Expertises » vient de la base : ses entrées sont les
@@ -67,12 +80,24 @@ function SiteFooter({
               <ul className="grid gap-1">
                 {column.links.map((link) => (
                   <li key={`${column.title}-${link.label}-${link.href}`}>
-                    <Link
-                      href={link.href}
-                      className="inline-flex min-h-11 items-center text-sm text-inverse-fg-muted transition-colors duration-100 hover:text-inverse-fg md:min-h-0 md:py-1"
-                    >
-                      {link.label}
-                    </Link>
+                    {/* Un lien sortant - aujourd'hui la page LinkedIn - reste une
+                        ancre ordinaire : `next/link` n'apporte rien hors du site, et
+                        `PageCurtain` ne doit pas poser son voile pour un onglet
+                        qu'il ne navigue pas. */}
+                    {link.href.startsWith("http") ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={linkClassName}
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link href={link.href} className={linkClassName}>
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

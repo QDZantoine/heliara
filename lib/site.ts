@@ -28,6 +28,43 @@ export const site = {
 } as const
 
 /**
+ * Le numéro du studio en E.164, et son lien d'appel.
+ *
+ * **Une seule fois, ici.** Trois endroits ont besoin de cette forme sans espaces - le
+ * lien d'appel de `/contact`, le `telephone` des données structurées, et demain le
+ * suivant - et la regex recopiée est exactement le genre de détail qui finit par
+ * diverger d'une copie à l'autre.
+ */
+export const phoneE164 = site.phone.replace(/[^+\d]/g, "")
+export const phoneTel = `tel:${phoneE164}`
+
+/**
+ * Les villes où le studio intervient.
+ *
+ * **Elles sont affichées avant d'être balisées** - pied de page de chaque écran, page
+ * de contact, `llms.txt` - et le nœud `areaServed` reprend cette liste. Une ville
+ * balisée mais absente de l'écran est un écart signalable, et c'est la même règle que
+ * pour une FAQ ou un fil d'Ariane.
+ *
+ * **Ce ne sont pas des adresses, et rien ne le laisse croire.** Le studio n'a pas
+ * d'agence dans chacune : aucune `PostalAddress` par ville, aucun `LocalBusiness`,
+ * aucune page « développeur web à … ». Déclarer un établissement qui n'existe pas est
+ * le premier motif de sanction en référencement local, et le nier ensuite coûte plus
+ * cher que ce que la mention rapporte.
+ *
+ * L'ordre suit l'ancrage réel : le bassin de Montpellier d'abord, Paris en dernier.
+ */
+export const serviceAreas = [
+  "Montpellier",
+  "Béziers",
+  "Nîmes",
+  "Paris",
+] as const
+
+/** La même liste, en une ligne : c'est ce que lisent le pied de page et `/contact`. */
+export const serviceAreaLine = `${serviceAreas.join(", ")} - et à distance partout en France`
+
+/**
  * La prise de rendez-vous, chez Cal.com.
  *
  * **Une troisième voie, jamais la première.** Le formulaire reste la porte par défaut de
@@ -45,6 +82,70 @@ export const booking = {
 } as const
 
 /**
+ * Le canal WhatsApp Business, celui que porte la bulle flottante.
+ *
+ * **`number` est au format international sans aucun séparateur**, seule forme que
+ * `wa.me` accepte : `33743752572`. Un `+`, un espace ou un `0` de tête y donnent une
+ * page d'erreur de WhatsApp, pas une conversation. `display` est le même numéro écrit
+ * pour être lu, et `tel:` se construit depuis `number` : un seul chiffre à corriger le
+ * jour où le numéro change.
+ *
+ * **C'est un second numéro, et c'est voulu.** `site.phone` est la ligne du studio, celle
+ * de `/contact` et des mentions légales ; celui-ci est le mobile professionnel, le seul
+ * qui porte un compte WhatsApp. La bulle est le seul endroit du site où il figure, pour
+ * qu'aucune page n'affiche deux numéros à la fois.
+ *
+ * **Rien n'est chargé depuis Meta avant le clic**, et c'est ce qui garde la page de
+ * confidentialité vraie : la bulle est une ancre `https://wa.me/...` ordinaire, sans
+ * script ni iframe. Même exigence que la prise de rendez-vous, pour la même raison.
+ */
+export const whatsapp = {
+  label: "WhatsApp",
+  number: "33743752572",
+  display: "+33 7 43 75 25 72",
+  /*
+    Le message pré-rempli, que le visiteur peut effacer. Il sert surtout à ne pas
+    laisser une conversation s'ouvrir sur un champ vide, qui fait hésiter.
+  */
+  greeting: "Bonjour, je souhaite échanger au sujet d'un projet.",
+} as const
+
+/**
+ * Deux adresses, et la distinction compte.
+ *
+ * `whatsappUrl` est l'adresse nue de la conversation : c'est celle que citent les
+ * données structurées et `llms.txt`, parce qu'une URL traînant un message pré-rempli
+ * encodé se recopie mal et n'apprend rien à un moteur. `whatsappChatUrl` est celle
+ * qu'ouvre la bulle, message compris.
+ */
+export const whatsappUrl = `https://wa.me/${whatsapp.number}`
+export const whatsappChatUrl = `${whatsappUrl}?text=${encodeURIComponent(
+  whatsapp.greeting
+)}`
+
+/** Le même numéro, en E.164, et en lien d'appel. */
+export const whatsappE164 = `+${whatsapp.number}`
+export const whatsappTel = `tel:${whatsappE164}`
+
+/**
+ * Les comptes publics du studio.
+ *
+ * **Une seule entrée, et c'est voulu** : un profil ne figure ici que si le studio le
+ * tient réellement à jour. Un lien vers un compte mort dit qu'il n'y a personne
+ * derrière la marque, ce qui est pire que ne rien afficher.
+ *
+ * Le libellé sert le pied de page, l'URL sert aussi le `sameAs` des données
+ * structurées : les deux lisent la même constante, deux adresses différentes
+ * feraient douter des deux.
+ */
+export const social = {
+  linkedin: {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/heliara-fr/",
+  },
+} as const
+
+/**
  * Les profils publics du studio, pour le `sameAs` des données structurées.
  *
  * **C'est ce qui relie « Heliara » à une entité et non à un mot.** Un moteur - et
@@ -52,15 +153,11 @@ export const booking = {
  * comptes existants pour être sûr de parler de la bonne organisation. Sans `sameAs`,
  * rien ne distingue ce studio d'un homonyme.
  *
- * **La liste est vide, et elle doit le rester tant que les URL ne sont pas
- * vérifiées.** Un `sameAs` vers un compte qui n'est pas le nôtre relie l'entité à
- * quelqu'un d'autre, et c'est plus dommageable que l'absence. Les schémas omettent la
- * propriété quand la liste est vide.
- *
- * À compléter : page LinkedIn de l'entreprise en priorité, puis tout profil que le
- * studio tient réellement à jour.
+ * **Une URL n'entre ici qu'une fois vérifiée.** Un `sameAs` vers un compte qui n'est
+ * pas le nôtre relie l'entité à quelqu'un d'autre, et c'est plus dommageable que
+ * l'absence. Les schémas omettent la propriété quand la liste est vide.
  */
-export const socialProfiles: readonly string[] = []
+export const socialProfiles: readonly string[] = [social.linkedin.href]
 
 /**
  * Endossement de groupe. **Le nom du holding n’apparaît nulle part sur le site
@@ -137,6 +234,7 @@ export const footerNav = [
     links: [
       { label: cta.primary.label, href: cta.primary.href },
       { label: site.email, href: `mailto:${site.email}` },
+      { label: social.linkedin.label, href: social.linkedin.href },
       { label: group.label, href: group.href },
     ],
   },

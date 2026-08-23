@@ -3,6 +3,7 @@ import { PageCurtain } from "@/components/layout/page-curtain"
 import { SiteFooter } from "@/components/layout/site-footer"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SkipLink } from "@/components/layout/skip-link"
+import { WhatsAppBubble } from "@/components/layout/whatsapp-bubble"
 import { JsonLd } from "@/components/seo/json-ld"
 import { publicExpertiseNav } from "@/lib/db/public-expertises"
 import { graph, organizationNode, websiteNode } from "@/lib/schema"
@@ -55,6 +56,14 @@ export async function SiteChrome({
       <SiteHeader expertiseNav={expertiseNav} />
       <main id="contenu">{children}</main>
       <SiteFooter expertiseNav={expertiseNav} />
+      {/*
+        La bulle WhatsApp est posée ici pour la même raison que le pied de page : elle
+        appartient à toutes les pages publiques, 404 comprise, et à aucune page
+        d'administration. Elle est `fixed`, donc sa place dans l'arbre ne change rien à
+        l'écran - mais elle vient en dernier, ce qui la met en fin d'ordre de tabulation
+        plutôt que devant le contenu.
+      */}
+      <WhatsAppBubble />
     </>
   )
 }

@@ -205,6 +205,22 @@ export const privacyPolicy: LegalSection[] = [
         value:
           "La page de contact propose de réserver un créneau par Cal.com. Rien n'est chargé depuis ce service tant que vous ne cliquez pas : c'est l'ouverture de la fenêtre de réservation, et elle seule, qui établit une connexion vers cal.com - lequel reçoit alors votre adresse IP et peut déposer ses propres traceurs. Les informations que vous y saisissez, nom, adresse électronique et créneau choisi, sont traitées par Cal.com en qualité de sous-traitant. Finalité : convenir d'un rendez-vous. Base légale : votre consentement, matérialisé par ce clic. Vous pouvez vous en dispenser : le formulaire, l'adresse électronique et le téléphone mènent au même endroit.",
       },
+      {
+        /*
+          **À maintenir d'accord avec `components/layout/whatsapp-bubble.tsx`.** La bulle
+          est une ancre `https://wa.me/...` : aucun widget, aucune iframe, donc aucune
+          connexion vers Meta tant que le visiteur ne clique pas. Poser le widget officiel
+          rendrait ce paragraphe faux - le même défaut que celui rencontré avec Umami, puis
+          évité avec Cal.com.
+
+          Ce qui suit le clic ne nous appartient plus : la conversation a lieu dans
+          WhatsApp, sous la politique de Meta, et c'est ce que dit la dernière phrase
+          plutôt que de laisser croire que nous en maîtrisons le traitement.
+        */
+        label: "Messagerie WhatsApp",
+        value:
+          "Un bouton flottant permet de nous écrire ou de nous appeler sur WhatsApp. Ce n'est qu'un lien : rien n'est chargé depuis WhatsApp ni depuis Meta tant que vous ne cliquez pas, et aucun traceur n'est déposé par cette page. Si vous cliquez, la conversation se déroule dans WhatsApp, dont l'éditeur Meta est alors responsable du traitement de votre numéro et de vos messages, selon sa propre politique de confidentialité. Nous conservons ces échanges comme une demande de contact. Finalité : répondre à votre demande. Base légale : votre consentement, matérialisé par ce clic. Vous pouvez vous en dispenser : le formulaire, l'adresse électronique et le téléphone mènent au même endroit.",
+      },
     ],
   },
   {

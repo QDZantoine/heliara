@@ -82,8 +82,9 @@ export const metadata: Metadata = {
       ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
       : undefined,
   },
-  // Le numéro de téléphone est un gabarit dans `lib/site.ts` : laisser iOS le
-  // détecter transformerait une valeur fausse en lien appelable.
+  // Les deux numéros du site sont déjà des liens `tel:` explicites - celui du studio
+  // sur `/contact`, le mobile WhatsApp dans la bulle. Laisser iOS en détecter d'autres
+  // rendrait appelable n'importe quelle suite de chiffres, un montant ou une date.
   formatDetection: { telephone: false },
 }
 

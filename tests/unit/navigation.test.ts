@@ -15,6 +15,12 @@ import {
   legalNav,
   mainNav,
   site,
+  social,
+  socialProfiles,
+  whatsapp,
+  whatsappChatUrl,
+  whatsappTel,
+  whatsappUrl,
 } from "@/lib/site"
 
 const root = path.resolve(import.meta.dirname, "../..")
@@ -100,6 +106,53 @@ describe("site", () => {
   })
 })
 
+describe("comptes publics", () => {
+  it("n'expose que des URL absolues, seule forme utile à un `sameAs`", () => {
+    for (const profile of socialProfiles) {
+      expect(profile).toMatch(/^https:\/\//)
+    }
+  })
+
+  it("reprend le compte du pied de page dans les données structurées", () => {
+    expect(socialProfiles).toContain(social.linkedin.href)
+  })
+})
+
+describe("WhatsApp", () => {
+  it("n'écrit le numéro qu'en chiffres, seule forme que `wa.me` accepte", () => {
+    // Un `+`, un espace ou un `0` de tête donnent une page d'erreur de WhatsApp.
+    expect(whatsapp.number).toMatch(/^[1-9]\d{6,14}$/)
+  })
+
+  it("écrit le même numéro dans sa forme lisible", () => {
+    expect(whatsapp.display.replace(/[^\d]/g, "")).toBe(whatsapp.number)
+    expect(whatsapp.display.startsWith("+")).toBe(true)
+  })
+
+  it("garde une adresse nue, celle que citent le graphe et `llms.txt`", () => {
+    // Une URL qui traîne un message encodé se recopie mal et n'apprend rien.
+    expect(whatsappUrl).toBe(`https://wa.me/${whatsapp.number}`)
+    expect(whatsappUrl).not.toContain("?")
+  })
+
+  it("compose l'adresse de la bulle avec un message échappé", () => {
+    expect(whatsappChatUrl).toBe(
+      `${whatsappUrl}?text=${encodeURIComponent(whatsapp.greeting)}`
+    )
+    expect(whatsappChatUrl).not.toContain(" ")
+  })
+
+  it("appelle le même numéro que celui de la conversation", () => {
+    expect(whatsappTel).toBe(`tel:+${whatsapp.number}`)
+  })
+
+  it("reste distinct de la ligne du studio : deux numéros, jamais confondus", () => {
+    // `site.phone` est la ligne de `/contact` et des mentions légales ; celui-ci est
+    // le mobile professionnel, et la bulle est le seul endroit qui le montre.
+    expect(whatsapp.number).not.toBe(site.phone.replace(/[^\d]/g, ""))
+  })
+})
+
 describe("navigation", () => {
   it("compte cinq entrées principales, jamais plus : deux niveaux maximum", () => {
     expect(mainNav).toHaveLength(5)
@@ -178,11 +231,12 @@ describe("pied de page", () => {
     }
   })
 
-  it("y place l'e-mail en mailto, le seul lien non interne", () => {
-    const mailto = footerNav
+  it("n'y admet que deux liens non internes : l'e-mail et le compte public", () => {
+    const external = footerNav
       .flatMap((column) => column.links)
-      .find((link) => link.href.startsWith("mailto:"))
-    expect(mailto?.href).toBe(`mailto:${site.email}`)
+      .filter((link) => !link.href.startsWith("/"))
+      .map((link) => link.href)
+    expect(external).toEqual([`mailto:${site.email}`, social.linkedin.href])
   })
 
   it("y reprend le groupe et les deux pages légales", () => {
