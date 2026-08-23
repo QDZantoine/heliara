@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { JsonLd } from "@/components/seo/json-ld"
+import { isStudioByline } from "@/lib/content/articles"
 import { ArticleReadingView } from "@/components/ressources/article-reading-view"
 import { ViewCounter } from "@/components/ressources/view-counter"
 import {
@@ -113,8 +114,15 @@ export default async function ArticlePage(
             description: article.lead,
             publishedAt: article.publishedAt,
             modifiedAt: article.updatedAt,
-            author: article.author,
-            authorRole: article.authorRole,
+            /*
+              Un article signé du studio ne passe **aucun** auteur : le nœud retombe
+              alors sur l'organisation par son `@id`. Baliser un `Person` nommé
+              « L'équipe Heliara » mettrait dans le graphe une personne qui n'existe
+              pas, et un moteur générateur la citerait telle quelle.
+            */
+            ...(isStudioByline(article.author)
+              ? {}
+              : { author: article.author, authorRole: article.authorRole }),
             section: article.category,
             readingTime: article.readingTime,
             imageUrl: article.heroMedia?.url,

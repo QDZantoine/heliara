@@ -1,25 +1,58 @@
 import type { Metadata } from "next"
 
 import { Container } from "@/components/primitives/container"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { FinalCta } from "@/components/sections/final-cta"
 import { PageHero } from "@/components/sections/page-hero"
 import { MethodGaugeCard } from "@/components/visuals/method-gauge"
 import { commitments, methodPhases } from "@/lib/content/method"
+import { graph, howToNode, webPageNode } from "@/lib/schema"
 import { cn } from "@/lib/utils"
 import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = pageMetadata({
+/**
+ * Titre, description et chemin, hissés parce que **trois** consommateurs les lisent :
+ * les métadonnées, le nœud de page et le `HowTo`. Les écrire trois fois, c'est garantir
+ * qu'ils divergeront.
+ */
+const page = {
   title: "Méthode",
   description:
     "Huit temps, des livrables nommés, des jalons courts : ce qui se passe exactement quand vous travaillez avec nous.",
   path: "/methode",
-})
+}
+
+export const metadata: Metadata = pageMetadata(page)
+
+/** L'ancre d'un temps, la même dans le balisage et dans le DOM. */
+const anchor = (num: string) => `temps-${num}`
 
 export default function MethodePage() {
   return (
     <>
+      {/*
+        La page et sa méthode. Le `HowTo` reprend les huit temps affichés juste en
+        dessous, dans le même ordre et avec le même livrable : c'est la condition pour
+        que le balisage ne dise rien de plus que l'écran.
+      */}
+      <JsonLd
+        data={graph([
+          webPageNode(page),
+          howToNode({
+            path: page.path,
+            name: "La méthode de travail du studio Heliara",
+            description: page.description,
+            steps: methodPhases.map((phase) => ({
+              title: phase.title,
+              text: phase.text,
+              deliverable: phase.deliverable,
+              anchor: anchor(phase.num),
+            })),
+          }),
+        ])}
+      />
       <div className="border-b border-line">
         <PageHero
           eyebrow="Méthode"
@@ -41,7 +74,7 @@ export default function MethodePage() {
             {methodPhases.map((phase, index) => {
               const textFirst = index % 2 === 0
               return (
-                <li key={phase.num}>
+                <li key={phase.num} id={anchor(phase.num)}>
                   <Reveal className="relative grid items-center gap-4 menu:grid-cols-2 menu:gap-18">
                     <span
                       aria-hidden="true"

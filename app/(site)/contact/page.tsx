@@ -3,22 +3,27 @@ import type { Metadata } from "next"
 import { BookingLink } from "@/components/contact/booking-link"
 import { ContactForm } from "@/components/contact/contact-form"
 import { Container } from "@/components/primitives/container"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { contactSteps, pastilleAccent } from "@/lib/content/team"
 import { listPublicTeam } from "@/lib/db/public-team"
 import { buttonVariants } from "@/components/ui/button"
+import { graph, webPageNode } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
-import { site } from "@/lib/site"
+import { phoneTel, serviceAreaLine, site } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
-export const metadata: Metadata = pageMetadata({
+/** Lu deux fois : par les métadonnées et par le nœud `ContactPage`. */
+const page = {
   title: "Contact",
   description:
     "Décrivez votre besoin avec vos mots. Un associé vous répond personnellement sous 48 heures ouvrées.",
   path: "/contact",
-})
+}
+
+export const metadata: Metadata = pageMetadata(page)
 
 export const revalidate = 60
 
@@ -33,6 +38,12 @@ export default async function ContactPage() {
 
   return (
     <section className="relative overflow-hidden">
+      {/*
+        `ContactPage` plutôt que `WebPage` : c'est le seul type que schema.org réserve à
+        cette intention, et les points de contact de l'organisation - e-mail, ligne du
+        studio, WhatsApp - la référencent déjà par son `@id`.
+      */}
+      <JsonLd data={graph([webPageNode({ ...page, type: "ContactPage" })])} />
       <Halo variant="warm" />
       <Container className="relative grid items-start gap-12 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-18">
         {/* Réassurance à gauche. Sur mobile, le formulaire passe en premier
@@ -69,8 +80,8 @@ export default async function ContactPage() {
                   Vous préférez en parler de vive voix ?
                 </p>
                 <p className="text-[0.845rem] leading-relaxed text-body">
-                  Choisissez un créneau dans notre agenda, entre 15 et 60 minutes,
-                  en visio ou sur place.
+                  Choisissez un créneau dans notre agenda, entre 15 et 60
+                  minutes, en visio ou sur place.
                 </p>
               </div>
               <BookingLink
@@ -152,14 +163,18 @@ export default async function ContactPage() {
             </p>
             <p>
               Ou le téléphone :{" "}
-              <a
-                href={`tel:${site.phone.replace(/[^+\d]/g, "")}`}
-                className="text-info-text hover:underline"
-              >
+              <a href={phoneTel} className="text-info-text hover:underline">
                 {site.phone}
               </a>{" "}
               - du lundi au vendredi, 9 h - 18 h
             </p>
+            {/*
+              Les villes d'intervention, ici aussi : c'est la page qu'on ouvre pour
+              savoir si l'on peut nous joindre depuis chez soi. Le pied de page les
+              porte sur chaque écran et `areaServed` les reprend - les trois lisent la
+              même constante, deux listes divergentes feraient douter des deux.
+            */}
+            <p>{serviceAreaLine}.</p>
           </Reveal>
         </div>
 

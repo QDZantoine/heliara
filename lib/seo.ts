@@ -63,6 +63,14 @@ type PageMetaInput = {
    * dans l'onglet.
    */
   absoluteTitle?: boolean
+  /**
+   * Un flux à annoncer, quand la page en a un.
+   *
+   * Rend le `<link rel="alternate" type="application/rss+xml">` que les lecteurs de
+   * flux et les navigateurs cherchent. **Un flux qu'aucune page n'annonce ne se
+   * découvre pas** : l'adresse n'est ni devinable ni listée nulle part ailleurs.
+   */
+  feed?: { title: string; path: string }
 }
 
 export function pageMetadata({
@@ -74,13 +82,25 @@ export function pageMetadata({
   image,
   noIndex,
   absoluteTitle,
+  feed,
 }: PageMetaInput): Metadata {
   const url = absoluteUrl(path)
 
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      ...(feed
+        ? {
+            types: {
+              "application/rss+xml": [
+                { url: absoluteUrl(feed.path), title: feed.title },
+              ],
+            },
+          }
+        : {}),
+    },
     openGraph: {
       type,
       url,

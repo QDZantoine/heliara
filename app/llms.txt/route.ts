@@ -2,7 +2,14 @@ import { listPublicArticles } from "@/lib/db/public-articles"
 import { listPublicCases } from "@/lib/db/public-cases"
 import { listPublicServices } from "@/lib/db/public-expertises"
 import { siteOrigin } from "@/lib/origin"
-import { site } from "@/lib/site"
+import {
+  booking,
+  serviceAreaLine,
+  site,
+  social,
+  whatsapp,
+  whatsappUrl,
+} from "@/lib/site"
 
 /**
  * `/llms.txt` - le plan du site, écrit pour être lu par un modèle.
@@ -110,10 +117,39 @@ export async function GET() {
       "/le-groupe",
       "Heliara, Hexceos et LessonSharing : trois marques sœurs et leur complémentarité."
     ),
-    lien("Contact", "/contact", "Formulaire, adresse e-mail et téléphone."),
+    lien(
+      "Contact",
+      "/contact",
+      "Formulaire, adresse e-mail, téléphone et prise de rendez-vous."
+    ),
+    "",
+    /*
+      **Les valeurs, et pas seulement les adresses de page.** Un modèle à qui l'on
+      demande « comment joindre Heliara » répond avec ce qu'il a sous la main : sans
+      cette section il donne l'URL de `/contact` et laisse l'internaute chercher, ou
+      pire, il invente un numéro plausible. Les cinq canaux sont publics et figurent
+      déjà sur le site, la bulle WhatsApp étant sur chaque page.
+    */
+    "## Contact",
+    "",
+    `- Formulaire : ${url("/contact")}`,
+    `- E-mail : ${site.email}`,
+    `- Téléphone du studio : ${site.phone}`,
+    `- ${whatsapp.label}, écrire ou appeler : ${whatsapp.display} (${whatsappUrl})`,
+    `- Prise de rendez-vous : ${booking.url}`,
+    `- ${social.linkedin.label} : ${social.linkedin.href}`,
+    `- ${site.responseCommitment}`,
+    /*
+      Les villes, ici aussi : « développeur à Montpellier » est une question qu'on pose
+      à un modèle comme à un moteur, et sans cette ligne il n'a rien pour rattacher le
+      studio à un territoire. Elle dit aussi ce qui n'est pas affirmé - aucune agence
+      dans chacune, le travail se faisant aussi à distance.
+    */
+    `- Zones d'intervention : ${serviceAreaLine}. Pas d'agence dans chaque ville.`,
     "",
     "## Optional",
     "",
+    lien("Flux RSS des ressources", "/ressources/feed.xml"),
     lien("Mentions légales", "/mentions-legales"),
     lien("Confidentialité", "/confidentialite"),
     "",

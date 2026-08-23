@@ -47,7 +47,24 @@ export default async function ExpertisesPage() {
       {/* Une page de section : `CollectionPage` dit à un moteur que cette adresse est un
           point d'entrée vers une collection, et non un article de plus. Le titre et la
           description viennent de `page`, la même source que les métadonnées. */}
-      <JsonLd data={graph([collectionPageNode(page)])} />
+      {/*
+          `mainEntity` énumère les services **affichés**, famille par famille et dans
+          l'ordre de la page : sans lui, la collection se déclarait sans jamais dire ce
+          qu'elle collecte.
+      */}
+      <JsonLd
+        data={graph([
+          collectionPageNode({
+            ...page,
+            items: groups.flatMap(({ services }) =>
+              services.map((service) => ({
+                name: service.title,
+                path: `/expertises/${service.slug}`,
+              }))
+            ),
+          }),
+        ])}
+      />
 
       <PageHero
         eyebrow="Expertises"

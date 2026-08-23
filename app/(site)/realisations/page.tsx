@@ -6,6 +6,7 @@ import { Section } from "@/components/primitives/section"
 import { CaseGrid } from "@/components/realisations/case-grid"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
+import { caseHref } from "@/lib/content/cases"
 import { listPublicCases, listPublicSectors } from "@/lib/db/public-cases"
 import { collectionPageNode, graph } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
@@ -54,7 +55,23 @@ export default async function RealisationsPage() {
       {/* Une page de section : `CollectionPage` dit à un moteur que cette adresse est un
           point d'entrée vers une collection, et non un article de plus. Le titre et la
           description viennent de `page`, la même source que les métadonnées. */}
-      <JsonLd data={graph([collectionPageNode(page)])} />
+      {/*
+          `mainEntity` énumère les fiches affichées, dans l'ordre de la grille. La liste
+          non filtrée, toujours : les filtres se jouent côté navigateur sur cette même
+          adresse, et baliser une sélection décrirait une page plus courte que la
+          canonique qu'on déclare.
+      */}
+      <JsonLd
+        data={graph([
+          collectionPageNode({
+            ...page,
+            items: cases.map((one) => ({
+              name: one.title,
+              path: caseHref(one.slug),
+            })),
+          }),
+        ])}
+      />
 
       <PageHero
         eyebrow="Réalisations"

@@ -29,7 +29,21 @@ function ArticleFeed({ articles, categories }: ArticleFeedProps) {
       <div
         role="group"
         aria-label="Filtrer par catégorie"
-        className="-mx-5 mb-8 flex snap-x snap-mandatory gap-2 overflow-x-auto px-5 pb-1 menu:justify-end md:mx-0 md:flex-wrap md:overflow-visible md:px-0"
+        /*
+          `pr` de fin de rangée : la place que la bulle WhatsApp occupe en bas à droite.
+
+          Un bouton flottant traverse toutes les positions verticales au défilement, donc
+          la seule chose qui décide de ce qu'il recouvre est la largeur de sa bande depuis
+          le bord - 72 px. Sans ce dégagement, la dernière pastille de filtre était
+          recouverte sur 32 à 48 px selon la largeur, mesuré : une cible de 53 px l'était
+          presque entièrement.
+
+          Sur mobile la rangée est un défileur horizontal : la réserve y est invisible et
+          ne fait qu'autoriser la dernière pastille à sortir de sous la bulle. Au-delà de
+          1440 px, la gouttière du conteneur suffit et la réserve est retirée, ce qui rend
+          les pastilles à nouveau alignées sur le bord droit de la grille.
+        */
+        className="-mx-5 mb-8 flex snap-x snap-mandatory gap-2 overflow-x-auto pr-16 pb-1 pl-5 menu:justify-end 2xl:pr-0 md:mx-0 md:flex-wrap md:overflow-visible md:pr-12 md:pl-0"
       >
         {categories.map((name) => {
           const active = name === category

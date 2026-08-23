@@ -24,14 +24,51 @@ layout.
 **`lib/schema.ts` - les données structurées.** Un graphe par page, aux `@id` stables, avec
 `organizationNode` et `websiteNode` posés une fois dans le layout du groupe `(site)`. La
 couverture : `Article` sur un article, `Article` sur une réalisation, `Service` plus
-`FAQPage` sur une expertise, `CollectionPage` sur les trois listings, et un
-`BreadcrumbList` partout où un fil est affiché.
+`FAQPage` sur une expertise, `CollectionPage` **avec son `ItemList`** sur les trois
+listings, `WebPage` sur les pages fixes - resserré en `ContactPage` sur `/contact` et en
+`AboutPage` sur `/a-propos` et `/le-groupe` -, `HowTo` sur `/methode`, `Person` pour les
+trois personnes de `/a-propos`, les deux marques sœurs en `Organization` sur `/le-groupe`,
+et un `BreadcrumbList` partout où un fil est affiché.
+
+**Quatre nœuds ajoutés après coup, pour ce qu'ils réparaient :**
+
+- **`ItemList` sur un listing.** Les trois listings se déclaraient collections sans jamais
+  dire ce qu'elles collectaient. La liste balisée est celle de la page **non filtrée** :
+  les filtres se jouent côté navigateur sur la même adresse, et baliser une sélection
+  décrirait une page plus courte que la canonique qu'on déclare.
+- **`WebPage` sur les pages fixes.** `/methode`, `/contact`, `/a-propos` et `/le-groupe`
+  n'avaient aucun nœud de page : rien ne disait qu'une adresse traitait d'un sujet, et un
+  moteur générateur n'avait aucun `@id` à citer.
+- **`HowTo` sur `/methode`**, malgré le retrait du résultat enrichi par Google en 2023 -
+  même raisonnement que `FAQPage`. Ses étapes pointent des ancres `#temps-NN`
+  **réellement posées** sur les `<li>` de la frise : un `url` d'étape vers une ancre
+  absente vaut moins que pas d'`url`.
+- **`Person` et marques sœurs.** Les personnes n'ont **ni `worksFor` ni `affiliation`** -
+  l'une dirige une marque sœur, et déduire un lien d'emploi du gabarit l'inventerait. Les
+  deux marques sont citées en `mentions`, **jamais** en `parentOrganization` : il n'y a pas
+  de maison mère à déclarer, et le balisage mettrait dans le graphe le seul nom que le
+  site public ne prononce pas.
+
+**Les villes sont des `City` dans `areaServed`, et rien d'autre.** `serviceAreas` de
+`lib/site.ts` est affiché dans le pied de page de chaque écran, sur `/contact` et dans
+`llms.txt` avant d'être balisé. Aucune `PostalAddress`, aucun `LocalBusiness`, aucune page
+locale : le studio n'a pas d'agence dans chacune. Un test le verrouille en cherchant ces
+deux types dans le nœud sérialisé.
 
 Deux règles qui ne se négocient pas :
 
 - **Le balisage reprend mot pour mot ce que la page montre.** Un fil balisé plus profond
   que celui qu'on affiche, ou une FAQ balisée absente de l'écran, est un écart
   signalable - d'où le `faqNode` conditionné à `service.faq.length > 0`.
+- **Les canaux de contact ne sont balisés que s'ils sont à l'écran.** L'organisation
+  porte `telephone` (la ligne du studio, en E.164) et **deux** `ContactPoint` nommés -
+  « Studio » et « WhatsApp » -, le second n'étant admis que parce que la bulle est sur
+  chaque page. `sameAs` reste le compte LinkedIn, et lui seul : `wa.me` est une adresse
+  de conversation, pas un profil, et l'y mettre relierait l'entité à une URL de
+  messagerie. L'adresse citée est **nue**, sans le message pré-rempli qu'ouvre la bulle -
+  `whatsappUrl` et non `whatsappChatUrl`. `llms.txt` porte les mêmes valeurs en clair,
+  parce qu'un modèle à qui l'on demande « comment joindre Heliara » répond avec ce qu'il
+  a sous la main, et invente un numéro plausible s'il n'a rien.
 - **`FAQPage` est conservé bien que Google en ait retiré le résultat enrichi en 2023.**
   La raison qui reste : des paires question-réponse explicites sont ce qu'un moteur
   génératif reprend le plus volontiers, n'ayant rien à reformuler.
@@ -163,6 +200,25 @@ s'affichent parfaitement et ne produisent aucun aperçu de lien - la cause est a
 dans `SITE_ORIGIN`, et se cherche en récupérant l'`og:image` de la page puis en tentant de
 la charger de l'extérieur. En HTTP sur un site HTTPS, c'est du contenu mixte, que plusieurs
 explorateurs refusent sans le dire.
+
+### Le flux RSS
+
+`app/(site)/ressources/feed.xml/route.ts`, généré avec le même repli sur le contenu
+statique que le reste - un flux vide dit à un lecteur qu'il n'y a plus rien à lire, et
+certains clients cessent alors de le consulter.
+
+**C'est le seul canal du site qui part au lieu d'attendre** : lecteurs de flux,
+agrégateurs de veille, automatisations d'équipe, et plusieurs explorateurs qui s'en
+servent pour repérer une publication sans reparcourir le site.
+
+Deux points qui ne se voient pas à la lecture :
+
+- **Un seul `&` non échappé rend le flux illisible en entier** - un lecteur strict le
+  rejette au parseur, sans afficher les articles valides qui le précèdent. D'où
+  l'échappement des cinq caractères, à la main.
+- **Un flux qu'aucune page n'annonce ne se découvre pas.** `pageMetadata({ feed })` pose
+  le `<link rel="alternate" type="application/rss+xml">` sur `/ressources`, et c'est la
+  seule déclaration : l'adresse n'est ni devinable ni listée ailleurs, `llms.txt` excepté.
 
 ### `sitemap.ts`
 

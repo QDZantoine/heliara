@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils"
 import { collectionPageNode, graph } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
+import { site } from "@/lib/site"
 
 /**
  * Le titre, la description et le chemin de la page, en un seul endroit.
@@ -33,7 +34,12 @@ const page = {
   path: "/ressources",
 }
 
-export const metadata: Metadata = pageMetadata(page)
+export const metadata: Metadata = pageMetadata({
+  ...page,
+  // Le flux est annoncé ici, et nulle part ailleurs : c'est la page qu'un lecteur de
+  // flux ouvre pour s'abonner, et une adresse non annoncée ne se découvre pas.
+  feed: { title: `Ressources - ${site.name}`, path: "/ressources/feed.xml" },
+})
 
 /**
  * Une minute, comme le reste du contenu lu en base. Littéral obligatoire : Next
@@ -74,7 +80,22 @@ export default async function RessourcesPage() {
       {/* Une page de section : `CollectionPage` dit à un moteur que cette adresse est un
           point d'entrée vers une collection, et non un article de plus. Le titre et la
           description viennent de `page`, la même source que les métadonnées. */}
-      <JsonLd data={graph([collectionPageNode(page)])} />
+      {/*
+          `mainEntity` énumère les articles affichés, la mise en avant d'abord puis le
+          flux, dans l'ordre de la page. `all` et non `feed` : l'article en tête est
+          bien sur la page, l'exclure décrirait une collection incomplète.
+      */}
+      <JsonLd
+        data={graph([
+          collectionPageNode({
+            ...page,
+            items: [featured, ...feed].map((one) => ({
+              name: one.title,
+              path: articleHref(one.slug),
+            })),
+          }),
+        ])}
+      />
 
       <div className="border-b border-line">
         <Container className="pt-14 pb-10 md:pt-18">
@@ -129,7 +150,8 @@ export default async function RessourcesPage() {
                     <span className="font-semibold text-ink">
                       {featured.author}
                     </span>{" "}
-                    · {featured.authorRole} · {featured.date}
+                    {featured.authorRole ? ` · ${featured.authorRole}` : ""} ·{" "}
+                    {featured.date}
                   </span>
                 </p>
               </div>

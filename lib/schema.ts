@@ -1,6 +1,14 @@
 import { siteOrigin } from "@/lib/origin"
 import { absoluteUrl } from "@/lib/seo"
-import { site, socialProfiles } from "@/lib/site"
+import {
+  phoneE164,
+  serviceAreas,
+  site,
+  socialProfiles,
+  whatsapp,
+  whatsappE164,
+  whatsappUrl,
+} from "@/lib/site"
 
 /**
  * Les données structurées, schema.org.
@@ -19,9 +27,11 @@ import { site, socialProfiles } from "@/lib/site"
  *    référencent au lieu de la recopier. Sans cela, chaque page décrirait une
  *    organisation qui pourrait être une autre, et rien ne relierait un article à son
  *    éditeur.
- * 2. **Rien qui ne soit vrai et déjà sur la page.** Pas de téléphone tant qu'il est
- *    un gabarit, pas d'adresse tant que les mentions légales portent « à compléter »,
- *    pas de note d'avis inventée. Une donnée structurée qui contredit la page est un
+ * 2. **Rien qui ne soit vrai et déjà sur la page.** Les deux numéros y sont depuis
+ *    qu'ils sont réels - la ligne du studio sur `/contact` et dans les mentions
+ *    légales, le mobile WhatsApp dans la bulle de chaque page ; l'adresse postale
+ *    n'y est pas, les mentions légales la portant encore en « à compléter », et
+ *    aucune note d'avis n'est inventée. Une donnée structurée qui contredit la page est un
  *    motif d'action manuelle, et une donnée fausse reprise par un modèle est pire :
  *    elle se propage.
  */
@@ -64,22 +74,64 @@ export function organizationNode(knowsAbout: string[] = []): Node {
       caption: `Logo ${site.name}`,
     },
     email: site.email,
-    // Le studio travaille en français, depuis la France : c'est ce que dit le site.
-    // Rien de plus n'est affirmé - ni téléphone, ni adresse postale, tant que les
-    // mentions légales les portent en « à compléter ».
-    areaServed: { "@type": "Country", name: "France" },
+    /*
+      Le numéro annoncé est celui du studio, en E.164 : c'est la forme qu'attend
+      schema.org, et c'est le numéro que montrent `/contact` et les mentions légales.
+      Le mobile WhatsApp est déclaré plus bas, comme point de contact et non comme
+      téléphone de l'organisation - deux numéros à la même hauteur laisseraient un
+      moteur choisir le mauvais.
+    */
+    telephone: phoneE164,
+    /*
+      Les zones d'intervention, telles que le pied de page les annonce sur chaque
+      écran : quatre villes, puis la France entière pour le travail à distance.
+
+      **Des `City` et non des `Place` avec adresse.** Le studio n'a pas d'agence dans
+      chacune, et `areaServed` dit précisément ce qu'on veut dire - le territoire
+      desservi - sans rien affirmer sur un établissement. Une `PostalAddress` ou un
+      `LocalBusiness` par ville serait faux, et c'est le premier motif de sanction en
+      référencement local.
+
+      Pas d'adresse postale non plus pour l'organisation, les mentions légales la
+      portant encore en « à compléter ».
+    */
+    areaServed: [
+      ...serviceAreas.map((city) => ({ "@type": "City", name: city })),
+      { "@type": "Country", name: "France" },
+    ],
     knowsLanguage: "fr-FR",
     ...(knowsAbout.length > 0 ? { knowsAbout } : {}),
     // Omis quand la liste est vide : un `sameAs` vide n'apporte rien et un `sameAs`
     // inventé relierait l'entité à un compte qui n'est pas le sien.
     ...(socialProfiles.length > 0 ? { sameAs: [...socialProfiles] } : {}),
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "sales",
-      email: site.email,
-      availableLanguage: "fr",
-      url: absoluteUrl("/contact"),
-    },
+    /*
+      Deux canaux, décrits séparément parce qu'ils ne se joignent pas de la même façon.
+      `name` les distingue - deux `ContactPoint` de même `contactType` sans nom
+      laisseraient un moteur en confondre les numéros.
+
+      **Le canal WhatsApp n'entre ici que parce que la bulle est sur chaque page.** Un
+      point de contact balisé mais absent de l'écran est un écart signalable, au même
+      titre qu'une FAQ balisée qu'on ne montre pas.
+    */
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        name: "Studio",
+        contactType: "sales",
+        email: site.email,
+        telephone: phoneE164,
+        availableLanguage: "fr",
+        url: absoluteUrl("/contact"),
+      },
+      {
+        "@type": "ContactPoint",
+        name: whatsapp.label,
+        contactType: "sales",
+        telephone: whatsappE164,
+        availableLanguage: "fr",
+        url: whatsappUrl,
+      },
+    ],
   }
 }
 
@@ -151,7 +203,15 @@ export function articleNode({
   description: string
   publishedAt: string
   modifiedAt?: string
-  author: string
+  /**
+   * Le nom de l'auteur, **quand c'est une personne**.
+   *
+   * Omis pour un article signé du studio : le nœud retombe alors sur l'organisation
+   * par son `@id`, ce qui est exactement ce qu'il faut dire. Un `Person` nommé
+   * « L'équipe Heliara » décrirait une personne qui n'existe pas, et c'est le genre
+   * d'entité qu'un moteur reprend telle quelle.
+   */
+  author?: string
   authorRole?: string
   section?: string
   readingTime?: string
@@ -332,14 +392,180 @@ export function faqNode(
 }
 
 /** Une page de section : listing, hub, page fixe. */
-export function collectionPageNode({
+/**
+ * Une page fixe qui n'est ni un listing ni un contenu daté : `/methode`, `/contact`,
+ * `/a-propos`, `/le-groupe`.
+ *
+ * **Elles n'avaient aucun nœud de page**, seulement l'organisation et le site posés par
+ * le chrome. Rien ne disait donc qu'une adresse précise traitait de tel sujet, et un
+ * moteur générateur n'avait aucun `@id` à citer pour « la méthode de Heliara ». Le
+ * `@type` est resserré quand schema.org en propose un plus juste - `ContactPage`,
+ * `AboutPage` -, ce qui est exactement l'information qu'une machine ne peut pas déduire
+ * du gabarit.
+ */
+export function webPageNode({
   path,
   title,
   description,
+  type = "WebPage",
+  about,
 }: {
   path: string
   title: string
   description: string
+  type?: "WebPage" | "ContactPage" | "AboutPage"
+  /** Le sujet de la page, quand c'est l'organisation elle-même. */
+  about?: boolean
+}): Node {
+  const url = absoluteUrl(path)
+  return {
+    "@type": type,
+    "@id": `${url}#page`,
+    url,
+    name: title,
+    description,
+    isPartOf: { "@id": websiteId() },
+    inLanguage: "fr-FR",
+    ...(about ? { about: { "@id": organizationId() } } : {}),
+  }
+}
+
+/**
+ * La méthode, en `HowTo`.
+ *
+ * **Même réserve et même raison que `faqNode`.** Google a retiré le résultat enrichi
+ * `HowTo` des résultats de bureau en 2023, puis de mobile : ce nœud n'apporte plus de
+ * vignette. Il est posé pour l'autre lecteur - un moteur génératif à qui l'on demande
+ * « comment se déroule un projet chez Heliara » trouve ici huit étapes nommées, dans
+ * l'ordre, avec leur livrable, et n'a rien à reformuler.
+ *
+ * Le livrable est joint au texte de l'étape parce que c'est ce que la page montre : le
+ * nom du temps, ce qu'il contient, et ce qu'on remet à la fin.
+ */
+export function howToNode({
+  path,
+  name,
+  description,
+  steps,
+}: {
+  path: string
+  name: string
+  description: string
+  steps: {
+    title: string
+    text: string
+    deliverable?: string
+    /** L'ancre du temps sur la page. Réellement posée : un `url` mort ne vaut rien. */
+    anchor: string
+  }[]
+}): Node {
+  const url = absoluteUrl(path)
+  return {
+    "@type": "HowTo",
+    "@id": `${url}#methode`,
+    name,
+    description,
+    inLanguage: "fr-FR",
+    isPartOf: { "@id": websiteId() },
+    step: steps.map((one, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: one.title,
+      text: [one.text, one.deliverable && `Livrable : ${one.deliverable}`]
+        .filter(Boolean)
+        .join(" "),
+      url: `${url}#${one.anchor}`,
+    })),
+  }
+}
+
+/**
+ * Une personne de l'équipe.
+ *
+ * **Ni `worksFor`, ni `affiliation`, volontairement.** Les trois personnes présentées
+ * n'ont pas le même rattachement - l'une dirige une marque sœur - et le déduire du
+ * gabarit inventerait un lien d'emploi. La page les présente, donc l'`AboutPage` les
+ * `mentions`, et rien de plus n'est affirmé que ce qu'elle écrit.
+ *
+ * `knowsAbout` reprend les spécialités déjà affichées en puces sur la carte.
+ */
+export function personNode({
+  name,
+  jobTitle,
+  description,
+  knowsAbout,
+  imageUrl,
+}: {
+  name: string
+  jobTitle: string
+  description?: string
+  knowsAbout?: string[]
+  imageUrl?: string
+}): Node {
+  return {
+    "@type": "Person",
+    "@id": `${siteOrigin()}/a-propos#${name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}`,
+    name,
+    jobTitle,
+    ...(description ? { description } : {}),
+    ...(knowsAbout && knowsAbout.length > 0 ? { knowsAbout } : {}),
+    ...(imageUrl ? { image: imageUrl } : {}),
+  }
+}
+
+/**
+ * Une marque sœur, citée par `/le-groupe`.
+ *
+ * **`mentions` et jamais `parentOrganization` ni `subOrganization`.** Il n'y a pas de
+ * maison mère à déclarer - le nom du holding ne figure nulle part sur le site public -
+ * et les trois marques sont sœurs. Une hiérarchie balisée là où la page décrit une
+ * complémentarité serait un écart, et elle mettrait dans le graphe le seul nom que le
+ * site ne prononce pas.
+ */
+export function brandNode({
+  name,
+  url,
+  description,
+}: {
+  name: string
+  url: string
+  description?: string
+}): Node {
+  return {
+    "@type": "Organization",
+    "@id": `${url.replace(/\/+$/, "")}/#organization`,
+    name,
+    url,
+    ...(description ? { description } : {}),
+  }
+}
+
+export function collectionPageNode({
+  path,
+  title,
+  description,
+  items,
+}: {
+  path: string
+  title: string
+  description: string
+  /**
+   * Les éléments **réellement affichés** par la page, dans l'ordre où elle les montre.
+   *
+   * Ils deviennent un `ItemList` : sans lui, un listing se déclarait comme collection
+   * sans jamais dire ce qu'il collectait, et un moteur devait deviner ses liens. Avec
+   * lui, l'inventaire est explicite - c'est ce qu'un moteur génératif reprend pour
+   * répondre « quelles réalisations » ou « quelles expertises ».
+   *
+   * Une page filtrée ne doit pas passer sa sélection : la liste balisée serait plus
+   * courte que la page canonique qu'elle déclare.
+   */
+  items?: { name: string; path: string }[]
 }): Node {
   const url = absoluteUrl(path)
   return {
@@ -350,5 +576,19 @@ export function collectionPageNode({
     description,
     isPartOf: { "@id": websiteId() },
     inLanguage: "fr-FR",
+    ...(items && items.length > 0
+      ? {
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: items.length,
+            itemListElement: items.map((one, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              name: one.name,
+              url: absoluteUrl(one.path),
+            })),
+          },
+        }
+      : {}),
   }
 }

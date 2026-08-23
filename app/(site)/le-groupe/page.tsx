@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
@@ -29,14 +30,18 @@ import {
   valueChainClosing,
 } from "@/lib/content/group"
 import { cn } from "@/lib/utils"
+import { brandNode, graph, organizationId, webPageNode } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = pageMetadata({
+/** Lu deux fois : par les métadonnées et par le nœud `AboutPage`. */
+const page = {
   title: "Le groupe - formation, développement web & cybersécurité",
   description:
     "Heliara fait partie d'un groupe de trois marques sœurs : LessonSharing (formation IT), Heliara (développement web) et Hexceos (cybersécurité, infogérance, hébergement souverain). Tout le cycle du numérique, en France.",
   path: "/le-groupe",
-})
+}
+
+export const metadata: Metadata = pageMetadata(page)
 
 const benefitIcons = {
   "user-round": UserRound,
@@ -48,6 +53,41 @@ const benefitIcons = {
 export default function LeGroupePage() {
   return (
     <>
+      {/*
+        La page, et les trois marques qu'elle montre.
+
+        **`mentions` et non `parentOrganization`.** Il n'y a pas de maison mère à
+        déclarer - le nom du holding ne figure nulle part sur le site public - et la
+        page décrit une complémentarité entre marques sœurs, pas une hiérarchie.
+        Balisée autrement, elle mettrait dans le graphe le seul nom que le site ne
+        prononce pas.
+
+        L'intérêt est ailleurs : les deux autres marques sont des entités réelles avec
+        leur propre domaine, et les citer par leur `@id` canonique relie trois sites
+        qui parlent les uns des autres. C'est ce qu'un moteur cherche pour comprendre
+        « le groupe » plutôt que trois noms sans lien.
+      */}
+      <JsonLd
+        data={graph([
+          {
+            ...webPageNode({ ...page, type: "AboutPage" }),
+            mentions: brands.map((brand) =>
+              brand.current
+                ? { "@id": organizationId() }
+                : { "@id": `${brand.href.replace(/\/+$/, "")}/#organization` }
+            ),
+          },
+          ...brands
+            .filter((brand) => !brand.current)
+            .map((brand) =>
+              brandNode({
+                name: brand.name,
+                url: brand.href,
+                description: brand.text,
+              })
+            ),
+        ])}
+      />
       {/* S1 - Hero. Un seul halo, un seul geste orange : le volume Heliara. */}
       <section className="relative overflow-hidden">
         <Halo variant="hero" />

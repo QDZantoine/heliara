@@ -3,6 +3,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
@@ -11,15 +12,19 @@ import { PageHero } from "@/components/sections/page-hero"
 import { TeamPortrait } from "@/components/visuals/team-portrait"
 import { convictions, manifesto, teamSection } from "@/lib/content/team"
 import { listPublicTeam } from "@/lib/db/public-team"
+import { graph, personNode, webPageNode } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 import { group } from "@/lib/site"
 
-export const metadata: Metadata = pageMetadata({
+/** Lu deux fois : par les métadonnées et par le nœud `AboutPage`. */
+const page = {
   title: "À propos",
   description:
     "Un studio à taille humaine, une exigence de niveau international : qui nous sommes et ce que nous pensons de la conception de produits.",
   path: "/a-propos",
-})
+}
+
+export const metadata: Metadata = pageMetadata(page)
 
 /*
   Une minute, comme les autres pages qui lisent la base. Un littéral : Next analyse cet
@@ -33,6 +38,34 @@ export default async function AProposPage() {
 
   return (
     <>
+      {/*
+        `AboutPage` dont le sujet **est** l'organisation, et les personnes qu'elle
+        présente en `mentions`.
+
+        C'est ce qui répond à « qui est derrière Heliara », la question qu'un moteur
+        génératif pose avant de citer une marque jeune. Les personnes sont celles que la
+        page affiche, avec leur rôle et leurs spécialités tels qu'écrits : aucun lien
+        d'emploi n'est déduit, l'une d'elles dirigeant une marque sœur.
+      */}
+      <JsonLd
+        data={graph([
+          {
+            ...webPageNode({ ...page, type: "AboutPage", about: true }),
+            mentions: team.map((person) => ({
+              "@type": "Person",
+              name: person.name,
+            })),
+          },
+          ...team.map((person) =>
+            personNode({
+              name: person.name,
+              jobTitle: person.role,
+              description: person.bio,
+              knowsAbout: person.skills,
+            })
+          ),
+        ])}
+      />
       <PageHero
         eyebrow="À propos"
         title="Un studio à taille humaine, une exigence sans concession"
