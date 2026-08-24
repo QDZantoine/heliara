@@ -52,7 +52,15 @@ export const partners: Person[] = [
   {
     initials: "AQ",
     name: "Antoine Quendez",
-    role: "Associé - conception & développement",
+    /*
+      Le même intitulé que la carte de visite (`lib/vcards.ts`) : deux formulations pour
+      la même personne sur le même domaine feraient douter des deux. Validé par
+      l'intéressé, comme l'exige la note de tête de ce fichier.
+
+      **L'équipe est administrable** : corriger ici ne change rien au site en ligne, qui
+      lit la base. Le rôle se modifie dans `/admin/equipe`.
+    */
+    role: "Associé - Lead Developer",
     bio: "Développeur full-stack, consultant-formateur et expert IA, spécialisé en Node.js, TypeScript, React et Next.js. Il conçoit des plateformes web, SaaS et des solutions d’IA souveraine alliant performance, sécurité et évolutivité. Ancien cadre de la Marine nationale, il associe rigueur opérationnelle et expertise technique au service des projets les plus exigeants.",
     skills: [
       "Next.js / TypeScript",

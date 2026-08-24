@@ -336,6 +336,45 @@ le lien « Heliara, une marque du groupe » du pied de page, tous deux larges de
 120 px. Et sur mobile, la pastille qui se trouve sous la bulle au repos - la rangée est
 un défileur horizontal, un glissement la dégage.
 
+## Les cartes de visite numériques
+
+`/vcard/[slug]` - une carte par personne, et un `.vcf` servi par
+`/vcard/[slug]/card.vcf`. Les données vivent dans `lib/vcards.ts`.
+
+**Hors du groupe `(site)`, et c'est le point de conception.** Une carte s'ouvre depuis un
+QR code au bout d'une poignée de main : ni en-tête de site, ni menu, ni voile de
+transition. Tout ce qui n'est pas « appeler, écrire, enregistrer » y est du bruit.
+
+**Pas dans `sitemap.xml`, mais indexable.** Elle se donne, elle ne se cherche pas ;
+l'annoncer mettrait les numéros directs de l'équipe dans la file d'exploration de tous les
+moteurs. Rien n'y figure qui ne soit sur une carte de papier - et c'est le critère pour
+décider ce qu'on ajoute à `lib/vcards.ts`.
+
+**Une carte n'existe qu'avec l'accord de l'intéressé** : publier le numéro direct de
+quelqu'un ne se décide pas à sa place. C'est pourquoi seule celle d'Antoine existe.
+
+Quatre points sur le `.vcf`, tous payés par une mesure :
+
+- **vCard 3.0, pas 4.0.** C'est la version que les Contacts d'iOS et d'Android importent
+  sans discuter depuis quinze ans.
+- **`Content-Disposition: attachment` est ce qui fait fonctionner le bouton.** Sans lui,
+  iOS affiche le texte du fichier dans Safari au lieu de proposer « Ajouter aux
+  contacts ». Le type MIME seul ne suffit pas.
+- **Fins de ligne en CRLF**, et virgules échappées : une virgule nue dans la note coupe la
+  valeur en deux. Les lignes ne sont **pas** repliées à 75 octets - un repli au milieu
+  d'une séquence UTF-8 casserait le fichier, le risque est du mauvais côté.
+- **La photo part en URI, jamais en base64** : un portrait encodé pèserait des centaines
+  de kilo-octets, et l'URI se corrige en remplaçant le fichier.
+
+**Le portrait a deux variantes, comme les cartes d'équipe** (`{ light, dark }`) : un
+détourage sur blanc posé sur une carte encre devient un disque lumineux. Un test vérifie
+que les deux fichiers existent vraiment dans `public/` - un chemin fautif rend un avatar
+vide et une photo morte dans la fiche contact, et ni le typecheck ni le build ne le voient.
+
+**Le portrait doit être `relative`.** L'en-tête encre est positionné : sans cela il se
+peint **au-dessus** du portrait quel que soit l'ordre du DOM, et la moitié haute du visage
+disparaît. Mesuré à l'écran.
+
 ## Formulaires
 
 `zod` + `react-hook-form`. Le schéma vit dans `lib/schemas/`, **partagé par le client et l'action serveur** : un seul schéma, donc aucun risque de voir les deux validations divergentes. Les messages y sont rédigés pour être affichés tels quels, en français, sans jargon de validation.
