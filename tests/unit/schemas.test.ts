@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import { budgetRanges } from "@/lib/content/team"
 import { contactDefaults, contactSchema } from "@/lib/schemas/contact"
-import { newsletterSchema } from "@/lib/schemas/newsletter"
 
 /** Un message d'erreur par champ, tel qu'il serait affiché. */
 function errorsOf(input: unknown) {
@@ -175,33 +174,5 @@ describe("contactDefaults", () => {
     expect(Object.keys(contactDefaults).sort()).toEqual(
       ["budget", "company", "email", "name", "project", "website"].sort()
     )
-  })
-})
-
-describe("newsletterSchema", () => {
-  it("accepte une adresse valide et la nettoie", () => {
-    expect(newsletterSchema.parse({ email: " lea@heliara.fr " })).toEqual({
-      email: "lea@heliara.fr",
-    })
-  })
-
-  it("réclame l'adresse quand elle est vide", () => {
-    const result = newsletterSchema.safeParse({ email: "  " })
-    expect(result.success).toBe(false)
-    expect(result.error?.issues[0].message).toBe("Indiquez votre e-mail.")
-  })
-
-  it("signale une adresse malformée", () => {
-    const result = newsletterSchema.safeParse({ email: "pas-une-adresse" })
-    expect(result.error?.issues[0].message).toBe(
-      "Cet e-mail ne semble pas valide."
-    )
-  })
-
-  it("borne la longueur", () => {
-    const result = newsletterSchema.safeParse({
-      email: `${"a".repeat(180)}@x.fr`,
-    })
-    expect(result.error?.issues[0].message).toBe("Cet e-mail est trop long.")
   })
 })

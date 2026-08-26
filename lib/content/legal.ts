@@ -158,11 +158,6 @@ export const privacyPolicy: LegalSection[] = [
           "Nom, société, adresse électronique, description du projet et enveloppe envisagée. Finalité : répondre à votre demande. Base légale : votre consentement.",
       },
       {
-        label: "Abonnement aux ressources",
-        value:
-          "Adresse électronique seule. Finalité : vous envoyer nos publications. Base légale : votre consentement, retirable à tout moment.",
-      },
-      {
         /*
           Décrit ce que fait réellement `ViewCounter` : aucun cookie, un compteur par
           article et une clé dans le stockage de session pour ne pas compter deux fois la
@@ -227,7 +222,6 @@ export const privacyPolicy: LegalSection[] = [
     title: "Durées de conservation",
     paragraphs: [
       "Demandes de contact : trois ans à compter du dernier échange, puis suppression.",
-      "Abonnement aux ressources : jusqu'à votre désabonnement, puis suppression sous trente jours.",
     ],
   },
   {

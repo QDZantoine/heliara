@@ -8,7 +8,7 @@ import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { ArticleCover } from "@/components/ressources/article-cover"
 import { ArticleFeed } from "@/components/ressources/article-feed"
-import { NewsletterForm } from "@/components/ressources/newsletter-form"
+import { CtaBand } from "@/components/sections/cta-band"
 import { articleHref, categoryTone } from "@/lib/content/articles"
 import {
   listPublicArticles,
@@ -173,26 +173,22 @@ export default async function RessourcesPage() {
         </Container>
       </Section>
 
-      {/* Capture douce : niveau tertiaire, e-mail seul. */}
-      <Section tone="surface" space="sm" aria-labelledby="abonnement">
-        <Container className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
-          <Reveal>
-            <h2
-              id="abonnement"
-              className="mb-2 text-[clamp(1.5rem,5.5vw,2rem)] font-bold"
-            >
-              Un e-mail par mois. Pas un de plus.
-            </h2>
-            <p className="text-[0.9rem] leading-relaxed text-body">
-              Nos guides et retours d’expérience, sans prospection.
-              Désabonnement en un clic.
-            </p>
-          </Reveal>
-          <Reveal delay={60}>
-            <NewsletterForm />
-          </Reveal>
-        </Container>
-      </Section>
+      {/*
+        **Ni lettre d'information, ni bloc d'abonnement.** « Un e-mail par mois. Pas un
+        de plus. » promettait un rendez-vous éditorial qu'aucun outil n'était prêt à
+        tenir, et son formulaire transmettait l'adresse par courriel sans liste ni
+        désabonnement - le contraire de ce que la page affirmait. Le bloc qui l'a
+        remplacé, mettant en avant le flux RSS, a été retiré à son tour : il occupait une
+        section pleine pour un canal que seuls des lecteurs de flux utilisent.
+
+        **Le flux existe toujours** et reste découvrable là où on le cherche : la balise
+        `<link rel="alternate">` de cette page, posée par `pageMetadata({ feed })`, et
+        `llms.txt`. Un lecteur de flux la trouve sans qu'on lui fasse de la place à
+        l'écran.
+
+        La page finit donc sur le rebond, la règle « aucune impasse » restant entière.
+      */}
+      <CtaBand title="Un projet derrière votre lecture ?" secondary />
     </>
   )
 }

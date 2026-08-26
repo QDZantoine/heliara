@@ -331,9 +331,8 @@ entièrement. Les deux rangées portent donc un `pr-16 md:pr-12 2xl:pr-0` - au-d
 grille. **Ne pas déplacer la bulle à gauche** : à 390 px, la bande gauche croise seize
 petites cibles contre cinq à droite, mesuré.
 
-Reste recouvert de 32 à 40 px, et assumé : « S'abonner » de la lettre d'information et
-le lien « Heliara, une marque du groupe » du pied de page, tous deux larges de plus de
-120 px. Et sur mobile, la pastille qui se trouve sous la bulle au repos - la rangée est
+Reste recouvert de 32 à 40 px, et assumé : le lien « Heliara, une marque du groupe » du
+pied de page, large de plus de 160 px. Et sur mobile, la pastille qui se trouve sous la bulle au repos - la rangée est
 un défileur horizontal, un glissement la dégage.
 
 ## Les cartes de visite numériques
@@ -524,6 +523,18 @@ Issues de la DA et de l'Architecture UX, à vérifier sur chaque écran :
 - Pas de photo stock, pas de 3D gadget, pas de dégradé saturé. Illustration = UI produit abstraite en CSS (`components/visuals/`, toujours `aria-hidden`).
 - Une idée par section · rythme binaire dense/respirante · arc affirmation → preuve → action · **le CTA n'arrive jamais avant la preuve**.
 - Conversion à 3 niveaux : primaire « Parlons de votre projet » (1 par page + nav permanente) · secondaire « Découvrir nos réalisations » · tertiaire capture douce (fin d'article, footer).
+  **Le troisième niveau n'est plus une lettre d'information.** « Un e-mail par mois. Pas
+  un de plus. » promettait un rendez-vous éditorial qu'aucun outil n'était prêt à tenir,
+  et son formulaire transmettait l'adresse par courriel sans liste ni désabonnement - le
+  contraire de ce que la page affirmait. Retiré, avec son action serveur, son schéma et
+  l'entrée correspondante des mentions de confidentialité : un traitement décrit dans la
+  politique de confidentialité doit exister. Le bloc qui l'a remplacé, mettant en avant
+  le flux RSS, a été retiré à son tour : il occupait une section pleine pour un canal que
+  seuls des lecteurs de flux utilisent. **Le flux existe toujours** et se découvre là où
+  on le cherche - la balise `<link rel="alternate">` de la page et `llms.txt` -, sans
+  qu'on lui fasse de la place à l'écran. `/ressources` finit donc sur le rebond de
+  `CtaBand`, la règle « aucune impasse » restant entière.
+  **Ne pas remettre de formulaire d'abonnement sans un gestionnaire de liste derrière.**
 - Aucune impasse : chaque page finit par une action ou un rebond. Le footer est le seul terminus.
 - Endossement de groupe : footer + `/le-groupe` + une ligne sur `/a-propos`. Jamais dans le hero, jamais dans la nav.
 - **Le nom du holding n'apparaît nulle part sur le site public.** Il ne vit que dans les mentions légales. Hexceos et LessonSharing sont des **marques sœurs**, pas une maison mère : `/le-groupe` met en avant les trois marques et leur complémentarité, jamais le holding. Le footer dit « Heliara, une marque du groupe », sans le nommer.

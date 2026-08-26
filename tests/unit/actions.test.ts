@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { submitContact } from "@/app/(site)/contact/actions"
-import { subscribe } from "@/app/(site)/ressources/actions"
 import { budgetRanges } from "@/lib/content/team"
 import { site } from "@/lib/site"
 
@@ -214,62 +213,5 @@ describe("submitContact", () => {
       const result = await submitContact(valid)
       expect(result.formError).not.toContain("re_live_abc123")
     })
-  })
-})
-
-describe("subscribe", () => {
-  it("transmet l'adresse et confirme", async () => {
-    const result = await subscribe({ email: "lea@heliara.fr" })
-    expect(result).toEqual({ status: "sent" })
-    expect(send.mock.calls[0][0].text).toContain("lea@heliara.fr")
-    expect(send.mock.calls[0][0].subject).toBe(
-      "Ressources : nouvelle inscription"
-    )
-  })
-
-  it("nettoie l'adresse avant de la transmettre", async () => {
-    await subscribe({ email: "  Lea@heliara.fr  " })
-    expect(send.mock.calls[0][0].text).toContain("Lea@heliara.fr")
-    expect(send.mock.calls[0][0].text).not.toContain("  ")
-  })
-
-  it("rejoue le schéma : une adresse invalide n'atteint jamais l'envoi", async () => {
-    const result = await subscribe({ email: "pas-une-adresse" })
-    expect(result.status).toBe("error")
-    expect(result.fieldErrors?.email).toBe("Cet e-mail ne semble pas valide.")
-    expect(send).not.toHaveBeenCalled()
-  })
-
-  it("survit à une entrée qui n'est pas un objet", async () => {
-    for (const input of [null, undefined, [], "lea@heliara.fr"]) {
-      expect((await subscribe(input)).status).toBe("error")
-    }
-    expect(send).not.toHaveBeenCalled()
-  })
-
-  it("ne prétend pas avoir inscrit quand l'envoi n'est pas configuré", async () => {
-    delete process.env.RESEND_API_KEY
-    const result = await subscribe({ email: "lea@heliara.fr" })
-    expect(result).toEqual({
-      status: "error",
-      formError: "L'inscription est momentanément indisponible.",
-    })
-    expect(send).not.toHaveBeenCalled()
-  })
-
-  it("signale un refus de Resend", async () => {
-    send.mockResolvedValue({ data: null, error: { message: "refusé" } })
-    const result = await subscribe({ email: "lea@heliara.fr" })
-    expect(result).toEqual({
-      status: "error",
-      formError: "L'inscription a échoué.",
-    })
-  })
-
-  it("ne laisse pas fuiter une exception réseau", async () => {
-    send.mockRejectedValue(new Error("ECONNRESET"))
-    const result = await subscribe({ email: "lea@heliara.fr" })
-    expect(result.status).toBe("error")
-    expect(result.formError).toBe("L'inscription a échoué.")
   })
 })
