@@ -4,6 +4,7 @@ import { Hero } from "@/components/home/hero"
 import { GuaranteesSection } from "@/components/home/guarantees-section"
 import { KpiBand } from "@/components/home/kpi-band"
 import { MethodPreview } from "@/components/home/method-preview"
+import { ServiceAreas } from "@/components/home/service-areas"
 import { ClientMarquee } from "@/components/home/client-marquee"
 import { Testimonials } from "@/components/home/testimonials"
 import { FinalCta } from "@/components/sections/final-cta"
@@ -72,6 +73,9 @@ export default async function HomePage() {
       <CaseList cases={featured} />
       <KpiBand />
       <GuaranteesSection />
+      {/* La distance, juste après le risque contractuel : deux objections lues à la
+          suite, avant les pairs et la demande. */}
+      <ServiceAreas />
       {/* Les pairs, entre la preuve et la demande : la place que l'Architecture UX donne
           aux témoignages. La section ne se rend pas tant qu'aucune citation n'est en
           ligne, donc son retour ne change rien à l'accueil aujourd'hui. */}
