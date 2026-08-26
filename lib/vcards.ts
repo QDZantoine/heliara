@@ -38,6 +38,16 @@ export type VCard = {
   calUrl?: string
   initials: string
   /**
+   * Autorise l'affichage du numéro **hors de sa carte**, aujourd'hui le bloc
+   * « Vos interlocuteurs » de `/contact`.
+   *
+   * **Faux par défaut, et c'est le point.** Donner son numéro pour une carte de visite
+   * qu'on tend soi-même n'est pas la même chose que le voir sur une page publique que
+   * tout le monde ouvre. Le consentement se donne une fois par usage, pas une fois pour
+   * toutes : Gaëtan a accepté la carte, pas la page de contact.
+   */
+  listPhoneOnSite?: boolean
+  /**
    * Le portrait, en deux variantes de fond.
    *
    * **Deux fichiers et non un seul, pour la même raison que les cartes d'équipe** : un
@@ -64,6 +74,7 @@ export const VCARDS: Record<string, VCard> = {
     website: "https://heliara.fr",
     calUrl: "https://cal.com/antoine-quendez-gcmupq",
     initials: "AQ",
+    listPhoneOnSite: true,
     photo: {
       light: "/team/antoine-white.png",
       dark: "/team/antoine-orange.png",
@@ -102,6 +113,44 @@ const VCARD_NOTE =
 
 export function getVCard(slug: string): VCard | undefined {
   return VCARDS[slug]
+}
+
+/**
+ * Le numéro en clair, à l'international.
+ *
+ * **Dérivé de `phone` et non stocké**, pour la même raison que le reste : deux écritures
+ * du même numéro finissent par diverger. `+33743752572` devient `+33 7 43 75 25 72`,
+ * groupé comme l'usage français l'écrit - indicatif, chiffre de tête, puis des paires.
+ *
+ * Un numéro qui n'est pas français revient tel quel : le regroupement par paires n'a
+ * rien d'universel, et une mise en forme fausse se lit plus mal qu'une absence de mise
+ * en forme.
+ */
+export function phoneIntl(card: VCard): string {
+  const digits = card.phone.replace(/\D/g, "")
+  if (!card.phone.startsWith("+33") || digits.length !== 11) {
+    return card.phone
+  }
+  const national = digits.slice(2)
+  const paires = national.slice(1).match(/.{2}/g) ?? []
+  return `+33 ${national[0]} ${paires.join(" ")}`
+}
+
+/**
+ * Le numéro à afficher sous le nom d'une personne, ailleurs que sur sa carte.
+ *
+ * Rend `undefined` quand la personne n'a pas de carte **ou** n'a pas autorisé cet
+ * affichage : l'appelant n'a donc rien à savoir du consentement, il affiche ce qu'il
+ * reçoit. C'est ce qui évite qu'un second appelant, un jour, oublie de le vérifier.
+ */
+export function getListedPhone(
+  fullName: string
+): { tel: string; display: string } | undefined {
+  const card = getVCardByName(fullName)
+  if (!card?.listPhoneOnSite) {
+    return undefined
+  }
+  return { tel: `tel:${card.phone}`, display: phoneIntl(card) }
 }
 
 /**

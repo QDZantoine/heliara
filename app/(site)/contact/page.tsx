@@ -16,7 +16,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { faqNode, graph, webPageNode } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 import { phoneTel, serviceAreaLine, site } from "@/lib/site"
-import { getVCardByName as vcardOf } from "@/lib/vcards"
+import { getListedPhone as listedPhone } from "@/lib/vcards"
 import { cn } from "@/lib/utils"
 
 /** Lu deux fois : par les métadonnées et par le nœud `ContactPage`. */
@@ -162,21 +162,25 @@ export default async function ContactPage() {
                       {person.role}
                     </span>
                     {/*
-                      Le numéro direct de qui possède une carte de visite, tiré de
+                      Le numéro direct de qui l'a **autorisé ici**, tiré de
                       `lib/vcards.ts` - la même source que `/vcard/[slug]`, pour qu'un
-                      numéro ne soit jamais écrit à deux endroits.
+                      numéro ne soit jamais écrit à deux endroits. Donner son numéro
+                      pour une carte qu'on tend soi-même n'est pas l'avoir donné pour
+                      une page publique : le drapeau `listPhoneOnSite` porte cette
+                      distinction, et `getListedPhone` la fait respecter sans que cet
+                      appelant ait à y penser.
 
                       C'est le seul numéro **mobile** visible du site : la ligne du
                       studio, plus bas sur cette page, reste celle des mentions légales.
                       Un visiteur qui veut joindre quelqu'un et non un standard trouve
                       donc les deux, chacun attribué.
                     */}
-                    {vcardOf(person.name) ? (
+                    {listedPhone(person.name) ? (
                       <a
-                        href={`tel:${vcardOf(person.name)?.phone}`}
+                        href={listedPhone(person.name)?.tel}
                         className="mt-0.5 inline-flex min-h-11 items-center text-[0.82rem] text-info-text hover:underline md:min-h-0"
                       >
-                        {vcardOf(person.name)?.phoneDisplay}
+                        {listedPhone(person.name)?.display}
                       </a>
                     ) : null}
                   </span>

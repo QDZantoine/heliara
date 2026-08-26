@@ -4,9 +4,11 @@ import path from "node:path"
 import { describe, expect, it } from "vitest"
 
 import {
+  getListedPhone,
   getVCard,
   VCARDS,
   vcardFilename,
+  phoneIntl,
   vcardSlugs,
   vcardText,
   type VCard,
@@ -57,6 +59,29 @@ describe("données des cartes", () => {
     expect(vcardSlugs()).toEqual(["antoine", "gaetan"])
     expect(getVCard("antoine")?.fullName).toBe("Antoine Quendez")
     expect(getVCard("personne-qui-n-existe-pas")).toBeUndefined()
+  })
+})
+
+describe("numéro affiché hors de la carte", () => {
+  it("écrit le numéro à l'international, groupé comme l'usage français", () => {
+    expect(phoneIntl(getVCard("antoine") as VCard)).toBe("+33 7 43 75 25 72")
+  })
+
+  it("rend un numéro étranger tel quel plutôt que mal groupé", () => {
+    const card = { ...(getVCard("antoine") as VCard), phone: "+15551234567" }
+    expect(phoneIntl(card)).toBe("+15551234567")
+  })
+
+  it("n'affiche que le numéro de qui l'a autorisé", () => {
+    // Donner son numéro pour une carte de visite qu'on tend soi-même n'est pas
+    // l'avoir donné pour une page publique.
+    expect(getListedPhone("Antoine Quendez")?.display).toBe("+33 7 43 75 25 72")
+    expect(getListedPhone("Gaëtan Maiuri")).toBeUndefined()
+    expect(getListedPhone("Personne Inconnue")).toBeUndefined()
+  })
+
+  it("rend le lien d'appel en E.164, jamais la forme lisible", () => {
+    expect(getListedPhone("Antoine Quendez")?.tel).toBe("tel:+33743752572")
   })
 })
 

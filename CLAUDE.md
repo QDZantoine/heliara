@@ -318,7 +318,17 @@ officiel, pas d'iframe. Même exigence que Cal.com, et pour la même raison -
 studio (`/contact`, mentions légales) ; `whatsapp.number` est le mobile professionnel,
 le seul qui porte un compte WhatsApp. Ce mobile est aussi affiché sous le nom de son
 titulaire dans « Vos interlocuteurs » de `/contact`, **lu depuis `lib/vcards.ts`** par
-`getVCardByName()` : c'est ce qui empêche un numéro direct d'être écrit à deux endroits.
+`getListedPhone()` : c'est ce qui empêche un numéro direct d'être écrit à deux endroits.
+
+**Le consentement se donne une fois par usage, pas une fois pour toutes.** Donner son
+numéro pour une carte de visite qu'on tend soi-même n'est pas l'avoir donné pour une page
+publique que tout le monde ouvre. D'où le drapeau `listPhoneOnSite`, **faux par défaut** :
+`getListedPhone()` ne rend rien pour qui ne l'a pas mis, et l'appelant n'a donc pas à
+penser à le vérifier. Sur `/contact`, seul le numéro d'Antoine est listé.
+
+Le numéro y est écrit **à l'international** (`+33 7 43 75 25 72`), dérivé de `phone` par
+`phoneIntl()` et non stocké : deux écritures du même numéro finissent par diverger. La
+carte de visite, elle, garde la forme nationale que `phoneDisplay` porte.
 Un visiteur qui cherche à joindre quelqu'un plutôt qu'un standard trouve donc les deux,
 sans avoir à deviner lequel est lequel.
 Il s'écrit **en chiffres seuls, indicatif compris** : un `+`, un espace ou un `0` de
