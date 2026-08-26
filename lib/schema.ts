@@ -309,6 +309,55 @@ export function caseStudyNode({
 }
 
 /**
+ * L'offre du studio, vue d'ensemble, pour l'accueil.
+ *
+ * **`Service` et non `ProfessionalService`, et c'est le point à ne pas défaire.**
+ * `ProfessionalService` est un sous-type de `LocalBusiness` : le déclarer affirme un
+ * établissement, avec l'adresse et les horaires qui vont avec. Or l'établissement
+ * immatriculé n'est pas dans les villes d'intervention, et la page dit noir sur blanc
+ * qu'il n'y a pas d'agence dans chacune. Un `LocalBusiness` sans adresse est au mieux
+ * ignoré, au pire une affirmation fausse - et c'est le premier motif de sanction en
+ * référencement local.
+ *
+ * `Service` dit exactement ce qui est vrai : voici la prestation, voici qui la rend,
+ * voici où elle est rendue. Le jour où un établissement existe dans l'Hérault, c'est
+ * `LocalBusiness` qu'il faudra ajouter, avec une adresse réelle.
+ *
+ * **`areaServed` reprend la même liste que le pied de page et le hero**, et cette
+ * section-là est désormais affichée : le balisage ne dit rien de plus que l'écran.
+ *
+ * Le catalogue est alimenté par les familles **réellement publiées**, celles que la
+ * grille de l'accueil montre juste en dessous.
+ */
+export function studioServiceNode(families: string[] = []): Node {
+  return {
+    "@type": "Service",
+    "@id": `${siteOrigin()}/#offre`,
+    name: "Conception et développement de produits numériques sur mesure",
+    description: site.description,
+    provider: { "@id": organizationId() },
+    inLanguage: "fr-FR",
+    isPartOf: { "@id": websiteId() },
+    areaServed: [
+      ...serviceAreas.map((city) => ({ "@type": "City", name: city })),
+      { "@type": "Country", name: "France" },
+    ],
+    ...(families.length > 0
+      ? {
+          hasOfferCatalog: {
+            "@type": "OfferCatalog",
+            name: "Familles de produits",
+            itemListElement: families.map((family) => ({
+              "@type": "Offer",
+              itemOffered: { "@type": "Service", name: family },
+            })),
+          },
+        }
+      : {}),
+  }
+}
+
+/**
  * Un service d'expertise.
  *
  * Les livrables deviennent un `OfferCatalog` : ce sont bien les prestations que le

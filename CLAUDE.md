@@ -208,6 +208,13 @@ voit ni au build, ni au typecheck, ni à l'écran :**
   Spotify, Apple Music et la presse : un moteur qui doit trancher entre deux entites du
   meme nom se sert d'abord de ce que la page dit d'elle-meme. La baseline reste le `h1`
   du hero.
+- **Pas de `LocalBusiness`, ni aucun de ses sous-types, tant qu'il n'y a pas
+  d'etablissement.** `ProfessionalService` en est un : le declarer affirme une adresse et
+  des horaires. L'etablissement immatricule est au RCS d'Evry, pas dans l'Herault, et
+  l'accueil dit noir sur blanc qu'il n'y a pas d'agence dans les villes d'intervention.
+  L'accueil porte donc un noeud **`Service`** (`studioServiceNode`) - prestation,
+  prestataire, zones desservies - et rien de plus. Le jour ou un etablissement existe
+  dans l'Herault, `LocalBusiness` s'ajoute avec une adresse reelle.
 - **Les villes d'intervention ne sont pas des adresses.** `serviceAreas` de `lib/site.ts`
   porte Montpellier, Béziers, Nîmes et Paris ; elles sont **affichées** - pied de page de
   chaque écran, `/contact`, `llms.txt` - avant d'être reprises en `areaServed`. Jamais de

@@ -1,3 +1,5 @@
+import { MapPin } from "lucide-react"
+
 import { Container } from "@/components/primitives/container"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
@@ -5,7 +7,7 @@ import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
 import { LinkedInLink } from "@/components/ui/linkedin-link"
 import { HeroLottie } from "@/components/visuals/hero-lottie"
-import { cta } from "@/lib/site"
+import { cta, serviceAreaLine } from "@/lib/site"
 
 /**
  * S2 - positionner en cinq secondes. Le double CTA segmente immédiatement :
@@ -75,6 +77,31 @@ function Hero() {
                 doit donc pas peser autant que les deux CTA. `self-start` la garde
                 carrée sous 640 px, où les boutons s'empilent en pleine largeur. */}
             <LinkedInLink className="size-12 self-start" />
+          </Reveal>
+
+          {/*
+            Les villes, au-dessus de la ligne de flottaison.
+
+            **Mesuré : c'était le dix-huitième titre de la page.** La section « Où nous
+            intervenons » répond à la dernière question d'un prospect local - pourrai-je
+            leur parler autrement que par écran interposé - et personne ne la voyait sans
+            dérouler tout l'accueil. Cette ligne la remonte là où elle est lue, sans
+            dupliquer la section : elle nomme, l'autre explique.
+
+            `serviceAreaLine`, comme le pied de page, `/contact` et `llms.txt` : une
+            liste, quatre lecteurs. Aucun geste orange de plus - le halo et le point du
+            titre sont déjà les deux de cet écran.
+          */}
+          <Reveal
+            immediate
+            delay={240}
+            className="mt-6 flex items-start gap-2 text-[0.82rem] text-label"
+          >
+            {/* `items-start` et non `items-center` : sous 640 px la ligne passe à deux
+                lignes, et un pictogramme centré verticalement se retrouvait entre les
+                deux au lieu d'être en tête. Vu à 390 px. */}
+            <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+            <span>{serviceAreaLine}</span>
           </Reveal>
         </div>
 
