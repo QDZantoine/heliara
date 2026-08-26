@@ -79,8 +79,15 @@ export const serviceAreas = [
   "Paris",
 ] as const
 
-/** La même liste, en une ligne : c'est ce que lisent le pied de page et `/contact`. */
-export const serviceAreaLine = `${serviceAreas.join(", ")} - et à distance partout en France`
+/**
+ * La même liste, en une ligne : c'est ce que lisent le pied de page, `/contact` et
+ * `llms.txt`.
+ *
+ * **Pas de tiret avant le complément**, et c'est délibéré : la règle du projet autorise
+ * le tiret simple comme séparateur, mais dans une phrase qu'un visiteur lit il sonne
+ * « rédigé par une machine ». Une virgule fait le même travail.
+ */
+export const serviceAreaLine = `${serviceAreas.join(", ")}, et à distance partout en France`
 
 /**
  * La prise de rendez-vous, chez Cal.com.
