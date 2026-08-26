@@ -24,7 +24,13 @@
 export const areasSection = {
   eyebrow: "Où nous intervenons",
   title: "Sur place quand ça compte, à distance le reste du temps.",
-  lead: "Un cadrage se mène mieux dans la même pièce : comprendre un métier suppose de voir les gens le faire. Le reste d'un projet - les itérations, les démonstrations, la mise en production - se conduit très bien à distance, et c'est ce qui permet de travailler pour des clients que deux heures de route séparent de nous.",
+  /*
+    Aucun tiret dans ce chapô, et c'est délibéré : une incise entre tirets sonne
+    « rédigé par une machine » à la lecture, quand bien même la règle typographique du
+    projet autorise le tiret simple comme séparateur. Les trois temps du projet sont
+    donc énumérés, pas mis en incise.
+  */
+  lead: "Un cadrage se mène mieux dans la même pièce : comprendre un métier suppose de voir les gens le faire. Les itérations, les démonstrations et la mise en production se conduisent très bien à distance, et c'est ce qui permet de travailler pour des clients que deux heures de route séparent de nous.",
   /**
    * La ligne qui suit les villes.
    *
