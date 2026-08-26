@@ -2,17 +2,21 @@ import type { Metadata } from "next"
 
 import { BookingLink } from "@/components/contact/booking-link"
 import { ContactForm } from "@/components/contact/contact-form"
+import { Faq } from "@/components/sections/faq"
 import { Container } from "@/components/primitives/container"
 import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
+import { Section } from "@/components/primitives/section"
+import { contactFaq, contactFaqSection } from "@/lib/content/faq"
 import { contactSteps, pastilleAccent } from "@/lib/content/team"
 import { listPublicTeam } from "@/lib/db/public-team"
 import { buttonVariants } from "@/components/ui/button"
-import { graph, webPageNode } from "@/lib/schema"
+import { faqNode, graph, webPageNode } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 import { phoneTel, serviceAreaLine, site } from "@/lib/site"
+import { getVCardByName as vcardOf } from "@/lib/vcards"
 import { cn } from "@/lib/utils"
 
 /** Lu deux fois : par les métadonnées et par le nœud `ContactPage`. */
@@ -43,7 +47,19 @@ export default async function ContactPage() {
         cette intention, et les points de contact de l'organisation - e-mail, ligne du
         studio, WhatsApp - la référencent déjà par son `@id`.
       */}
-      <JsonLd data={graph([webPageNode({ ...page, type: "ContactPage" })])} />
+      <JsonLd
+        data={graph([
+          webPageNode({ ...page, type: "ContactPage" }),
+          /*
+            `FAQPage` **parce que la FAQ est affichée sur cette page**, et pas une ligne
+            de plus que ce qu'elle montre : `contactFaq` est la source unique des deux.
+            Google a retiré le résultat enrichi en 2023 ; ce qui reste, et qui justifie le
+            nœud, c'est qu'une paire question-réponse explicite est ce qu'un moteur
+            générateur reprend le plus volontiers - il n'a rien à reformuler.
+          */
+          faqNode(page.path, contactFaq),
+        ])}
+      />
       <Halo variant="warm" />
       <Container className="relative grid items-start gap-12 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-18">
         {/* Réassurance à gauche. Sur mobile, le formulaire passe en premier
@@ -145,6 +161,24 @@ export default async function ContactPage() {
                     <span className="block text-[0.78rem] text-label">
                       {person.role}
                     </span>
+                    {/*
+                      Le numéro direct de qui possède une carte de visite, tiré de
+                      `lib/vcards.ts` - la même source que `/vcard/[slug]`, pour qu'un
+                      numéro ne soit jamais écrit à deux endroits.
+
+                      C'est le seul numéro **mobile** visible du site : la ligne du
+                      studio, plus bas sur cette page, reste celle des mentions légales.
+                      Un visiteur qui veut joindre quelqu'un et non un standard trouve
+                      donc les deux, chacun attribué.
+                    */}
+                    {vcardOf(person.name) ? (
+                      <a
+                        href={`tel:${vcardOf(person.name)?.phone}`}
+                        className="mt-0.5 inline-flex min-h-11 items-center text-[0.82rem] text-info-text hover:underline md:min-h-0"
+                      >
+                        {vcardOf(person.name)?.phoneDisplay}
+                      </a>
+                    ) : null}
                   </span>
                 </li>
               ))}
@@ -182,6 +216,28 @@ export default async function ContactPage() {
           <ContactForm />
         </Reveal>
       </Container>
+
+      {/*
+        La FAQ, après le formulaire et non avant : elle répond aux questions de celui
+        qui hésite encore, pas de celui qui a déjà décidé d'écrire. Six réponses qui
+        existent toutes ailleurs sur le site - les engagements, les huit temps de la
+        méthode, les technologies, les zones d'intervention - rassemblées là où on les
+        cherche au moment de se décider.
+
+        Elle réutilise `Faq`, la même que les pages d'expertise : bâtie sur `<details>`,
+        donc ouvrable au clavier et dépliée par la recherche du navigateur, sans une
+        ligne de JavaScript.
+      */}
+      <Section space="md" className="relative border-t border-line">
+        <Container width="reading">
+          <Reveal>
+            <Eyebrow className="mb-4">{contactFaqSection.eyebrow}</Eyebrow>
+          </Reveal>
+          <Reveal delay={60}>
+            <Faq title={contactFaqSection.title} items={contactFaq} />
+          </Reveal>
+        </Container>
+      </Section>
     </section>
   )
 }

@@ -104,6 +104,19 @@ export function getVCard(slug: string): VCard | undefined {
   return VCARDS[slug]
 }
 
+/**
+ * La carte d'une personne, par son nom complet.
+ *
+ * **C'est ce qui fait de `lib/vcards.ts` la source unique des numéros directs.** Le bloc
+ * « Vos interlocuteurs » de `/contact` affiche le numéro de qui possède une carte : sans
+ * cette recherche, le même numéro serait écrit à deux endroits et finirait par diverger.
+ * Le rapprochement se fait sur `fullName`, qui est aussi ce que la base rend pour un
+ * membre de l'équipe.
+ */
+export function getVCardByName(fullName: string): VCard | undefined {
+  return Object.values(VCARDS).find((card) => card.fullName === fullName)
+}
+
 /** Les slugs, pour `generateStaticParams` des deux routes. */
 export function vcardSlugs(): string[] {
   return Object.keys(VCARDS)

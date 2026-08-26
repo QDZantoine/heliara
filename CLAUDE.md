@@ -314,9 +314,13 @@ page.
 officiel, pas d'iframe. Même exigence que Cal.com, et pour la même raison -
 `lib/content/legal.ts` l'affirme, et le poser autrement rendrait cette page fausse.
 
-**Deux numéros sur le site, jamais sur le même écran.** `site.phone` est la ligne du
+**Deux numéros sur le site, et chacun est attribué.** `site.phone` est la ligne du
 studio (`/contact`, mentions légales) ; `whatsapp.number` est le mobile professionnel,
-le seul qui porte un compte WhatsApp, et la bulle est le seul endroit qui le montre.
+le seul qui porte un compte WhatsApp. Ce mobile est aussi affiché sous le nom de son
+titulaire dans « Vos interlocuteurs » de `/contact`, **lu depuis `lib/vcards.ts`** par
+`getVCardByName()` : c'est ce qui empêche un numéro direct d'être écrit à deux endroits.
+Un visiteur qui cherche à joindre quelqu'un plutôt qu'un standard trouve donc les deux,
+sans avoir à deviner lequel est lequel.
 Il s'écrit **en chiffres seuls, indicatif compris** : un `+`, un espace ou un `0` de
 tête donnent une page d'erreur de WhatsApp et non une conversation.
 
@@ -380,6 +384,26 @@ vide et une photo morte dans la fiche contact, et ni le typecheck ni le build ne
 **Le portrait doit être `relative`.** L'en-tête encre est positionné : sans cela il se
 peint **au-dessus** du portrait quel que soit l'ordre du DOM, et la moitié haute du visage
 disparaît. Mesuré à l'écran.
+
+## La FAQ de `/contact`
+
+Six questions, et la règle qui les choisit : **chaque réponse est déjà vraie ailleurs sur
+le site**. Les engagements de `guarantees.ts`, les livrables des huit temps de
+`method.ts`, les technologies telles que ce fichier les fixe, les zones d'intervention de
+`site.ts`. Rien n'y est affirmé de neuf - une FAQ est le dernier endroit où inventer,
+puisque c'est le format qu'un moteur générateur reprend mot pour mot.
+
+**Ce qui a choisi les questions**, et non une supposition : ce sont les points qu'un
+assistant conversationnel a exigé de vérifier quand on lui a demandé si le studio était
+sérieux - propriété du code, réversibilité, déroulé, technologies, hébergement, distance.
+
+**Deux questions en sont absentes faute de pouvoir y répondre honnêtement** : le prix d'un
+projet et sa durée en semaines. Les deux dépendent du périmètre, et une fourchette
+inventée serait pire que l'absence.
+
+`contactFaq` est la source unique de l'affichage **et** du nœud `FAQPage`. Une paire
+balisée absente de l'écran est un écart signalable, et l'inverse - une question affichée
+hors du balisage - perd exactement ce pour quoi la FAQ existe.
 
 ## Formulaires
 
