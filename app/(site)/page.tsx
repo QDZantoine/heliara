@@ -73,7 +73,7 @@ export default async function HomePage() {
         L'offre, une fois, sur la page qui la montre.
 
         L'organisation et le site sont posés par `SiteChrome` sur toutes les pages ;
-        celui-ci n'a de sens que sur l'accueil, qui montre les trois familles et les
+        celui-ci n'a de sens que sur l'accueil, qui montre les quatre familles et les
         villes. Voir `studioServiceNode` pour la raison qui écarte
         `ProfessionalService`.
       */}

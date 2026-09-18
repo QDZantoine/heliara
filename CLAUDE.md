@@ -436,11 +436,11 @@ hors du balisage - perd exactement ce pour quoi la FAQ existe.
 
 `public/illustrations/` accueille les illustrations SVG statiques, servies par `next/image` en `unoptimized` : l'optimiseur n'apporte rien sur un SVG. Elles sont décoratives, donc `alt=""` et hors arbre d'accessibilité.
 
-Trois illustrations portent les cartes de familles d'expertise de l'accueil :
-`sass-illustration.svg`, `website-illustration.svg`, `ia-illustration.svg`. Elles ont
-remplacé un croquis de barres grises qui se lisait comme un wireframe - trois filets et
-une étiquette monospace suggéraient une interface sans en montrer aucune, ce qui donnait
-à la section l'air d'une maquette inachevée.
+Quatre illustrations portent les cartes de familles d'expertise de l'accueil :
+`sass-illustration.svg`, `website-illustration.svg`, `ia-illustration.svg`,
+`mobile-illustration.svg`. Elles ont remplacé un croquis de barres grises qui se lisait
+comme un wireframe - trois filets et une étiquette monospace suggéraient une interface
+sans en montrer aucune, ce qui donnait à la section l'air d'une maquette inachevée.
 
 **Le croquis reste, en repli.** `familyIllustrations` associe un fichier à un slug de
 famille ; une famille absente de la table retombe sur `ExpertiseSketch`. C'est ce qui
@@ -751,6 +751,9 @@ nomme le terme fautif.
 - **E-commerce : Shopify, avec un thème entièrement sur mesure.** Le studio ne
   développe pas de moteur de paiement, de calcul de TVA ni de gestion de fraude. Le
   site décrivait une boutique développée de zéro.
+- **Applications mobiles : natif iOS et Android**, avec un module commun en C ou C++
+  via le NDK pour ce qui doit aller vite ou rester sur l'appareil, et des SDK livrés
+  aux partenaires. Pas de framework multiplateforme tiers. À valider par le studio.
 - **Site institutionnel : entièrement sur mesure**, sans thème acheté ni constructeur
   de pages. C'est le seul domaine où l'on ne part pas d'une plateforme du marché.
 

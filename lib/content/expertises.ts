@@ -1,11 +1,11 @@
 /**
- * Trois familles d’expertise pour l’accueil (le visiteur se reconnaît dans un
- * problème, pas dans un catalogue), neuf services pour le hub et le SEO
+ * Quatre familles d’expertise pour l’accueil (le visiteur se reconnaît dans un
+ * problème, pas dans un catalogue), dix services pour le hub et le SEO
  * d’intention. Référence : Architecture UX, S4 et fiche « Expertises ».
  */
 
 export type ExpertiseFamilySlug =
-  "plateformes-saas" | "sites-e-commerce" | "ia-api"
+  "plateformes-saas" | "sites-e-commerce" | "ia-api" | "applications-mobiles"
 
 export type ExpertiseFamily = {
   slug: ExpertiseFamilySlug
@@ -52,6 +52,16 @@ export const expertiseFamilies: ExpertiseFamily[] = [
     halo: "warm",
     lines: [48, 62, 76],
   },
+  {
+    slug: "applications-mobiles",
+    label: "Applications mobiles",
+    title: "Applications mobiles",
+    summary:
+      "Des applications iOS et Android pensées pour le terrain, avec ou sans réseau, et des SDK que vos partenaires intègrent dans leurs propres outils.",
+    tag: "ios · android",
+    halo: "cool",
+    lines: [64, 42, 70],
+  },
 ]
 
 /**
@@ -69,7 +79,9 @@ export const expertiseFamilies: ExpertiseFamily[] = [
  * décalerait la mise en page.
  *
  * Couleurs vérifiées avant intégration, comme le veut la règle du projet : les trois
- * fichiers portent déjà l'orange de marque `#e9591f`. Aucune recoloration nécessaire.
+ * premiers fichiers portent déjà l'orange de marque `#e9591f`. Le quatrième vient
+ * d'undraw avec le violet par défaut de la banque, `#6c63ff`, passé à l'orange de
+ * marque avant intégration.
  */
 export const familyIllustrations: Record<
   string,
@@ -89,6 +101,11 @@ export const familyIllustrations: Record<
     src: "/illustrations/ia-illustration.svg",
     width: 800,
     height: 524,
+  },
+  "applications-mobiles": {
+    src: "/illustrations/mobile-illustration.svg",
+    width: 718,
+    height: 596,
   },
 }
 
@@ -601,6 +618,94 @@ export const expertiseServices: ExpertiseService[] = [
       },
     ],
     ctaTitle: "Parlons de vos intégrations",
+  },
+  {
+    slug: "applications-mobiles",
+    family: "applications-mobiles",
+    title: "Applications mobiles, SDK & NDK",
+    tagline:
+      "Quand votre service doit tenir dans une poche : sur le terrain, hors connexion, avec les capteurs du téléphone.",
+    problem:
+      "Vos équipes travaillent debout, en déplacement, parfois sans réseau, et un site adapté au mobile ne suffit plus : il faut la caméra, la position, les notifications, et une application qui répond même en sous-sol. Nous concevons des applications natives iOS et Android, et les SDK qui permettent à d’autres d’intégrer votre service dans les leurs.",
+    deliverables: [
+      {
+        title: "Une application publiée sur les deux magasins",
+        text: "Nous prenons en charge le dossier de publication sur l’App Store et Google Play, les règles de chaque plateforme et les allers-retours de validation. Vous publiez sous votre propre compte : l’application vous appartient, comme son code.",
+      },
+      {
+        title: "Un fonctionnement hors connexion",
+        text: "Les données saisies sur le terrain sont conservées sur l’appareil et synchronisées au retour du réseau, sans doublon ni perte. C’est la première chose qui distingue une application d’un site consulté sur téléphone.",
+      },
+      {
+        title: "Un SDK que d’autres développeurs intègrent",
+        text: "Quand votre service doit vivre dans les applications de vos partenaires, nous livrons une bibliothèque iOS et Android documentée, versionnée, avec un exemple d’intégration qui compile. Un SDK se juge au temps que met un inconnu à l’intégrer.",
+      },
+      {
+        title: "Des modules natifs quand la performance l’exige",
+        text: "Traitement d’image, audio, chiffrement, calcul lourd : ces parties sont écrites en C ou C++ via le NDK et partagées entre les deux plateformes, pour n’être écrites, testées et corrigées qu’une fois.",
+      },
+    ],
+    techChoices: [
+      {
+        title: "Natif sur chaque plateforme",
+        text: "Une application qu’on ouvre dix fois par jour doit se sentir chez elle : gestes, accessibilité, autonomie, mises à jour du système. Nous développons pour iOS et Android avec les outils de chaque plateforme, et nous expliquons ce choix avant de commencer, pas après.",
+      },
+      {
+        title: "Un cœur partagé, écrit une fois",
+        text: "Ce qui ne dépend pas de l’écran, règles métier, chiffrement, traitement de données, est isolé dans un module commun aux deux plateformes. Une correction se fait à un endroit, et les deux applications restent d’accord.",
+      },
+      {
+        title: "Une application qui ne dépend pas d’un réseau parfait",
+        text: "Chaque écran est conçu pour l’attente, l’erreur et l’absence de réseau. Une application qui affiche une roue infinie dans un ascenseur est une application que l’on désinstalle.",
+      },
+      {
+        title: "Une chaîne de publication reproductible",
+        text: "La construction, la signature et l’envoi sur les magasins sont automatisés : une version se produit en une commande, et la précédente se retrouve. Personne ne signe une application depuis son poste un vendredi soir.",
+      },
+    ],
+    whyCustom: {
+      lead: "Une application mobile spécifique se justifie quand :",
+      signals: [
+        "vos équipes travaillent debout, en déplacement ou sans réseau fiable",
+        "le service a besoin de la caméra, de la position ou des notifications de l’appareil",
+        "vos partenaires doivent intégrer votre service dans leurs propres applications",
+        "une partie du traitement doit s’exécuter sur l’appareil, pour la vitesse ou la confidentialité",
+        "les mêmes personnes ouvrent l’application plusieurs fois par jour",
+      ],
+      closing:
+        "Si votre usage se résume à consulter des informations de temps en temps, un site pensé pour le mobile fera le même travail pour une fraction du coût, sans passage par les magasins. C’est alors ce que nous vous recommanderons.",
+    },
+    relatedCase: "",
+    faq: [
+      {
+        question: "Natif ou multiplateforme ?",
+        answer:
+          "Nous développons en natif, avec les outils de chaque plateforme, et nous partageons ce qui peut l’être dans un module commun. C’est le choix qui vieillit le mieux quand le système évolue, et il n’enferme dans aucun framework tiers dont il faudrait suivre le rythme.",
+      },
+      {
+        question:
+          "À qui appartiennent l’application et les comptes développeur ?",
+        answer:
+          "À vous. Les comptes Apple et Google sont ouverts à votre nom, le code est déposé dans un dépôt dont vous êtes propriétaire, et les clés de signature vous sont remises. Une autre équipe peut reprendre la suite sans nous.",
+      },
+      {
+        question:
+          "Faut-il une application sur les deux plateformes dès le départ ?",
+        answer:
+          "Pas nécessairement. Si vos utilisateurs sont équipés par votre entreprise, une seule plateforme peut suffire au début, et le cœur partagé permet d’ajouter la seconde sans repartir de zéro. Si le public est ouvert, les deux sont indispensables.",
+      },
+      {
+        question: "Qu’est-ce qu’un SDK, et en avons-nous besoin ?",
+        answer:
+          "Une bibliothèque que d’autres développeurs ajoutent à leur application pour utiliser votre service sans le reconstruire. Vous en avez besoin si des partenaires doivent intégrer ce que vous faites dans leurs outils : un paiement, une identification, une mesure. Sinon, une API suffit.",
+      },
+      {
+        question: "Pourquoi du C ou du C++ dans une application mobile ?",
+        answer:
+          "Pour les traitements qui doivent aller vite ou rester sur l’appareil : image, audio, chiffrement, calcul. Le NDK d’Android et les outils d’Apple permettent d’écrire ce code une fois et de l’embarquer dans les deux applications. Nous n’y recourons que là où c’est utile, le reste de l’application restant dans le langage de sa plateforme.",
+      },
+    ],
+    ctaTitle: "Parlons de votre application",
   },
   {
     slug: "maintenance-evolutive",

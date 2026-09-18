@@ -14,7 +14,7 @@ import {
 } from "@/lib/content/expertises"
 
 /**
- * S4 - trois familles, pas neuf services : le visiteur se reconnaît dans un
+ * S4 - quatre familles, pas dix services : le visiteur se reconnaît dans un
  * problème, le détail vit sur les pages expertise.
  */
 function ExpertiseGrid() {
@@ -32,11 +32,14 @@ function ExpertiseGrid() {
             id="expertises-titre"
             className="text-[clamp(1.75rem,7vw,3.25rem)] leading-[1.08] font-bold"
           >
-            Trois familles de produits, une même exigence.
+            Quatre familles de produits, une même exigence.
           </h2>
         </Reveal>
 
-        <ul className="grid gap-5 lg:grid-cols-3">
+        {/* Quatre cartes : deux par ligne dès la tablette, les quatre côte à côte à
+            partir de 1280 px seulement. À 1024 px, quatre colonnes donneraient des
+            cartes de 230 px où le résumé passerait sur sept lignes. */}
+        <ul className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {expertiseFamilies.map((family, index) => {
             const illustration = familyIllustrations[family.slug]
             return (

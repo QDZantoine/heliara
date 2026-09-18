@@ -20,6 +20,6 @@ export const contentType = OG_CONTENT_TYPE
 export default async function Image() {
   return ogCard({
     eyebrow: "Expertises",
-    title: "Neuf savoir-faire, trois familles de produits",
+    title: "Dix savoir-faire, quatre familles de produits",
   })
 }

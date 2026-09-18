@@ -25,7 +25,7 @@ import { pageMetadata } from "@/lib/seo"
 const page = {
   title: "Expertises",
   description:
-    "Neuf savoir-faire regroupés en trois familles : plateformes et SaaS, sites et e-commerce, IA et API.",
+    "Dix savoir-faire regroupés en quatre familles : plateformes et SaaS, sites et e-commerce, IA et API, applications mobiles.",
   path: "/expertises",
 }
 
@@ -68,7 +68,7 @@ export default async function ExpertisesPage() {
 
       <PageHero
         eyebrow="Expertises"
-        title="Neuf savoir-faire, trois familles de produits"
+        title="Dix savoir-faire, quatre familles de produits"
         lead="Chaque page dit le problème qu’elle résout, ce que nous livrons, et les choix techniques que nous assumons."
       />
 

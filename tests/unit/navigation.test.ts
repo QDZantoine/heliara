@@ -189,8 +189,8 @@ describe("navigation", () => {
     }
   })
 
-  it("reprend les trois familles d'expertise dans le sous-menu", () => {
-    expect(expertiseNavFallback).toHaveLength(3)
+  it("reprend les quatre familles d'expertise dans le sous-menu", () => {
+    expect(expertiseNavFallback).toHaveLength(4)
   })
 })
 
