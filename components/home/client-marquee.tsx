@@ -39,7 +39,7 @@ function ClientMarquee({ clients }: { clients: readonly Client[] }) {
         un logo monochrome sombre disparaît sur l'encre - cela se corrige en fournissant
         sa variante claire, jamais par un filtre.
       */
-      className="border-y border-line bg-surface"
+      className="mt-12 border-y border-line bg-surface md:mt-16 lg:mt-0"
     >
       {/*
           Une grille sous 900 px, et c'est pour la commande de pause : en colonne, elle
