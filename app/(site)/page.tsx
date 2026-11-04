@@ -1,9 +1,9 @@
 import { CaseList } from "@/components/home/case-list"
-import { ExpertiseGrid } from "@/components/home/expertise-grid"
+import { ExpertiseList } from "@/components/home/expertise-list"
 import { Hero } from "@/components/home/hero"
 import { JsonLd } from "@/components/seo/json-ld"
 import { GuaranteesSection } from "@/components/home/guarantees-section"
-import { KpiBand } from "@/components/home/kpi-band"
+import { Manifesto } from "@/components/home/manifesto"
 import { MethodPreview } from "@/components/home/method-preview"
 import { ServiceAreas } from "@/components/home/service-areas"
 import { ClientMarquee } from "@/components/home/client-marquee"
@@ -39,9 +39,9 @@ export const metadata: Metadata = pageMetadata({
 /**
  * Accueil - une conversation en dix temps (Architecture UX, 05).
  *
- * Arc : affirmation (hero) → caution (preuve sociale) → quoi (expertises) →
- * comment (méthode) → preuve (réalisations, chiffres) → pairs (témoignages) →
- * demande (CTA final). Le rythme alterne section dense et section respirante,
+ * Arc : affirmation (hero) → caution (preuve sociale) → conviction (manifeste) →
+ * quoi (expertises) → comment (méthode) → preuve (réalisations) → garanties →
+ * pairs (témoignages) → demande (CTA final). Le rythme alterne section dense et section respirante,
  * et la demande n'arrive qu'après les trois objections levées.
  */
 /**
@@ -112,10 +112,13 @@ export default async function HomePage() {
       />
       <Hero screens={heroScreens} />
       <ClientMarquee clients={clients} />
-      <ExpertiseGrid />
+      {/* La conviction, tôt : une bande encre entre la caution et le « quoi ». Elle
+          porte aussi les quatre principes, que la bande chiffrée d'après les
+          réalisations portait seule. */}
+      <Manifesto />
+      <ExpertiseList />
       <MethodPreview />
       <CaseList cases={featured} />
-      <KpiBand />
       <GuaranteesSection />
       {/* La distance, juste après le risque contractuel : deux objections lues à la
           suite, avant les pairs et la demande. */}

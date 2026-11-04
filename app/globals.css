@@ -292,9 +292,6 @@
 
   /* --- Animations ------------------------------------------------------- */
   --animate-marquee: hel-marquee 42s linear infinite;
-  --animate-float: hel-float 7s var(--hel-ease-io) infinite;
-  --animate-float-mid: hel-float 8s var(--hel-ease-io) infinite;
-  --animate-float-slow: hel-float 9s var(--hel-ease-io) infinite reverse;
 }
 
 @keyframes hel-marquee {
@@ -303,16 +300,6 @@
   }
   to {
     transform: translateX(-50%);
-  }
-}
-
-@keyframes hel-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
   }
 }
 
@@ -584,68 +571,6 @@
   animation: hel-screen-light 360ms var(--hel-ease-io) both;
 }
 
-/* La relève : la fenêtre passe à un autre projet, le tient, puis revient. Un fondu
-   d'environ une seconde sur un cycle de 16 s, en décalé d'une fenêtre à l'autre. */
-@keyframes hel-screen-swap {
-  0%,
-  44% {
-    opacity: 0;
-  }
-  50%,
-  94% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.hel-screen-swap {
-  opacity: 0;
-  animation: hel-screen-swap 16s var(--hel-ease-inout) infinite both;
-}
-
-/* Les noms, eux, ne se fondent pas l'un dans l'autre : deux libellés superposés à
-   mi-opacité se lisent comme un texte brouillé. L'ancien sort, puis le nouveau
-   entre, sur le même cycle que l'image. */
-@keyframes hel-caption-in {
-  0%,
-  47% {
-    opacity: 0;
-  }
-  50%,
-  91% {
-    opacity: 1;
-  }
-  94%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes hel-caption-out {
-  0%,
-  44% {
-    opacity: 1;
-  }
-  47%,
-  97% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.hel-caption-in {
-  opacity: 0;
-  animation: hel-caption-in 16s linear infinite both;
-}
-
-.hel-caption-out {
-  animation: hel-caption-out 16s linear infinite both;
-}
-
 /* Le reflet : une bande claire qui traverse la vitre, puis un long repos. Sous 16 %
    d'opacité, ce qui le garde dans la règle des halos de la DA. */
 @keyframes hel-screen-sweep {
@@ -669,18 +594,6 @@
   animation: hel-screen-sweep 11s var(--hel-ease-inout) infinite both;
 }
 
-/* La profondeur au pointeur : `--px` et `--py` vont de -1 à 1 (`PointerField`),
-   chaque fenêtre s'y décale selon sa `--depth`. La transition lisse le suivi ; la
-   plus proche bouge le plus, c'est ce qui donne le relief. */
-.hel-depth {
-  transform: translate3d(
-    calc(var(--px, 0) * var(--depth, 0px)),
-    calc(var(--py, 0) * var(--depth, 0px)),
-    0
-  );
-  transition: transform 360ms var(--hel-ease-expo);
-}
-
 /* La lueur du hero suit le pointeur, à l'opposé et plus lentement que les écrans :
    la lumière vient de derrière eux. Toujours un seul halo, il se déplace. */
 .hel-halo-follow {
@@ -690,6 +603,167 @@
     0
   );
   transition: transform 900ms var(--hel-ease-expo);
+}
+
+/* ==========================================================================
+   Le hero : la plongée dans le produit
+
+   Un mur de sites livrés posé sur un plan incliné. Trois enveloppes, trois
+   mouvements, chacun sur son propre `transform` - une seconde déclaration sur le
+   même nœud remplacerait la première :
+
+   - `.hel-wall-stage` porte la perspective ;
+   - `.hel-wall-tilt` s'oriente au pointeur (`--px`, `--py` de `PointerField`) ;
+   - `.hel-wall-plane` est incliné au repos, et se redresse au défilement là où
+     l'animation existe (règles sous `@supports` plus bas).
+
+   État de repos = état sans animation : le mur incliné, immobile. C'est ce que
+   voient Firefox, le mouvement réduit et le mobile, et c'est déjà une composition.
+   ========================================================================== */
+.hel-wall-stage {
+  /* Pas de rognage ici : le plan monte au-dessus de son bord haut quand il se
+     redresse. C'est le conteneur épinglé du hero qui rogne, au bord de l'écran. */
+  perspective: 1800px;
+  perspective-origin: 50% 0%;
+}
+
+.hel-wall-tilt {
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--px, 0) * -3.5deg))
+    rotateX(calc(var(--py, 0) * 2.5deg));
+  transition: transform 900ms var(--hel-ease-expo);
+}
+
+.hel-wall-plane {
+  --tilt: 22deg;
+  transform-style: preserve-3d;
+  transform-origin: 50% 0%;
+  transform: rotateX(var(--tilt)) scale(0.94);
+}
+
+@media (min-width: 1024px) {
+  .hel-wall-plane {
+    --tilt: 30deg;
+  }
+}
+
+/* La trame du plan de travail : des points neutres, estompés vers les bords et le
+   bas. Décor seul, aucune couleur de marque. */
+.hel-dots {
+  background-image: radial-gradient(
+    circle at center,
+    var(--hel-line-strong) 1px,
+    transparent 1.4px
+  );
+  background-size: 28px 28px;
+  mask-image: radial-gradient(
+    ellipse 70% 60% at 50% 30%,
+    black 0%,
+    transparent 75%
+  );
+  opacity: 0.7;
+}
+
+/* Les pièces du symbole, aux coins de la carte du hero. Les déplacements suivent
+   la découpe de la charte, 12,3° montant vers la droite : le long de la coupe
+   (0,977 ; -0,213) et perpendiculairement (0,213 ; 0,977). Les pièces ne pivotent
+   jamais, la charte l'interdit. */
+.hel-mark-part-top,
+.hel-mark-part-bottom,
+.hel-mark-in-top,
+.hel-mark-in-bottom {
+  transform-box: view-box;
+}
+
+@keyframes hel-mark-assemble-top {
+  from {
+    opacity: 0;
+    transform: translate(-29px, -6px);
+  }
+}
+
+@keyframes hel-mark-assemble-bottom {
+  from {
+    opacity: 0;
+    transform: translate(29px, 6px);
+  }
+}
+
+[data-reveal-ready] .hel-mark-in-top {
+  animation: hel-mark-assemble-top 1400ms var(--hel-ease-expo) 120ms both;
+}
+
+[data-reveal-ready] .hel-mark-in-bottom {
+  animation: hel-mark-assemble-bottom 1400ms var(--hel-ease-expo) 220ms both;
+}
+
+/* L'ouverture : la pièce haute recule vers le haut à gauche, la basse vers le bas
+   à droite, perpendiculairement à la coupe - le produit passe entre les deux. */
+@keyframes hel-mark-open-top {
+  to {
+    opacity: 0.4;
+    transform: translate(-34px, -150px);
+  }
+}
+
+@keyframes hel-mark-open-bottom {
+  to {
+    opacity: 0.4;
+    transform: translate(34px, 150px);
+  }
+}
+
+/* Le hero épinglé : le texte s'en va vers le haut, le plan se redresse, monte et
+   remplit l'écran. Les deux suivent le défilement de la page, pas la vue du hero :
+   il est en tête de page, et `scroll(root)` donne des bornes qui ne dépendent pas
+   de sa hauteur. */
+@keyframes hel-copy-away {
+  to {
+    opacity: 0;
+    transform: translateY(-14vh) scale(0.96);
+  }
+}
+
+@keyframes hel-page-hero-away {
+  to {
+    opacity: 0.25;
+    transform: translateY(-56px);
+  }
+}
+
+/* Le bandeau de la méthode, au-dessus de la bande finale : contour clair sur encre,
+   séparateurs gris. **Pas d'orange** : le point du titre et le bouton sont déjà les
+   deux gestes de cet écran. Il glisse avec le défilement. */
+.hel-ticker {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(242 242 240 / 0.16);
+}
+
+.hel-ticker-dot {
+  margin-inline: 0.28em;
+  -webkit-text-stroke: 0;
+  color: rgb(242 242 240 / 0.16);
+}
+
+@keyframes hel-ticker-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-38%);
+  }
+}
+
+@keyframes hel-wordmark-rise {
+  from {
+    transform: translateY(38%);
+  }
+}
+
+@keyframes hel-wall-rise {
+  to {
+    transform: rotateX(0deg) translateY(-46vh) scale(1.1);
+  }
 }
 
 /* La lueur de la bande encre dérive lentement : une pièce qui respire au lieu
@@ -708,9 +782,8 @@
 }
 
 /* Défilement piloté, sans JavaScript, là où le navigateur le sait : la barre de
-   navigation se détache en pilule, et la capture d'une réalisation recule quand sa
-   carte entre dans le champ. Ailleurs, ces deux pièces restent dans leur état de
-   repos, qui est l'état d'origine. */
+   navigation se détache en pilule. Ailleurs, elle reste dans son état de repos, qui
+   est l'état d'origine. */
 @keyframes hel-header-float {
   to {
     top: 0.5rem;
@@ -729,15 +802,6 @@
   }
 }
 
-@keyframes hel-case-zoom {
-  from {
-    transform: scale(1.06);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
 @supports (animation-timeline: scroll()) {
   .hel-header-plate {
     animation: hel-header-float linear both;
@@ -749,12 +813,6 @@
     animation: hel-header-lift linear both;
     animation-timeline: scroll(root);
     animation-range: 0 160px;
-  }
-
-  .hel-case img {
-    animation: hel-case-zoom linear both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 35%;
   }
 }
 
@@ -798,21 +856,6 @@
   }
 }
 
-/* Plongée dans l'écran : en quittant le hero, le texte remonte et s'efface, l'écran
-   de devant vient vers soi et les deux autres s'écartent. 2D, amplitudes courtes. */
-@keyframes hel-hero-copy-out {
-  to {
-    opacity: 0.15;
-    transform: translateY(-64px);
-  }
-}
-
-@keyframes hel-spread {
-  to {
-    transform: translate(var(--sx, 0), var(--sy, 0)) scale(var(--ss, 1));
-  }
-}
-
 @keyframes hel-rise {
   from {
     opacity: 0;
@@ -847,6 +890,65 @@
   }
 }
 
+/* Le cadre épinglé des réalisations est masqué par défaut ; la règle qui le montre
+   vit plus bas, sous `@supports (animation-timeline: view())`, avec ses deux autres
+   gardes, et doit donc venir après celle-ci. */
+.hel-case-stage {
+  display: none;
+}
+
+/* Le manifeste : chaque mot passe de l'ombre à la lumière, dans l'ordre de lecture. */
+@keyframes hel-word {
+  from {
+    opacity: 0.22;
+  }
+}
+
+/* Les temps de la méthode : celui qui traverse le centre de l'écran est allumé, les
+   autres restent en retrait. Le plateau du milieu est large pour qu'un temps reste
+   lisible le temps qu'on le lise. */
+@keyframes hel-step {
+  0% {
+    opacity: 0.3;
+    transform: translateY(12px);
+  }
+  32%,
+  68% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+}
+
+/* Les réalisations épinglées : la capture d'un projet vient se fondre par-dessus la
+   précédente quand son texte atteint le tiers haut de l'écran. */
+@keyframes hel-cover-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes hel-rail-v {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+/* Le titre du hero entre ligne par ligne, chaque ligne montant un peu plus tard que
+   la précédente. Translation seule et **sans masque**, et c'est mesuré : une ligne
+   rognée par `overflow: hidden` pendant qu'elle monte n'est pas peinte au sens du
+   LCP, qui tombait alors sur le paragraphe d'introduction. Sans masque, le titre
+   reste le LCP, comme `hel-reveal-in` l'exige. */
+@keyframes hel-line-in {
+  from {
+    transform: translateY(0.45em);
+  }
+}
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     html:has([data-hero-fused]) .hel-header-plate {
@@ -854,27 +956,76 @@
       animation-range: 0 220px;
     }
 
-    /* La timeline est celle du hero tout entier, pas celle de chaque enfant : sans
-       cela le texte et les écrans commenceraient à bouger à deux moments différents,
-       chacun quand son propre bord atteint le haut de l'écran. */
-    .hel-hero {
-      view-timeline-name: --hero;
+    /* L'en-tête des pages internes remonte et s'efface en quittant l'écran. Il
+       est en tête de page : `scroll(root)` donne des bornes fixes. */
+    .hel-page-hero-copy {
+      animation: hel-page-hero-away linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 70vh;
     }
 
-    .hel-hero-copy,
-    .hel-spread {
-      animation-timeline: --hero;
-      animation-range: exit 0% exit 100%;
-      animation-fill-mode: both;
-      animation-timing-function: linear;
+    /* Le mot-symbole du pied de page monte depuis le bas de l'écran pendant qu'on
+       arrive en fin de page. */
+    .hel-tilt-in {
+      animation: hel-tilt-flatten linear both;
+      animation-timeline: view();
+      animation-range: entry 30% cover 45%;
     }
 
-    .hel-hero-copy {
-      animation-name: hel-hero-copy-out;
+    .hel-ticker {
+      animation: hel-ticker-slide linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
     }
 
-    .hel-spread {
-      animation-name: hel-spread;
+    .hel-wordmark {
+      animation: hel-wordmark-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    /* L'épinglage n'existe qu'ici : au-delà de 1024 px, timelines prises en
+       charge, mouvement accepté. Le hero gagne 85 vh de hauteur, que son contenu
+       collant traverse le temps de la plongée. Hors de ces trois conditions, un
+       hero épinglé sans animation ne serait qu'un défilement mort. */
+    @media (min-width: 1024px) {
+      .hel-hero {
+        height: calc(100svh + 85vh);
+      }
+
+      .hel-hero-pin {
+        position: sticky;
+        top: 0;
+        height: 100svh;
+      }
+
+      .hel-hero-copy {
+        animation: hel-copy-away linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 45vh;
+      }
+
+      .hel-wall-plane {
+        animation: hel-wall-rise linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 85vh;
+      }
+
+      .hel-mark-part-top,
+      .hel-mark-part-bottom {
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root);
+        animation-range: 0 70vh;
+      }
+
+      .hel-mark-part-top {
+        animation-name: hel-mark-open-top;
+      }
+
+      .hel-mark-part-bottom {
+        animation-name: hel-mark-open-bottom;
+      }
     }
 
     /* Une cascade : chaque carte d'une même rangée part un peu plus tard que la
@@ -910,6 +1061,81 @@
       animation-timeline: view();
       animation-range: entry 0% cover 45%;
     }
+
+    /* Le paragraphe porte la timeline et le nombre de mots ; chaque mot en tire sa
+       fenêtre, de 12 % à 52 % de la traversée, dans l'ordre de son rang. */
+    .hel-manifesto {
+      view-timeline-name: --manifesto;
+    }
+
+    .hel-word {
+      animation: hel-word linear both;
+      animation-timeline: --manifesto;
+      animation-range: cover calc(12% + var(--i, 0) / var(--n, 1) * 40%) cover
+        calc(20% + var(--i, 0) / var(--n, 1) * 40%);
+    }
+
+    .hel-step {
+      animation: hel-step linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* Le fil de la méthode lit la timeline de la liste depuis la colonne voisine. */
+    .hel-method {
+      timeline-scope: --steps;
+    }
+
+    .hel-steps {
+      view-timeline-name: --steps;
+    }
+
+    /* Le cadre épinglé n'existe qu'ici : grand écran, timelines prises en charge,
+       mouvement accepté. La capture de chaque fiche s'efface en même temps. */
+    @media (min-width: 1024px) {
+      .hel-case-stage {
+        display: block;
+        position: sticky;
+        align-self: start;
+      }
+
+      .hel-case-inline {
+        display: none;
+      }
+
+      .hel-case-item {
+        min-height: 72vh;
+      }
+
+      .hel-case-cover {
+        animation: hel-cover-in linear both;
+        animation-timeline: var(--tl);
+        animation-range: cover 18% cover 42%;
+      }
+
+      /* La première capture est là d'emblée : rien ne la précède. */
+      .hel-case-cover:nth-child(2) {
+        animation: none;
+      }
+    }
+
+    .hel-phases {
+      view-timeline-name: --phases;
+    }
+
+    .hel-rail-phases {
+      transform-origin: center top;
+      animation: hel-rail-v linear both;
+      animation-timeline: --phases;
+      animation-range: cover 10% cover 90%;
+    }
+
+    .hel-rail-v {
+      transform-origin: center top;
+      animation: hel-rail-v linear both;
+      animation-timeline: --steps;
+      animation-range: cover 8% cover 72%;
+    }
   }
 }
 
@@ -928,6 +1154,113 @@
    pas empiler des dizaines de transitions au moment où le rideau se lève. */
 [data-reveal-now] {
   transition: none;
+}
+
+/* Les lignes du titre du hero : un masque par ligne, une montée par ligne, en
+   décalé de 80 ms. Comme `hel-reveal-in`, la règle n'existe que sous
+   `data-reveal-ready` : sans JavaScript, le titre est simplement là. */
+.hel-line {
+  display: block;
+}
+
+[data-reveal-ready] .hel-line > span {
+  display: block;
+  animation: hel-line-in 900ms var(--hel-ease-expo) both;
+  animation-delay: calc(var(--l, 0) * 90ms);
+}
+
+/* Les mots du titre des pages internes entrent l'un après l'autre, par translation
+   seule (le titre est le LCP). `inline-block` pour que la translation s'applique ;
+   l'espace reste dans le span, la phrase se replie comme un texte ordinaire. */
+@keyframes hel-word-in {
+  from {
+    transform: translateY(0.42em);
+  }
+}
+
+.hel-title-word {
+  display: inline-block;
+  white-space: pre;
+}
+
+[data-reveal-ready] .hel-title-word {
+  animation: hel-word-in 850ms var(--hel-ease-expo) both;
+  animation-delay: calc(80ms + var(--w, 0) * 45ms);
+}
+
+/* Le filet sous un en-tête se trace de gauche à droite, une fois, à l'arrivée. */
+@keyframes hel-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.hel-draw {
+  transform-origin: left center;
+}
+
+[data-reveal-ready] .hel-draw {
+  animation: hel-draw 1200ms var(--hel-ease-expo) 320ms both;
+}
+
+/* Carte de réalisation : la capture s'avance dans son cadre au survol, la pastille
+   monte. Pointeur fin seulement : au doigt, le survol se déclencherait au toucher. */
+.hel-card img {
+  transition: transform 700ms var(--hel-ease-expo);
+}
+
+.hel-card-pill {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 240ms var(--hel-ease-expo),
+    transform 240ms var(--hel-ease-expo);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hel-card:hover img {
+    transform: scale(1.04);
+  }
+
+  .hel-card:hover .hel-card-pill,
+  .hel-card:focus-visible .hel-card-pill {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* La capture d'une fiche projet : perspective sur la scène, l'inclinaison n'existe
+   que dans l'animation pilotée, plus bas. */
+.hel-tilt-stage {
+  perspective: 1600px;
+  perspective-origin: 50% 0%;
+}
+
+.hel-tilt-in {
+  transform-origin: 50% 0%;
+}
+
+@keyframes hel-tilt-flatten {
+  from {
+    transform: rotateX(18deg) scale(0.94);
+  }
+}
+
+/* Lien de section : un soulignement qui s'étire depuis la gauche au survol, et se
+   retire par la droite. Fond dégradé plutôt que bordure : la largeur s'anime sans
+   mise en page. */
+.hel-link-slide {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: right bottom 0.3em;
+  transition: background-size 320ms var(--hel-ease-expo);
+}
+
+.hel-link-slide:hover,
+.hel-link-slide:focus-visible {
+  background-size: 100% 1px;
+  background-position: left bottom 0.3em;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -960,19 +1293,20 @@
      décalage, puis s'allumeraient d'un coup. */
   .hel-screen,
   .hel-screen-veil,
-  .hel-screen-swap,
-  .hel-caption-in,
-  .hel-caption-out,
   .hel-screen-sweep,
   .hel-halo-drift,
   .hel-header-plate,
   .hel-header-inner,
-  .hel-case img {
+  .hel-line > span,
+  .hel-title-word,
+  .hel-draw,
+  .hel-mark-in-top,
+  .hel-mark-in-bottom {
     animation: none;
   }
 
-  .hel-depth,
-  .hel-halo-follow {
+  .hel-halo-follow,
+  .hel-wall-tilt {
     transform: none;
   }
 

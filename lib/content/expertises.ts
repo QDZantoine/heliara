@@ -14,10 +14,15 @@ export type ExpertiseFamily = {
   /** Titre de la carte d’accueil. */
   title: string
   summary: string
-  /** Étiquette technique du visuel schématique. */
+  /**
+   * `tag`, `halo` et `lines` réglaient le croquis d'interface qui ornait les cartes
+   * de l'accueil. La liste éditoriale qui les a remplacées n'a plus de visuel : ces
+   * trois champs restent portés par la base et par l'administration, mais n'ont
+   * plus d'effet à l'écran. À retirer de la base avec une migration le jour où l'on
+   * touche aux familles.
+   */
   tag: string
   halo: "warm" | "cool"
-  /** Largeurs en % des barres du visuel : trois valeurs. */
   lines: [number, number, number]
 }
 
@@ -63,51 +68,6 @@ export const expertiseFamilies: ExpertiseFamily[] = [
     lines: [64, 42, 70],
   },
 ]
-
-/**
- * L'illustration en tête de carte, par famille.
- *
- * **Une table à part, et non un champ de `ExpertiseFamily`.** Les familles sont
- * administrables : quelqu'un peut en créer une depuis l'administration, où il n'y a pas
- * de dépôt de fichier pour ce visuel. Une famille absente de cette table retombe donc
- * sur le croquis d'interface abstrait, qui se règle lui par ses trois barres et son
- * étiquette - les champs de l'administration gardent ainsi un effet, au lieu de devenir
- * des réglages sans conséquence.
- *
- * Les dimensions viennent du `viewBox` de chaque fichier. Elles sont déclarées pour que
- * la boîte soit réservée avant le chargement : sans elles, l'arrivée de l'illustration
- * décalerait la mise en page.
- *
- * Couleurs vérifiées avant intégration, comme le veut la règle du projet : les trois
- * premiers fichiers portent déjà l'orange de marque `#e9591f`. Le quatrième vient
- * d'undraw avec le violet par défaut de la banque, `#6c63ff`, passé à l'orange de
- * marque avant intégration.
- */
-export const familyIllustrations: Record<
-  string,
-  { src: string; width: number; height: number }
-> = {
-  "plateformes-saas": {
-    src: "/illustrations/sass-illustration.svg",
-    width: 1095,
-    height: 714,
-  },
-  "sites-e-commerce": {
-    src: "/illustrations/website-illustration.svg",
-    width: 876,
-    height: 661,
-  },
-  "ia-api": {
-    src: "/illustrations/ia-illustration.svg",
-    width: 800,
-    height: 524,
-  },
-  "applications-mobiles": {
-    src: "/illustrations/mobile-illustration.svg",
-    width: 718,
-    height: 596,
-  },
-}
 
 export type ExpertiseService = {
   slug: string
