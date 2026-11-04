@@ -28,8 +28,8 @@ import { guarantees, guaranteesSection } from "@/lib/content/guarantees"
 function GuaranteesSection() {
   return (
     <Section tone="surface" space="lg" aria-labelledby="engagements-titre">
-      <Container>
-        <Reveal className="mb-9 max-w-[42rem] md:mb-12">
+      <Container className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-center lg:gap-16">
+        <Reveal className="max-w-[42rem]">
           <Eyebrow className="mb-4">{guaranteesSection.eyebrow}</Eyebrow>
           <h2
             id="engagements-titre"
@@ -38,43 +38,43 @@ function GuaranteesSection() {
             {guaranteesSection.title}
           </h2>
           {/* `text-pretty` : sans lui le chapô laissait « opposer. » seul sur une
-              troisième ligne. L'orpheline se voit d'autant plus que la ligne d'après
-              est un filet. */}
+              troisième ligne. */}
           <p className="text-[1.0625rem] leading-relaxed text-pretty text-body">
             {guaranteesSection.lead}
           </p>
         </Reveal>
 
         {/*
-          Deux colonnes au-delà de 640 px, trois au-delà de 1024. Sept items sur trois
-          colonnes laissent la dernière rangée incomplète, et c'est voulu : la liste se
-          lit comme un relevé qui s'arrête où il s'arrête, pas comme une grille qu'on
-          aurait remplie pour faire nombre.
+          Une feuille, et une seule. Les engagements se lisent comme l'extrait d'un
+          contrat qu'on pose sur la table : une surface flottante, des clauses l'une
+          sous l'autre. C'est la promesse de la section rendue visible - ce qu'on peut
+          opposer - et c'est la profondeur par les couches que demande la DA.
 
-          Un filet en haut de chaque item plutôt qu'une carte : la DA demande la
-          profondeur par les couches et non par les filets, mais il ne s'agit pas ici de
-          profondeur - sept cartes flottantes pour sept phrases courtes donneraient une
-          section bien plus lourde que ce qu'elle porte.
+          Sept cartes pour sept phrases courtes auraient été bien plus lourdes que ce
+          qu'elles portent ; une seule carte ne l'est pas. Les filets entre les lignes
+          sont internes à la feuille : ils séparent des clauses, ils ne font pas relief.
         */}
-        <ul className="grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-          {guarantees.map((guarantee, index) => (
-            <li key={guarantee} className="flex">
-              <Reveal
-                delay={index * 50}
-                className="flex w-full items-start gap-3.5 border-t border-line pt-5"
-              >
-                <CircleCheckBig
-                  aria-hidden="true"
-                  className="mt-0.5 size-4.5 shrink-0 text-brand"
-                  strokeWidth={2}
-                />
-                <span className="text-[1rem] leading-snug font-medium text-ink">
-                  {guarantee}
-                </span>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+        <Reveal delay={80}>
+          <div className="rounded-lg border border-line bg-raised p-6 shadow-4 md:p-8">
+            <p className="mb-2 font-mono text-[0.72rem] tracking-[0.08em] text-label uppercase">
+              {guaranteesSection.sheetLabel}
+            </p>
+            <ul className="divide-y divide-line">
+              {guarantees.map((guarantee) => (
+                <li key={guarantee} className="flex items-start gap-3.5 py-3.5">
+                  <CircleCheckBig
+                    aria-hidden="true"
+                    className="mt-0.5 size-4.5 shrink-0 text-brand"
+                    strokeWidth={2}
+                  />
+                  <span className="text-[1rem] leading-snug font-medium text-ink">
+                    {guarantee}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
       </Container>
     </Section>
   )

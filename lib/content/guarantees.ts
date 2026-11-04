@@ -16,6 +16,8 @@ export const guaranteesSection = {
   eyebrow: "Nos garanties",
   title: "Des engagements, pas des intentions.",
   lead: "Chacun se vérifie dans un contrat plutôt que dans une promesse commerciale. C'est la différence entre ce qu'un prestataire affirme et ce qu'on peut lui opposer.",
+  /** L'en-tête de la feuille qui les porte : ce qu'elle est, pas un nom de document. */
+  sheetLabel: "Inscrit au contrat",
 }
 export const guarantees: readonly string[] = [
   "Code documenté, et 100 % à vous",
