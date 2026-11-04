@@ -6,91 +6,110 @@ import { cn } from "@/lib/utils"
 export type HeroScreen = { media: MediaRef; name: string; sector: string }
 
 /**
- * Trois produits livrés, posés comme des écrans qui s'allument.
+ * Des produits livrés, posés comme des écrans allumés, et vivants.
  *
  * **« Montrer le produit, pas la matière »** : c'est la phrase de la DA, prise au mot. Le
- * hero montrait une illustration de fenêtres génériques ; il montre désormais des
- * interfaces réellement en production, ce qui est la seule chose qu'un prospect ne peut
- * pas soupçonner d'être un décor.
+ * hero montre des interfaces réellement en production, ce qu'un prospect ne peut pas
+ * soupçonner d'être un décor.
  *
- * **Le moment orchestré, et le seul de la page** : chaque écran monte de quelques pixels
- * pendant qu'un voile encre se retire de sa surface, en décalé. C'est la « lumière
- * d'écran » rendue littérale, et cela ne porte que sur `opacity` et `transform`. Sous
- * `prefers-reduced-motion`, la règle globale ramène tout à l'état final ; sans
- * JavaScript, l'animation CSS se joue quand même, rien n'est masqué durablement.
+ * **Quatre mouvements, tous sur `opacity` et `transform`** :
  *
- * **Quand il n'y a pas trois couvertures, le hero rend `HeroLottie` à la place.** Sa
- * boîte est un carré à peine plus haut ; le hero ayant une hauteur minimale sur grand
- * écran, l'écart ne déplace pas le texte. Et il ne survient jamais au cours d'un même
- * chargement : la base répond ou non avant le rendu.
+ * 1. l'allumage, une fois : chaque fenêtre monte pendant qu'un voile encre se retire ;
+ * 2. une flottaison lente, à trois rythmes, pour que la composition respire ;
+ * 3. un reflet qui balaie les vitres de temps à autre - la « lumière d'écran » ;
+ * 4. une relève : chaque fenêtre passe à un autre projet puis revient, en décalé. Les
+ *    trois fenêtres montrent toujours trois projets distincts.
  *
- * Décoratif (`aria-hidden`) : les mêmes projets sont nommés et liés plus bas, dans les
- * réalisations. Les lire ici en plus ferait entendre trois noms sans contexte.
+ * La profondeur au pointeur est portée par `PointerField`, qui pose `--px` et `--py`
+ * sur le hero : chaque fenêtre s'y décale selon sa `--depth`, de quelques pixels.
+ *
+ * Sous `prefers-reduced-motion`, tout est figé sur la composition de départ. Sans
+ * JavaScript, seule la profondeur au pointeur manque.
+ *
+ * Décoratif (`aria-hidden`) : les mêmes projets sont nommés et liés plus bas.
  */
 function HeroScreens({ screens }: { screens: HeroScreen[] }) {
-  const [back, middle, front] = screens
+  const count = screens.length
+  // La relève de la fenêtre `k` : trois projets plus loin quand il y en a assez, sinon
+  // le suivant. Dans les deux cas, les trois fenêtres restent distinctes entre elles.
+  const relief = (k: number) => screens[(k + (count > 3 ? 3 : 1)) % count]
+
+  const places = [
+    { box: "top-0 left-0 w-[68%]", depth: 8, float: "animate-float-slow" },
+    { box: "top-[16%] right-0 w-[64%]", depth: 14, float: "animate-float-mid" },
+    {
+      box: "bottom-[2%] left-[14%] w-[72%]",
+      depth: 22,
+      float: "animate-float",
+    },
+  ]
+  const shadows = ["shadow-2", "shadow-3", "shadow-4"]
 
   return (
     <div
       aria-hidden="true"
       className="relative mx-auto aspect-[6/5] w-full max-w-[36rem]"
     >
-      <Screen
-        screen={back}
-        order={0}
-        className="top-0 left-0 w-[68%] shadow-2"
-      />
-      <Screen
-        screen={middle}
-        order={1}
-        className="top-[16%] right-0 w-[64%] shadow-3"
-      />
-      <Screen
-        screen={front}
-        order={2}
-        className="bottom-[2%] left-[14%] w-[72%] shadow-4"
-      />
+      {places.map((place, k) => (
+        <div
+          key={k}
+          className={cn("hel-depth absolute", place.box)}
+          style={{ "--depth": `${place.depth}px` } as React.CSSProperties}
+        >
+          <div className={place.float}>
+            <Screen
+              first={screens[k]}
+              second={relief(k)}
+              order={k}
+              shadow={shadows[k]}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
 
 function Screen({
-  screen,
+  first,
+  second,
   order,
-  className,
+  shadow,
 }: {
-  screen: HeroScreen
+  first: HeroScreen
+  second: HeroScreen
   order: number
-  className: string
+  shadow: string
 }) {
+  const swapDelay = { animationDelay: `${3200 + order * 1800}ms` }
+
   return (
     <figure
       className={cn(
-        "hel-screen absolute overflow-hidden rounded-md border border-line bg-raised",
-        className
+        "hel-screen relative overflow-hidden rounded-md border border-line bg-raised",
+        shadow
       )}
       style={{ animationDelay: `${120 + order * 140}ms` }}
     >
       {/* La barre de fenêtre : trois pastilles neutres et le nom du projet. Aucune
           couleur de marque, l'orange de cet écran est déjà pris par le titre et le CTA. */}
-      <figcaption className="flex h-7 items-center gap-1.5 border-b border-line bg-surface px-3">
+      <figcaption className="relative flex h-7 items-center gap-1.5 border-b border-line bg-surface px-3">
         <span className="size-1.5 rounded-full bg-line-strong" />
         <span className="size-1.5 rounded-full bg-line-strong" />
         <span className="size-1.5 rounded-full bg-line-strong" />
-        <span className="ml-2 truncate font-mono text-[0.62rem] text-label">
-          {screen.name}
-          <span className="max-sm:hidden"> · {screen.sector}</span>
-        </span>
+        <Caption screen={first} className="hel-caption-out" style={swapDelay} />
+        <Caption screen={second} className="hel-caption-in" style={swapDelay} />
       </figcaption>
-      <div className="relative aspect-[16/10] bg-inset">
-        <Image
-          src={screen.media.url}
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 26rem, 70vw"
-          // Une capture de site commence par son hero : c'est lui qu'on montre.
-          className="object-cover object-top"
-          loading="eager"
+      <div className="relative aspect-[16/10] overflow-hidden bg-inset">
+        <Capture screen={first} />
+        <Capture
+          screen={second}
+          className="hel-screen-swap"
+          style={swapDelay}
+        />
+        <span
+          className="hel-screen-sweep pointer-events-none absolute inset-0"
+          style={{ animationDelay: `${1400 + order * 2600}ms` }}
         />
         <span
           className="hel-screen-veil pointer-events-none absolute inset-0 bg-inverse"
@@ -98,6 +117,52 @@ function Screen({
         />
       </div>
     </figure>
+  )
+}
+
+function Caption({
+  screen,
+  className,
+  style,
+}: {
+  screen: HeroScreen
+  className?: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <span
+      className={cn(
+        "absolute inset-y-0 right-3 left-12 flex items-center truncate font-mono text-[0.62rem] text-label",
+        className
+      )}
+      style={style}
+    >
+      {screen.name}
+      <span className="max-sm:hidden">&nbsp;· {screen.sector}</span>
+    </span>
+  )
+}
+
+function Capture({
+  screen,
+  className,
+  style,
+}: {
+  screen: HeroScreen
+  className?: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <Image
+      src={screen.media.url}
+      alt=""
+      fill
+      sizes="(min-width: 1024px) 26rem, 70vw"
+      // Une capture de site commence par son hero : c'est lui qu'on montre.
+      className={cn("object-cover object-top", className)}
+      style={style}
+      loading="eager"
+    />
   )
 }
 

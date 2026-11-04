@@ -56,7 +56,7 @@ function CaseList({ cases }: { cases: ListCase[] }) {
                 <Reveal>
                   <Link
                     href={`/realisations/${study.slug}`}
-                    className="group/case grid overflow-hidden rounded-lg border border-line bg-surface shadow-1 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0 lg:min-h-[26rem] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
+                    className="hel-case group/case grid overflow-hidden rounded-lg border border-line bg-surface shadow-1 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0 lg:min-h-[26rem] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
                   >
                     <div
                       className={cn(

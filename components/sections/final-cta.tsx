@@ -35,7 +35,7 @@ function FinalCta({
       className="overflow-hidden"
       aria-labelledby="cta-final-titre"
     >
-      <Halo variant="inverse" />
+      <Halo variant="inverse" className="hel-halo-drift" />
       <Container className="relative py-20 text-center md:py-28 lg:py-32">
         <Reveal>
           <h2

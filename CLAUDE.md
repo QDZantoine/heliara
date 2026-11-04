@@ -39,7 +39,7 @@ Le `.prettierrc` du projet fait loi, y compris quand il contredit une préféren
 Autres règles :
 
 - Nommage de fichiers en `kebab-case`, composants en `PascalCase`.
-- Server Components par défaut. `"use client"` réservé à : menu mobile, sélecteur de thème, filtres de réalisations, formulaire de contact, apparitions au scroll, lien de prise de rendez-vous.
+- Server Components par défaut. `"use client"` réservé à : menu mobile, sélecteur de thème, filtres de réalisations, formulaire de contact, apparitions au scroll, lien de prise de rendez-vous, profondeur au pointeur du hero (`PointerField`, deux variables CSS et rien d'autre).
 - Contenu éditorial : données statiques typées dans `lib/content/*.ts`, jamais en dur dans le JSX.
 - **Aucun cadratin ni demi-cadratin, jamais** : ni `—` ni `–`, y compris dans le contenu éditorial, les commentaires de code et les messages de commit. Un tiret simple `-` partout où un séparateur est nécessaire. Les maquettes de référence en sont pleines : les transcrire suppose de les convertir au passage.
 
@@ -105,6 +105,25 @@ deux écrans différents selon la façon dont il s'est perdu.
 **`SiteChrome` a été extrait du layout du groupe pour cela.** La 404 racine vit hors du
 groupe - contrainte de Next, pas un choix - et sans cette extraction, la 404 la plus
 fréquente serait un écran sans chemin de retour.
+
+## Le hero et les effets de défilement
+
+Le hero montre **trois produits livrés**, hors marques sœurs, en fenêtres qui
+s'allument puis vivent : flottaison, reflet sur la vitre, relève vers un autre projet,
+profondeur au pointeur. La barre de navigation se détache en pilule au défilement, et la
+capture d'une réalisation recule quand sa carte entre dans le champ.
+
+- **Tout porte sur `opacity` et `transform`**, sauf la plaque de la barre, petite, dont
+  l'inset et le rayon s'animent. Mesuré sur un build de production : aucune image
+  au-delà de 24 ms au repos, au pointeur ni au défilement, et le titre reste le LCP.
+- **Les effets de défilement sont du CSS piloté** (`animation-timeline`), sous
+  `@supports` : sans prise en charge, la barre et les cartes restent dans leur état
+  d'origine. Aucun écouteur de défilement en JavaScript.
+- **Deux libellés ne se fondent jamais l'un dans l'autre** : à mi-opacité ils se lisent
+  comme un texte brouillé. L'image se fond, le nom sort puis entre.
+- `prefers-reduced-motion` fige tout sur la composition de départ ; la liste des
+  classes coupées est dans la media query de `globals.css`, à compléter avec toute
+  nouvelle animation.
 
 ## Transition de page
 

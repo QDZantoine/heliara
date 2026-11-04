@@ -584,6 +584,180 @@
   animation: hel-screen-light 360ms var(--hel-ease-io) both;
 }
 
+/* La relève : la fenêtre passe à un autre projet, le tient, puis revient. Un fondu
+   d'environ une seconde sur un cycle de 16 s, en décalé d'une fenêtre à l'autre. */
+@keyframes hel-screen-swap {
+  0%,
+  44% {
+    opacity: 0;
+  }
+  50%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.hel-screen-swap {
+  opacity: 0;
+  animation: hel-screen-swap 16s var(--hel-ease-inout) infinite both;
+}
+
+/* Les noms, eux, ne se fondent pas l'un dans l'autre : deux libellés superposés à
+   mi-opacité se lisent comme un texte brouillé. L'ancien sort, puis le nouveau
+   entre, sur le même cycle que l'image. */
+@keyframes hel-caption-in {
+  0%,
+  47% {
+    opacity: 0;
+  }
+  50%,
+  91% {
+    opacity: 1;
+  }
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hel-caption-out {
+  0%,
+  44% {
+    opacity: 1;
+  }
+  47%,
+  97% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.hel-caption-in {
+  opacity: 0;
+  animation: hel-caption-in 16s linear infinite both;
+}
+
+.hel-caption-out {
+  animation: hel-caption-out 16s linear infinite both;
+}
+
+/* Le reflet : une bande claire qui traverse la vitre, puis un long repos. Sous 16 %
+   d'opacité, ce qui le garde dans la règle des halos de la DA. */
+@keyframes hel-screen-sweep {
+  0%,
+  78% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+.hel-screen-sweep {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.16) 50%,
+    transparent 70%
+  );
+  transform: translateX(-130%);
+  animation: hel-screen-sweep 11s var(--hel-ease-inout) infinite both;
+}
+
+/* La profondeur au pointeur : `--px` et `--py` vont de -1 à 1 (`PointerField`),
+   chaque fenêtre s'y décale selon sa `--depth`. La transition lisse le suivi ; la
+   plus proche bouge le plus, c'est ce qui donne le relief. */
+.hel-depth {
+  transform: translate3d(
+    calc(var(--px, 0) * var(--depth, 0px)),
+    calc(var(--py, 0) * var(--depth, 0px)),
+    0
+  );
+  transition: transform 360ms var(--hel-ease-expo);
+}
+
+/* La lueur du hero suit le pointeur, à l'opposé et plus lentement que les écrans :
+   la lumière vient de derrière eux. Toujours un seul halo, il se déplace. */
+.hel-halo-follow {
+  transform: translate3d(
+    calc(var(--px, 0) * -48px),
+    calc(var(--py, 0) * -32px),
+    0
+  );
+  transition: transform 900ms var(--hel-ease-expo);
+}
+
+/* La lueur de la bande encre dérive lentement : une pièce qui respire au lieu
+   d'un aplat. Transformation seule, sur un aller-retour de 14 s. */
+@keyframes hel-halo-drift {
+  from {
+    transform: translate3d(-8%, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(8%, -6%, 0) scale(1.12);
+  }
+}
+
+.hel-halo-drift {
+  animation: hel-halo-drift 14s var(--hel-ease-inout) infinite alternate;
+}
+
+/* Défilement piloté, sans JavaScript, là où le navigateur le sait : la barre de
+   navigation se détache en pilule, et la capture d'une réalisation recule quand sa
+   carte entre dans le champ. Ailleurs, ces deux pièces restent dans leur état de
+   repos, qui est l'état d'origine. */
+@keyframes hel-header-float {
+  to {
+    top: 0.5rem;
+    bottom: -0.5rem;
+    left: max(0.5rem, calc((100% - 78.5rem) / 2));
+    right: max(0.5rem, calc((100% - 78.5rem) / 2));
+    border-color: var(--hel-line);
+    border-radius: 9999px;
+    box-shadow: var(--hel-shadow-3);
+  }
+}
+
+@keyframes hel-header-lift {
+  to {
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes hel-case-zoom {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .hel-header-plate {
+    animation: hel-header-float linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 160px;
+  }
+
+  .hel-header-inner {
+    animation: hel-header-lift linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 160px;
+  }
+
+  .hel-case img {
+    animation: hel-case-zoom linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+  }
+}
+
 .hel-principle-card[data-reveal] {
   transition:
     opacity 500ms var(--hel-ease-expo),
@@ -630,8 +804,21 @@
   /* Même raison : sans cela, les écrans du hero resteraient éteints le temps de leur
      décalage, puis s'allumeraient d'un coup. */
   .hel-screen,
-  .hel-screen-veil {
+  .hel-screen-veil,
+  .hel-screen-swap,
+  .hel-caption-in,
+  .hel-caption-out,
+  .hel-screen-sweep,
+  .hel-halo-drift,
+  .hel-header-plate,
+  .hel-header-inner,
+  .hel-case img {
     animation: none;
+  }
+
+  .hel-depth,
+  .hel-halo-follow {
+    transform: none;
   }
 
   .hel-logos {

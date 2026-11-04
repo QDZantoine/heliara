@@ -21,8 +21,19 @@ function SiteHeader({
   expertiseNav: readonly { label: string; href: string }[]
 }) {
   return (
-    <header className="sticky top-0 z-200 border-b border-line bg-[color-mix(in_srgb,var(--hel-page)_82%,transparent)] backdrop-blur-[14px]">
-      <div className="mx-auto flex h-17 max-w-page items-center justify-between gap-4 pr-5 pl-5 md:pl-6">
+    <header className="sticky top-0 z-200">
+      {/*
+        La plaque porte le fond, le filet et le flou, et c'est elle qui bouge : au
+        défilement, elle se détache du bord et devient une pilule flottante au-dessus de
+        la page (`hel-header-float`, piloté par le défilement en CSS). Le contenu descend
+        d'autant pour rester centré dedans. Là où le navigateur ne sait pas piloter une
+        animation au défilement, la barre reste celle d'origine.
+      */}
+      <div
+        aria-hidden="true"
+        className="hel-header-plate absolute inset-0 border border-transparent border-b-line bg-[color-mix(in_srgb,var(--hel-page)_82%,transparent)] backdrop-blur-[14px]"
+      />
+      <div className="hel-header-inner relative mx-auto flex h-17 max-w-page items-center justify-between gap-4 pr-5 pl-5 md:pl-6">
         <Link
           href="/"
           aria-label="Heliara, retour à l’accueil"
@@ -33,14 +44,14 @@ function SiteHeader({
 
         <nav
           aria-label="Navigation principale"
-          className="hidden items-center gap-5 menu:flex lg:gap-6"
+          className="hidden items-center gap-1 menu:flex"
         >
           {mainNav.map((item) => (
             <NavLink
               key={item.href}
               href={item.href}
-              className="text-[0.845rem] font-medium text-body transition-colors duration-100 hover:text-ink"
-              activeClassName="text-ink font-semibold"
+              className="rounded-full px-3 py-2 text-[0.845rem] font-medium text-body transition-[color,background-color] duration-150 ease-expo hover:bg-inset hover:text-ink"
+              activeClassName="bg-inset text-ink font-semibold"
             >
               {item.label}
             </NavLink>

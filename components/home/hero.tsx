@@ -8,6 +8,7 @@ import { CtaIcon } from "@/components/ui/cta-icon"
 import { LinkedInLink } from "@/components/ui/linkedin-link"
 import { HeroLottie } from "@/components/visuals/hero-lottie"
 import { HeroScreens, type HeroScreen } from "@/components/visuals/hero-screens"
+import { PointerField } from "@/components/visuals/pointer-field"
 import { cta, serviceAreaLine } from "@/lib/site"
 
 /**
@@ -25,62 +26,65 @@ import { cta, serviceAreaLine } from "@/lib/site"
 function Hero({ screens = [] }: { screens?: HeroScreen[] }) {
   return (
     <section className="relative overflow-hidden">
-      <Halo variant="hero" />
-      <Container className="relative grid items-center gap-8 pt-14 pb-16 md:gap-12 md:pt-24 md:pb-15 lg:min-h-[82svh] lg:grid-cols-[1.05fr_1fr]">
-        <div>
-          <Reveal
-            immediate
-            className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.78rem] font-medium text-body shadow-1"
-          >
-            <span className="size-1.5 rounded-full bg-brand" />
-            Studio de conception de plateformes numériques
-          </Reveal>
-
-          <Reveal immediate delay={60}>
-            <h1 className="mb-7 text-[clamp(2.125rem,9.5vw,5.5rem)] leading-[0.98] font-extrabold tracking-[-0.035em]">
-              Votre métier, traduit en produit
-              <span className="text-brand">.</span>
-            </h1>
-          </Reveal>
-
-          <Reveal
-            immediate
-            delay={120}
-            className="mb-9 max-w-[28.75rem] text-[1.0625rem] leading-relaxed text-body md:text-lg"
-          >
-            Nous concevons des plateformes numériques sur mesure qui deviennent
-            de véritables outils de travail. Pensées pour durer, évoluer et
-            accompagner la croissance de votre entreprise.
-          </Reveal>
-
-          <Reveal
-            immediate
-            delay={180}
-            className="flex flex-col gap-3 sm:flex-row sm:items-center"
-          >
-            <ButtonLink
-              href={cta.primary.href}
-              size="lg"
-              className="max-sm:w-full"
+      {/* La zone suit le pointeur : la lueur du hero et la profondeur des écrans s'en
+          servent. C'est toujours un seul halo, il se déplace. */}
+      <PointerField className="relative">
+        <Halo variant="hero" className="hel-halo-follow" />
+        <Container className="relative grid items-center gap-8 pt-14 pb-16 md:gap-12 md:pt-24 md:pb-15 lg:min-h-[82svh] lg:grid-cols-[1.05fr_1fr]">
+          <div>
+            <Reveal
+              immediate
+              className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.78rem] font-medium text-body shadow-1"
             >
-              <CtaIcon />
-              {cta.primary.label}
-            </ButtonLink>
-            <ButtonLink
-              href={cta.secondary.href}
-              variant="secondary"
-              size="lg"
-              className="max-sm:w-full"
+              <span className="size-1.5 rounded-full bg-brand" />
+              Studio de conception de plateformes numériques
+            </Reveal>
+
+            <Reveal immediate delay={60}>
+              <h1 className="mb-7 text-[clamp(2.125rem,9.5vw,5.5rem)] leading-[0.98] font-extrabold tracking-[-0.035em]">
+                Votre métier, traduit en produit
+                <span className="text-brand">.</span>
+              </h1>
+            </Reveal>
+
+            <Reveal
+              immediate
+              delay={120}
+              className="mb-9 max-w-[28.75rem] text-[1.0625rem] leading-relaxed text-body md:text-lg"
             >
-              {cta.secondary.label}
-            </ButtonLink>
-            {/* Troisième porte, volontairement muette : elle sort du site, elle ne
+              Nous concevons des plateformes numériques sur mesure qui
+              deviennent de véritables outils de travail. Pensées pour durer,
+              évoluer et accompagner la croissance de votre entreprise.
+            </Reveal>
+
+            <Reveal
+              immediate
+              delay={180}
+              className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            >
+              <ButtonLink
+                href={cta.primary.href}
+                size="lg"
+                className="max-sm:w-full"
+              >
+                <CtaIcon />
+                {cta.primary.label}
+              </ButtonLink>
+              <ButtonLink
+                href={cta.secondary.href}
+                variant="secondary"
+                size="lg"
+                className="max-sm:w-full"
+              >
+                {cta.secondary.label}
+              </ButtonLink>
+              {/* Troisième porte, volontairement muette : elle sort du site, elle ne
                 doit donc pas peser autant que les deux CTA. `self-start` la garde
                 carrée sous 640 px, où les boutons s'empilent en pleine largeur. */}
-            <LinkedInLink className="size-12 self-start" />
-          </Reveal>
+              <LinkedInLink className="size-12 self-start" />
+            </Reveal>
 
-          {/*
+            {/*
             Les villes, au-dessus de la ligne de flottaison.
 
             **Mesuré : c'était le dix-huitième titre de la page.** La section « Où nous
@@ -93,27 +97,28 @@ function Hero({ screens = [] }: { screens?: HeroScreen[] }) {
             liste, quatre lecteurs. Aucun geste orange de plus - le halo et le point du
             titre sont déjà les deux de cet écran.
           */}
-          <Reveal
-            immediate
-            delay={240}
-            className="mt-6 flex items-start gap-2 text-[0.82rem] text-label"
-          >
-            {/* `items-start` et non `items-center` : sous 640 px la ligne passe à deux
+            <Reveal
+              immediate
+              delay={240}
+              className="mt-6 flex items-start gap-2 text-[0.82rem] text-label"
+            >
+              {/* `items-start` et non `items-center` : sous 640 px la ligne passe à deux
                 lignes, et un pictogramme centré verticalement se retrouvait entre les
                 deux au lieu d'être en tête. Vu à 390 px. */}
-            <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-            <span>{serviceAreaLine}</span>
-          </Reveal>
-        </div>
+              <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+              <span>{serviceAreaLine}</span>
+            </Reveal>
+          </div>
 
-        {/* Trois produits livrés quand la base en a, l'illustration sinon : le repli
+          {/* Trois produits livrés quand la base en a, l'illustration sinon : le repli
             statique n'a aucune couverture, et deux écrans ne font pas une composition. */}
-        {screens.length >= 3 ? (
-          <HeroScreens screens={screens.slice(0, 3)} />
-        ) : (
-          <HeroLottie />
-        )}
-      </Container>
+          {screens.length >= 3 ? (
+            <HeroScreens screens={screens} />
+          ) : (
+            <HeroLottie />
+          )}
+        </Container>
+      </PointerField>
     </section>
   )
 }
