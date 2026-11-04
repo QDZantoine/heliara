@@ -1,9 +1,11 @@
 "use server"
 
 import { revalidatePath, updateTag } from "next/cache"
+import { after } from "next/server"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
+import { notifyIndexNow } from "@/lib/indexnow"
 import { requireSession, type SessionUser } from "@/lib/auth/session"
 import { BusinessError, write } from "@/lib/db/call"
 import { parseId } from "@/lib/db/id"
@@ -119,6 +121,15 @@ function invalidate(slug?: string) {
   if (slug) {
     updateTag(`expertise:${slug}`)
   }
+  // Le site public change aussi : Bing et les moteurs IndexNow en sont prévenus après
+  // la réponse. Un brouillon signalé répond 404, ce qui est exact.
+  after(() =>
+    notifyIndexNow([
+      "/",
+      "/expertises",
+      ...(slug ? [`/expertises/${slug}`] : []),
+    ])
+  )
   revalidatePath("/admin/expertises")
   revalidatePath("/admin")
 }

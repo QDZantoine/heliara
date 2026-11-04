@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 import { SESSION_COOKIE } from "@/lib/auth/cookie"
+import { indexNowKey } from "@/lib/indexnow"
+import { site } from "@/lib/site"
 
 /**
  * Proxy - c'est le nouveau nom du middleware depuis Next 16.
@@ -31,6 +33,19 @@ import { SESSION_COOKIE } from "@/lib/auth/cookie"
  * **L'autorisation réelle vit dans `app/admin/(protected)/layout.tsx`**, qui
  * interroge la base, et dans chaque action serveur, qui la revérifie - une action
  * serveur est une route publique, atteignable sans passer par la moindre page.
+ *
+ * **3. Un seul domaine indexable, et la preuve IndexNow.**
+ *
+ * Sous tout autre hôte que le domaine de production - préproduction, aperçu,
+ * administration, `localhost` -, la réponse porte `X-Robots-Tag: noindex, nofollow`.
+ * La page se voit et se partage, elle ne s'indexe pas. On compare à `site.url` et
+ * **jamais à `siteOrigin()`** : une préproduction règle `SITE_ORIGIN` sur son propre
+ * hôte, elle se croirait canonique.
+ *
+ * Le piège à connaître : si le proxy inverse ne transmet ni `X-Forwarded-Host` ni le
+ * `Host` d'origine, **toute la production passe en noindex** sans que rien ne casse.
+ * Après chaque déploiement : `curl -sI https://heliara.fr/` ne doit montrer aucun
+ * `X-Robots-Tag`.
  */
 
 const isWriteRole = process.env.HELIARA_ROLE === "write"
@@ -39,6 +54,15 @@ const isWriteRole = process.env.HELIARA_ROLE === "write"
 function notFound() {
   return new NextResponse(null, { status: 404 })
 }
+
+/** L'hôte demandé, derrière le proxy inverse : premier de la liste, sans port. */
+function requestHost(request: NextRequest) {
+  const raw =
+    request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? ""
+  return raw.split(",")[0].trim().split(":")[0].toLowerCase()
+}
+
+const canonicalHost = new URL(site.url).hostname.toLowerCase()
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -74,6 +98,12 @@ export function proxy(request: NextRequest) {
   } else if (isAdminPath) {
     // Le déploiement public ne sert jamais l'administration.
     return notFound()
+  } else {
+    // Preuve IndexNow, à la racine et sous le nom de la clé, sur le site public seul.
+    const key = indexNowKey()
+    if (key && pathname === `/${key}.txt`) {
+      return NextResponse.rewrite(new URL("/indexnow-key.txt", request.url))
+    }
   }
 
   // Contrôle optimiste : cookie absent sur une page protégée, on redirige tout de
@@ -88,7 +118,11 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+  if (requestHost(request) !== canonicalHost) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow")
+  }
+  return response
 }
 
 export const config = {

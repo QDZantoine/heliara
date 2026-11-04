@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 
 import { siteOrigin } from "@/lib/origin"
+import { site } from "@/lib/site"
 
 /**
  * `robots.txt`, et les deux décisions qu'il porte par ce qu'il **ne** dit pas.
@@ -27,10 +28,22 @@ import { siteOrigin } from "@/lib/origin"
  * Si l'entraînement de modèles devait un jour être refusé - décision commerciale et non
  * technique - c'est ici que les `Disallow` nominatifs viendraient, avec la liste des
  * agents visés.
+ *
+ * **3. Hors du domaine de production, tout est fermé**, et sans plan du site. Une
+ * préproduction règle `SITE_ORIGIN` sur son propre hôte : c'est cette différence avec
+ * `site.url` qui la désigne. Le `X-Robots-Tag` de `proxy.ts` double la mesure.
+ *
+ * `force-dynamic` : prérendu, le fichier figerait l'origine connue au build.
  */
+export const dynamic = "force-dynamic"
+
 export default function robots(): MetadataRoute.Robots {
+  const origin = siteOrigin()
+  if (new URL(origin).host !== new URL(site.url).host) {
+    return { rules: { userAgent: "*", disallow: "/" } }
+  }
   return {
     rules: { userAgent: "*", allow: "/" },
-    sitemap: `${siteOrigin()}/sitemap.xml`,
+    sitemap: `${origin}/sitemap.xml`,
   }
 }

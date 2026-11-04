@@ -222,6 +222,13 @@ voit ni au build, ni au typecheck, ni à l'écran :**
   à Montpellier » : le studio n'a pas d'agence dans chacune, et un établissement déclaré
   qui n'existe pas est le premier motif de sanction en référencement local.
 
+**Un seul domaine indexable, celui de `site.url`.** Sous tout autre hôte, `proxy.ts`
+pose `X-Robots-Tag: noindex` et `robots.txt` ferme tout. Après chaque déploiement,
+`curl -sI https://heliara.fr/` ne doit montrer **aucun** `X-Robots-Tag` : un proxy
+inverse qui perd l'hôte d'origine désindexerait la production en silence. IndexNow
+signale chaque enregistrement de l'administration ; `pnpm indexnow` après une mise en
+ligne, jamais avant.
+
 **`lib/origin.ts` est la source unique des URL absolues**, et tout passe par elle :
 canonique, OpenGraph, plan du site, `robots.txt`, `llms.txt`, `@id` du graphe. Ne jamais
 bâtir une URL absolue sur `site.url` en dur, ni deviner l'origine depuis l'en-tête `Host`.

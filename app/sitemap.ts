@@ -22,6 +22,13 @@ import { siteOrigin } from "@/lib/origin"
  *
  * Les horodatages de la base sont des `UNIX_TIMESTAMP()`, donc en secondes.
  */
+/**
+ * Une minute, comme `llms.txt` et le reste du contenu lu en base : sans cela le plan est
+ * figé au build, et une fiche publiée dans l'administration n'y entre qu'au déploiement
+ * suivant. Littéral obligatoire.
+ */
+export const revalidate = 60
+
 function quand(updatedAt?: number) {
   return updatedAt ? { lastModified: new Date(updatedAt * 1000) } : {}
 }

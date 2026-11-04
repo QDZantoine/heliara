@@ -140,11 +140,51 @@ nominatives n'aurait **aucun effet** et donnerait l'illusion d'un réglage à te
 l'autorisation. Si l'entraînement devait être refusé - décision commerciale - c'est là que
 les `Disallow` viendraient.
 
+**Hors du domaine de production, il ferme tout**, sans plan du site : l'origine servie
+(`siteOrigin()`) est comparée à `site.url`, et une préproduction qui règle `SITE_ORIGIN`
+sur son hôte se désigne ainsi. `force-dynamic`, sans quoi il figerait l'origine du build.
+
+### Un seul domaine indexable : `X-Robots-Tag`
+
+`proxy.ts` pose `X-Robots-Tag: noindex, nofollow` sous tout hôte qui n'est pas celui de
+`site.url` - préproduction, `www`, administration, `localhost`. L'hôte est lu dans
+`X-Forwarded-Host`, sinon `Host`, premier de la liste, sans port. **On compare à
+`site.url`, jamais à `siteOrigin()`** : une préproduction se croirait canonique.
+
+**Le risque est du côté silencieux** : un proxy inverse qui ne transmet pas l'hôte
+d'origine passe toute la production en noindex sans rien casser. Après chaque
+déploiement, `curl -sI https://heliara.fr/` ne doit montrer aucun `X-Robots-Tag`.
+
+### IndexNow
+
+Bing (donc ChatGPT Search et Copilot), Yandex, Seznam, Naver - pas Google. Repris tel
+quel d'ACFL, avec une adaptation aux deux processus :
+
+- `INDEXNOW_KEY` est donnée **aux deux** : `read` sert la preuve (`/<clé>.txt`, réécrit
+  par `proxy.ts` vers `app/indexnow-key.txt/route.ts`), `write` envoie le signal.
+- `notifyIndexNow()` de `lib/indexnow.ts` est appelé dans `after()` par les trois
+  `invalidate()` des actions de réalisations, articles et expertises : la fiche, son
+  listing et l'accueil. Il ne lève jamais, timeout de 5 s.
+- **Il ne part que si l'origine publique est le domaine de production**
+  (`indexNowBase()`) : rien depuis un poste de développement ni une préproduction.
+- Limite assumée : le site public se rafraîchit en 60 s, son cache n'étant pas celui de
+  l'administration. Un moteur très rapide relirait la version d'avant.
+- `pnpm indexnow` soumet tout le plan du site lu en ligne, **après** la mise en ligne,
+  jamais avant. Il s'arrête si la preuve n'est pas servie ou si une adresse sort de
+  l'hôte.
+
 ### `/llms.txt`
 
 Généré par `app/llms.txt/route.ts`, lu en base avec le même repli que le reste. Un fichier
 figé annoncerait des services supprimés et tairait les nouveaux, sans que personne le voie
 puisque aucun visiteur ne le lit.
+
+**Il porte aussi les questions fréquentes**, celle de `/contact` fusionnée avec celles de
+chaque expertise, dédupliquées par question : ce sont les paires déjà affichées et
+balisées, rien de neuf. **Pas de raison sociale, de fondateur, de témoignage ni de
+chiffre** bien que la méthode générique les prévoie : le nom du holding ne vit que dans
+les mentions légales, les `Person` n'ont délibérément aucun lien d'emploi, et les
+témoignages comme les résultats ne sont pas validés.
 
 **Ce qu'il porte et qui ne se lit nulle part ailleurs aussi nettement, c'est ce que le
 studio ne fait pas** : la pile par défaut n'est pas une obligation, l'e-commerce passe par

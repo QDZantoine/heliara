@@ -92,10 +92,16 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=(), payment=()",
   },
   {
+    // Doublon de `frame-ancestors` ci-dessous, pour les navigateurs qui ne lisent pas
+    // encore la CSP. Les deux disent la même chose : aucune mise en cadre.
+    key: "X-Frame-Options",
+    value: "DENY",
+  },
+  {
     /*
       Les quatre directives qui ne demandent pas de nonce :
 
-      - `frame-ancestors 'none'` remplace `X-Frame-Options` et le fait mieux - aucune
+      - `frame-ancestors 'none'` est la forme moderne de `X-Frame-Options` - aucune
         mise en cadre, donc pas de détournement de clic sur le formulaire de contact ni
         sur l'administration.
       - `base-uri 'self'` : une balise `<base>` injectée réécrirait toutes les URL

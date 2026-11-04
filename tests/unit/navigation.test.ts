@@ -357,4 +357,15 @@ describe("robots", () => {
     expect(result.rules).toEqual({ userAgent: "*", allow: "/" })
     expect(result.sitemap).toBe(`${site.url}/sitemap.xml`)
   })
+
+  it("ferme tout hors du domaine de production, sans plan du site", () => {
+    vi.stubEnv("SITE_ORIGIN", "https://apercu.exemple.test")
+    try {
+      const result = robots()
+      expect(result.rules).toEqual({ userAgent: "*", disallow: "/" })
+      expect(result.sitemap).toBeUndefined()
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
 })

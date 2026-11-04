@@ -113,3 +113,49 @@ describe("proxy, rôle read", () => {
     expect(proxy(requete("/")).status).toBe(200)
   })
 })
+
+describe("proxy, domaine indexable", () => {
+  /** Une requête telle que le proxy inverse la transmet, hôte demandé compris. */
+  function versHote(host: string, pathname = "/") {
+    return new NextRequest(new URL(`http://127.0.0.1:3000${pathname}`), {
+      headers: { "x-forwarded-host": host },
+    })
+  }
+
+  it("laisse le domaine de production indexable, port et casse ignorés", async () => {
+    const proxy = await chargerProxy("read")
+    expect(proxy(versHote("heliara.fr")).headers.get("x-robots-tag")).toBeNull()
+    expect(
+      proxy(versHote("Heliara.FR:443, proxy.interne")).headers.get(
+        "x-robots-tag"
+      )
+    ).toBeNull()
+  })
+
+  it("passe tout autre hôte en noindex : préproduction, www, administration", async () => {
+    const proxy = await chargerProxy("read")
+    for (const host of ["apercu.heliara.fr", "www.heliara.fr", "localhost"]) {
+      expect(proxy(versHote(host)).headers.get("x-robots-tag"), host).toBe(
+        "noindex, nofollow"
+      )
+    }
+  })
+
+  it("sert la preuve IndexNow sur le site public seulement", async () => {
+    vi.stubEnv("INDEXNOW_KEY", "cle-de-test-1234")
+    try {
+      const lecture = await chargerProxy("read")
+      const reponse = lecture(versHote("heliara.fr", "/cle-de-test-1234.txt"))
+      expect(reponse.headers.get("x-middleware-rewrite")).toContain(
+        "/indexnow-key.txt"
+      )
+
+      const ecriture = await chargerProxy("write")
+      expect(
+        ecriture(versHote("heliara.fr", "/cle-de-test-1234.txt")).status
+      ).toBe(404)
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+})

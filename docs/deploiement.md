@@ -304,6 +304,12 @@ que plusieurs explorateurs refusent sans le dire.
   se dédouble dans l'index ; l'URL canonique de chaque page est déjà absolue et unique,
   mais la redirection évite au moteur de la découvrir deux fois.
 - **HTTP vers HTTPS en 301.**
+- **Transmettre l'hôte d'origine** (`Host` ou `X-Forwarded-Host`). `proxy.ts` pose
+  `X-Robots-Tag: noindex` sous tout hôte qui n'est pas `heliara.fr` : un proxy qui
+  réécrit l'hôte désindexe la production sans que rien ne casse. Vérifier après chaque
+  déploiement que `curl -sI https://heliara.fr/` ne montre aucun `X-Robots-Tag`.
+- **IndexNow** : `INDEXNOW_KEY` aux deux processus. Après la mise en ligne, et jamais
+  avant, `pnpm indexnow` soumet le plan du site à Bing et aux moteurs du protocole.
 - Le proxy doit transmettre `X-Forwarded-For` : c'est l'adresse que le journal d'audit
   enregistre pour chaque écriture.
 - Aucun cache partagé n'est nécessaire devant l'application. Un cache de CDN sur les
