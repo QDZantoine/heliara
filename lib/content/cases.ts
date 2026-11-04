@@ -65,6 +65,8 @@ export type CaseStudy = {
   meta: { label: string; value: string }[]
   chapters: CaseChapter[]
   resultsLabel: string
+  /** L'adresse du site livré, quand il est public : un lien suivi depuis la fiche. */
+  siteUrl?: string
   results: { value: string; label: string }[]
   testimonial: { quote: string; name: string; role: string; initials: string }
   lessons: string[]

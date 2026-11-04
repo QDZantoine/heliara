@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, ArrowUpRight } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
 import { DisplayTitle } from "@/components/primitives/display-title"
@@ -11,11 +11,12 @@ import { Section } from "@/components/primitives/section"
 import { CaseCover } from "@/components/realisations/case-cover"
 import { CaseGallery } from "@/components/realisations/case-gallery"
 import { Breadcrumb } from "@/components/sections/breadcrumb"
-import { ButtonLink } from "@/components/ui/button"
+import { ButtonLink, buttonVariants } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
 import { caseHref } from "@/lib/content/cases"
 import type { MediaRef, MediaWithCaption } from "@/lib/media"
 import { cta } from "@/lib/site"
+import { cn } from "@/lib/utils"
 
 /**
  * Ce dont la fiche a besoin pour se rendre, et rien de plus.
@@ -36,6 +37,8 @@ export type CaseView = {
   /** Les captures de ce qui a été livré. Vide ou absente, aucun bloc ne s'affiche. */
   gallery?: readonly MediaWithCaption[]
   resultsLabel: string
+  /** L'adresse du site livré, quand il est public. */
+  siteUrl?: string
   meta: readonly { label: string; value: string }[]
   chapters: readonly {
     num: string
@@ -51,6 +54,15 @@ export type CaseView = {
     initials: string
   }
   lessons: readonly string[]
+}
+
+/** `https://www.exemple.fr/accueil` devient `exemple.fr`. */
+function hostOf(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
 }
 
 /**
@@ -103,9 +115,38 @@ function CaseStudyView({
             <Reveal immediate delay={60}>
               <DisplayTitle
                 text={study.heroTitle}
-                className="mt-6 mb-12 text-[clamp(2.25rem,6.4vw,5.25rem)] leading-[0.98] font-extrabold tracking-[-0.045em]"
+                className={cn(
+                  "mt-6 text-[clamp(2.25rem,6.4vw,5.25rem)] leading-[0.98] font-extrabold tracking-[-0.045em]",
+                  study.siteUrl ? "mb-8" : "mb-12"
+                )}
               />
             </Reveal>
+            {/*
+              Le site livré, en lien **suivi** : pas de `nofollow`, c'est un lien
+              entrant assumé pour le client, et l'ancre nomme le site plutôt que de
+              dire « cliquez ici ». `noopener` sans `noreferrer`, pour que le client
+              voie dans ses statistiques que la visite vient d'ici.
+            */}
+            {study.siteUrl ? (
+              <Reveal delay={120} className="mb-12">
+                <a
+                  href={study.siteUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className={buttonVariants({
+                    variant: "secondary",
+                    size: "md",
+                  })}
+                >
+                  Voir le site {study.title.split(" - ")[0]}
+                  <ArrowUpRight aria-hidden="true" className="size-4" />
+                  <span className="sr-only">(nouvel onglet)</span>
+                </a>
+                <span className="mt-2 block font-mono text-xs text-label">
+                  {hostOf(study.siteUrl)}
+                </span>
+              </Reveal>
+            ) : null}
           </div>
           {/*
             La capture arrive inclinée, comme posée sur un plan qui s'enfonce dans

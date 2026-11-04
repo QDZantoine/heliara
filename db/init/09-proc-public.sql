@@ -35,7 +35,7 @@ BEGIN
   SELECT
     c.id, c.slug, c.sector, c.year, c.badge, c.title, c.hero_title,
     c.teaser, c.summary, c.figure, c.measure, c.halo, c.accent,
-    c.featured, c.wide, c.results_label,
+    c.featured, c.wide, c.results_label, c.site_url,
     c.testimonial_quote, c.testimonial_name, c.testimonial_role,
     c.testimonial_initials,
     m.object_key AS hero_object_key,
@@ -70,7 +70,7 @@ BEGIN
   SELECT
     c.id, c.slug, c.sector, c.year, c.badge, c.title, c.hero_title,
     c.teaser, c.summary, c.figure, c.measure, c.halo, c.accent,
-    c.featured, c.wide, c.results_label,
+    c.featured, c.wide, c.results_label, c.site_url,
     c.testimonial_quote, c.testimonial_name, c.testimonial_role,
     c.testimonial_initials,
     m.object_key AS hero_object_key,

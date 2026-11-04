@@ -199,6 +199,20 @@ export const caseFields = z.object({
  * l'import en masse pose **la même** règle sur sa propre forme. Une seconde
  * implémentation de « tout ou rien » divergerait au premier ajustement.
  */
+/**
+ * L'adresse du site livré, facultative. `https://` seulement, comme le vérifie
+ * `set_case_site_url` : le lien part sur le site public, il ne doit mener ni à une
+ * page non chiffrée ni à un `javascript:`.
+ */
+export const siteUrlSchema = z
+  .string()
+  .trim()
+  .max(300, "Cette adresse est trop longue.")
+  .refine(
+    (value) => value === "" || /^https:\/\/[^\s/]+\.[^\s]+$/.test(value),
+    "Indiquez une adresse complète qui commence par https://"
+  )
+
 export function withTestimonialRule<T extends z.ZodType<TestimonialParts>>(
   schema: T
 ) {

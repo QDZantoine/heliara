@@ -248,11 +248,10 @@ Trois pièces partagées portent l'immersion de toutes les pages, et c'est là q
 faut agir avant de retoucher une page isolée :
 
 - **`PageHero`** (`components/sections/page-hero.tsx`) : en-tête éditorial aligné à
-  gauche, plus jamais centré sur fond uni. Index monospace tiré du rang de la page
-  dans `mainNav` (le surtitre doit donc porter exactement le libellé de nav pour
-  recevoir son numéro), titre jusqu'à 5,25 rem qui entre mot à mot
+  gauche, plus jamais centré sur fond uni. Surtitre monospace **sans numéro** (le rang
+  tiré de `mainNav` a été retiré à la demande, comme sur la barre), titre jusqu'à 5,25 rem qui entre mot à mot
   (`hel-title-word`, translation seule : c'est le LCP), introduction en colonne,
-  filet qui se trace (`hel-draw`), trame de points et lueur au pointeur, et le symbole du kit (`HeroMark`) rogné par le bord droit, au-dessus de l'introduction : c'est le geste orange de l'écran, l'index de page est donc en encre. Le bloc
+  filet qui se trace (`hel-draw`), trame de points et lueur au pointeur, et le symbole du kit (`HeroMark`) rogné par le bord droit, au-dessus de l'introduction : c'est le geste orange de l'écran. Le bloc
   s'efface au défilement (`hel-page-hero-away`). Le prop `align` est conservé mais
   sans effet.
 - **`FinalCta`** : titre jusqu'à 6,5 rem, et au-dessus les quatre temps de la méthode
@@ -956,6 +955,16 @@ mise en ligne n'ait été décidée. Ses six fiches de démonstration - Voltéis
 Rhône-Nord, Kerlon, Nexa Santé - ont été remplacées par les neuf réalisations réelles.
 Deux tests de `tests/unit/content.test.ts` le verrouillent : aucun marqueur de rédaction
 (`[à compléter]`, `20XX`, `ajoute un résultat`) et aucun des noms de clients inventés.
+
+**L'adresse du site livré (`site_url`) est un lien suivi, et c'est voulu.** La fiche
+l'affiche sous son titre (« Voir le site DK Clim »), sans `nofollow` : c'est un lien
+entrant assumé pour le client, l'ancre nomme le site, et `noopener` sans `noreferrer`
+laisse le client voir d'où vient la visite. Le graphe la reprend en `WebSite` dans
+`about`. Elle a sa procédure, `set_case_site_url`, plutôt qu'un paramètre de plus à
+`update_case_study` : changer cette signature casserait l'administration entre un
+déploiement et sa migration. **En production, `pnpm db:migrate` après le déploiement** -
+avant, le site public ne montre simplement aucun lien, et seul l'enregistrement d'une
+adresse échoue. Ne la remplir que pour un site public dont le client accepte le lien.
 
 Les neuf fiches sont volontairement **sans chiffre, sans témoignage et sans ligne
 `Stack`** : aucun client n'a communiqué de mesure, un verbatim se fait valider par écrit,

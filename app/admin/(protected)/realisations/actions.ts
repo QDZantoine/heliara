@@ -18,6 +18,7 @@ import {
   metaListSchema,
   reorderSchema,
   resultsSchema,
+  siteUrlSchema,
   uploadSchema,
 } from "@/lib/schemas/case"
 import { checkUpload, objectKey, publicUrl, signedUpload } from "@/lib/s3"
@@ -59,12 +60,14 @@ const messages: Record<string, string> = {
   MEDIA_IN_USE:
     "Cette image est encore utilisée : retirez-la d'abord des fiches concernées.",
   INVALID_JSON: "Les données envoyées sont illisibles.",
+  INVALID_URL: "Indiquez une adresse complète qui commence par https://",
 }
 
 /** Le champ sur lequel afficher un code d'erreur donné, quand il y en a un. */
 const errorFields: Record<string, string> = {
   SLUG_TAKEN: "slug",
   SLUG_REQUIRED: "slug",
+  INVALID_URL: "siteUrl",
 }
 
 /**
@@ -517,6 +520,31 @@ export async function confirmUpload(
       id: toHex(row.id),
       url: publicUrl(row.object_key),
     }
+  })
+}
+
+export async function setCaseSiteUrl(
+  id: string,
+  slug: string,
+  url: string
+): Promise<ActionResult> {
+  return run(async () => {
+    const { actor, ip } = await context()
+    const caseId = parseId(id)
+    if (!caseId) {
+      return { status: "error", formError: "Réalisation inconnue." }
+    }
+    const parsed = siteUrlSchema.safeParse(url)
+    if (!parsed.success) {
+      return {
+        status: "error",
+        fieldErrors: { siteUrl: parsed.error.issues[0].message },
+      }
+    }
+    await write.void("set_case_site_url", [caseId, parsed.data, actor.id, ip])
+    invalidate(slug)
+    revalidatePath(`/admin/realisations/${slug}`)
+    return OK
   })
 }
 

@@ -31,7 +31,7 @@ BEGIN
   SELECT
     c.id, c.slug, c.sector, c.year, c.badge, c.title, c.hero_title,
     c.teaser, c.summary, c.figure, c.measure, c.halo, c.accent,
-    c.featured, c.wide, c.results_label,
+    c.featured, c.wide, c.results_label, c.site_url,
     c.testimonial_quote, c.testimonial_name, c.testimonial_role,
     c.testimonial_initials, c.hero_media_id,
     c.position, c.status, c.published_at, c.created_at, c.updated_at,
@@ -74,7 +74,7 @@ BEGIN
   SELECT
     c.id, c.slug, c.sector, c.year, c.badge, c.title, c.hero_title,
     c.teaser, c.summary, c.figure, c.measure, c.halo, c.accent,
-    c.featured, c.wide, c.results_label,
+    c.featured, c.wide, c.results_label, c.site_url,
     c.testimonial_quote, c.testimonial_name, c.testimonial_role,
     c.testimonial_initials, c.hero_media_id,
     c.position, c.status, c.published_at, c.created_at, c.updated_at
@@ -658,6 +658,53 @@ BEGIN
 
   CALL write_audit(
     p_actor_id, 'case.set_lessons', 'case_study', p_case_id, NULL, p_items, p_ip
+  );
+
+  COMMIT;
+END$$
+
+/**
+ * L'adresse du site livré, à part de `update_case_study` : changer la signature de
+ * celle-ci casserait l'administration le temps qu'un déploiement et sa migration
+ * se rejoignent. Seules les adresses `https://` sont admises - le lien est affiché
+ * sur le site public, un `javascript:` ou un `http://` n'y ont pas leur place.
+ */
+DROP PROCEDURE IF EXISTS set_case_site_url$$
+CREATE PROCEDURE set_case_site_url(
+  IN p_id       BINARY(16),
+  IN p_url      VARCHAR(300),
+  IN p_actor_id BINARY(16),
+  IN p_ip       VARCHAR(45)
+)
+SQL SECURITY DEFINER
+BEGIN
+  DECLARE v_before VARCHAR(300) DEFAULT NULL;
+  DECLARE v_url    VARCHAR(300) DEFAULT TRIM(IFNULL(p_url, ''));
+
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  IF v_url <> '' AND v_url NOT REGEXP '^https://[^[:space:]/]+[.][^[:space:]]+$' THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'INVALID_URL';
+  END IF;
+
+  START TRANSACTION;
+
+  SELECT site_url INTO v_before FROM case_study WHERE id = p_id;
+  IF v_before IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'CASE_NOT_FOUND';
+  END IF;
+
+  UPDATE case_study
+  SET site_url = v_url, updated_at = UNIX_TIMESTAMP(), updated_by = p_actor_id
+  WHERE id = p_id;
+
+  CALL write_audit(
+    p_actor_id, 'case.set_site_url', 'case_study', p_id,
+    JSON_OBJECT('site_url', v_before), JSON_OBJECT('site_url', v_url), p_ip
   );
 
   COMMIT;

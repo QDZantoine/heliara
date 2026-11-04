@@ -266,6 +266,7 @@ export function caseStudyNode({
   modifiedAt,
   imageUrl,
   results,
+  siteUrl,
 }: {
   path: string
   title: string
@@ -276,8 +277,11 @@ export function caseStudyNode({
   modifiedAt?: string
   imageUrl?: string
   results?: { value: string; label: string }[]
+  /** Le site livré, affiché en lien sur la fiche : balisé comme ce dont elle parle. */
+  siteUrl?: string
 }): Node {
   const url = absoluteUrl(path)
+  const sectorNode = { "@type": "Thing", name: sector }
 
   return {
     "@type": "Article",
@@ -291,7 +295,12 @@ export function caseStudyNode({
     inLanguage: "fr-FR",
     ...(modifiedAt ? { dateModified: modifiedAt } : {}),
     ...(imageUrl ? { image: imageUrl } : {}),
-    about: { "@type": "Thing", name: sector },
+    about: siteUrl
+      ? [
+          sectorNode,
+          { "@type": "WebSite", name: title.split(" - ")[0], url: siteUrl },
+        ]
+      : sectorNode,
     ...(year ? { temporalCoverage: year } : {}),
     // Les résultats mesurés, tels qu'affichés. C'est la partie citable d'une étude
     // de cas, et la seule qu'un modèle puisse reprendre sans la reformuler.

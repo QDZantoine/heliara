@@ -142,3 +142,15 @@ CREATE TABLE IF NOT EXISTS case_lesson (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_uca1400_ai_ci;
+
+-- ------------------------------------------------------------
+-- L'adresse du site livré, facultative : la fiche publique en fait un lien suivi,
+-- qui sert aussi de lien entrant pour le client. Chaîne vide quand il n'y en a pas,
+-- ou quand le site n'est pas public.
+--
+-- `IF NOT EXISTS` : le fichier est rejoué par `pnpm db:migrate` sur une base qui a
+-- déjà la colonne, et l'ajout ne touche à aucune ligne existante.
+-- ------------------------------------------------------------
+
+ALTER TABLE case_study
+  ADD COLUMN IF NOT EXISTS site_url VARCHAR(300) NOT NULL DEFAULT '' AFTER results_label;

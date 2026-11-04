@@ -56,6 +56,8 @@ type PublicRow = {
   featured: number
   wide: number
   results_label: string
+  /** Absent tant que la migration n'a pas tourné : le lien ne s'affiche pas. */
+  site_url?: string
   testimonial_quote: string | null
   testimonial_name: string | null
   testimonial_role: string | null
@@ -120,6 +122,7 @@ function toSummary(row: PublicRow): PublicCase {
     featured: bool(row.featured),
     wide: bool(row.wide),
     resultsLabel: text(row.results_label) || "Résultats",
+    siteUrl: text(row.site_url) || undefined,
     testimonial: {
       quote: row.testimonial_quote ?? "",
       name: row.testimonial_name ?? "",

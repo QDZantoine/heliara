@@ -101,6 +101,7 @@ GRANT EXECUTE ON PROCEDURE heliara.list_case_slugs      TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.list_case_sectors    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.create_case_study    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.update_case_study    TO 'app_write'@'%';
+GRANT EXECUTE ON PROCEDURE heliara.set_case_site_url    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.publish_case_study   TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.delete_case_study    TO 'app_write'@'%';
 GRANT EXECUTE ON PROCEDURE heliara.reorder_case_studies TO 'app_write'@'%';

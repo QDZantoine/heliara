@@ -65,6 +65,7 @@ export type CaseDetail = {
   featured: boolean
   wide: boolean
   resultsLabel: string
+  siteUrl: string
   testimonial: {
     quote: string
     name: string
@@ -149,6 +150,8 @@ type DetailRow = {
   featured: number
   wide: number
   results_label: string
+  /** Absent tant que la migration n'a pas tourné. */
+  site_url?: string
   testimonial_quote: string | null
   testimonial_name: string | null
   testimonial_role: string | null
@@ -242,6 +245,7 @@ export async function getCase(
     featured: bool(row.featured),
     wide: bool(row.wide),
     resultsLabel: text(row.results_label) || "Résultats",
+    siteUrl: text(row.site_url),
     testimonial: {
       quote: row.testimonial_quote ?? "",
       name: row.testimonial_name ?? "",

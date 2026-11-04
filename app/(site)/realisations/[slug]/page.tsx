@@ -96,6 +96,7 @@ export default async function CaseStudyPage(
             year: study.year,
             imageUrl: study.heroMedia?.url,
             results: study.results,
+            siteUrl: study.siteUrl,
           }),
           breadcrumbNode([
             { label: "Réalisations", path: "/realisations" },

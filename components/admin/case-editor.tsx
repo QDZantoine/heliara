@@ -9,6 +9,7 @@ import {
   setChapters,
   setGallery,
   setLessons,
+  setCaseSiteUrl,
   setMediaAlt,
   setMeta,
   setResults,
@@ -104,6 +105,7 @@ function CaseEditor({ item }: { item: CaseDetail }) {
       featured: item.featured,
       wide: item.wide,
       resultsLabel: item.resultsLabel,
+      siteUrl: item.siteUrl,
       testimonialQuote: item.testimonial.quote,
       testimonialName: item.testimonial.name,
       testimonialRole: item.testimonial.role,
@@ -133,13 +135,22 @@ function CaseEditor({ item }: { item: CaseDetail }) {
       après remplacement de l'image, l'alternative en base est celle du nouveau fichier,
       c'est-à-dire vide, et non celle du précédent.
     */
-    async ({ heroMedia, ...rest }) => {
+    async ({ heroMedia, siteUrl, ...rest }) => {
       const fait = await updateCase(item.id, {
         ...rest,
         heroMediaId: heroMedia[0]?.id ?? null,
       })
       if (fait.status !== "ok") {
         return fait
+      }
+
+      // L'adresse du site a sa procédure, écrite seulement si elle a changé : sans
+      // cela, chaque enregistrement déposerait une ligne d'audit vide de sens.
+      if (siteUrl.trim() !== item.siteUrl) {
+        const lien = await setCaseSiteUrl(item.id, rest.slug, siteUrl)
+        if (lien.status !== "ok") {
+          return lien
+        }
       }
 
       const hero = heroMedia[0]
@@ -290,6 +301,21 @@ function CaseEditor({ item }: { item: CaseDetail }) {
                 />
               </Field>
             </div>
+
+            <Field
+              label="Adresse du site en ligne"
+              hint="Facultatif. Affichée sur la fiche en lien « Voir le site », un lien suivi qui compte aussi comme lien entrant pour le client. Laissez vide si le site n'est pas public."
+              error={fiche.fieldErrors.siteUrl}
+            >
+              <input
+                type="url"
+                inputMode="url"
+                placeholder="https://"
+                className={cn(input, "font-mono text-[0.875rem]")}
+                value={v.siteUrl}
+                onChange={(event) => set("siteUrl", event.target.value)}
+              />
+            </Field>
           </Fieldset>
         </WithPlacements>
       ),

@@ -84,6 +84,11 @@ Une liste. Quatre valeurs se lisent bien, huit ne se lisent plus.
 
 `resultsLabel` (160 car.) remplace le titre du bloc, « Résultats » par défaut.
 
+`siteUrl` (300 car., facultatif) : l'adresse du site livré, `https://` seulement. Elle
+s'affiche sous le titre de la fiche en lien suivi « Voir le site … », et compte comme
+lien entrant pour le client. Elle se saisit dans l'étape Identité de l'administration ;
+`pnpm db:import-cases` ne la lit pas.
+
 ### Le témoignage
 
 **Tout ou rien** : les trois premiers champs remplis, ou aucun. Un verbatim sans nom

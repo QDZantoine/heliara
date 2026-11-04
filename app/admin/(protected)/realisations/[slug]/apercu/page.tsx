@@ -85,6 +85,7 @@ export default async function CasePreviewPage(
             // La galerie aussi, pour la même raison : l'aperçu est le rendu exact.
             gallery: item.gallery,
             resultsLabel: item.resultsLabel,
+            siteUrl: item.siteUrl || undefined,
             meta: item.meta,
             chapters: item.chapters.map((chapter) => ({
               num: chapter.num,
