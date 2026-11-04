@@ -1,18 +1,20 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
 import { JsonLd } from "@/components/seo/json-ld"
-import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
 import { CtaBand } from "@/components/sections/cta-band"
 import { PageHero } from "@/components/sections/page-hero"
+import { BrandPicto } from "@/components/visuals/brand-picto"
 import { expertiseHref } from "@/lib/content/expertises"
+import { familyPictos } from "@/lib/content/pictos"
 import { publicServicesByFamily } from "@/lib/db/public-expertises"
 import { collectionPageNode, graph } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
+import { cn } from "@/lib/utils"
 
 /**
  * Le titre, la description et le chemin de la page, en un seul endroit.
@@ -72,50 +74,74 @@ export default async function ExpertisesPage() {
         lead="Chaque page dit le problème qu’elle résout, ce que nous livrons, et les choix techniques que nous assumons."
       />
 
+      {/*
+        Une famille par section, en deux colonnes au-delà de 1024 px : à gauche le
+        picto du kit, le rang, le nom et le résumé, collants pendant qu'on lit ; à
+        droite ses services en lignes à grand titre. Le geste des expertises de
+        l'accueil, prolongé : la flèche s'encre au survol, le picto s'allume.
+      */}
       {groups.map(({ family, services }, familyIndex) => (
         <Section
           key={family.slug}
-          space="sm"
-          className={familyIndex === 0 ? "pt-0 md:pt-0 lg:pt-0" : undefined}
+          space="md"
+          className={cn(
+            "group/family",
+            familyIndex === 0 ? "pt-0 md:pt-0 lg:pt-0" : "border-t border-line"
+          )}
           aria-labelledby={`famille-${family.slug}`}
         >
-          <Container>
-            <Reveal className="mb-6 max-w-[42.5rem]">
-              <Eyebrow className="mb-3" tone="muted">
-                {`0${familyIndex + 1}`}
-              </Eyebrow>
+          <Container className="grid gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16">
+            <Reveal className="lg:sticky lg:top-28 lg:self-start">
+              <div className="mb-6 flex items-center gap-4">
+                {familyPictos[family.slug] ? (
+                  <BrandPicto
+                    name={familyPictos[family.slug]}
+                    className="size-12 text-ink transition-[color] duration-300 group-hover/family:[--picto-accent:var(--hel-brand)]"
+                  />
+                ) : null}
+                <span className="font-mono text-[0.75rem] text-label">
+                  {String(familyIndex + 1).padStart(2, "0")} /{" "}
+                  {String(groups.length).padStart(2, "0")}
+                </span>
+              </div>
               <h2
                 id={`famille-${family.slug}`}
-                className="mb-3 text-[clamp(1.625rem,6vw,2.25rem)] font-bold"
+                className="mb-4 text-[clamp(1.875rem,4.2vw,3rem)] leading-[1.05] font-bold tracking-[-0.035em]"
               >
                 {family.label}
               </h2>
-              <p className="text-[0.97rem] leading-relaxed text-body">
+              <p className="max-w-[26rem] text-[0.97rem] leading-relaxed text-body">
                 {family.summary}
               </p>
             </Reveal>
 
-            {/* Lignes d’index compactes : numéro, titre, description, sans flèche
-                sur mobile (Responsive Guidelines 09, « Cartes Expertises »). */}
             <ul className="border-t border-line">
-              {services.map((service) => (
+              {services.map((service, index) => (
                 <li key={service.slug}>
-                  <Link
-                    href={expertiseHref(service.slug)}
-                    className="group flex flex-col gap-1.5 border-b border-line py-5 transition-colors duration-100 hover:bg-surface md:flex-row md:items-center md:gap-8"
+                  <Reveal
+                    className="hel-rise"
+                    style={{ "--i": index } as React.CSSProperties}
                   >
-                    <span className="shrink-0 font-display text-[1.0625rem] font-bold tracking-[-0.015em] text-ink md:w-70">
-                      {service.title}
-                    </span>
-                    <span className="flex-1 text-[0.9rem] leading-relaxed text-body">
-                      {service.tagline}
-                    </span>
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="hidden size-4 shrink-0 text-brand-text transition-transform duration-[160ms] ease-expo group-hover:translate-x-1 md:block"
-                      strokeWidth={1.5}
-                    />
-                  </Link>
+                    <Link
+                      href={expertiseHref(service.slug)}
+                      className="group/row grid gap-2 border-b border-line py-7 md:grid-cols-[minmax(0,1fr)_2.75rem] md:items-center md:gap-8 md:py-9"
+                    >
+                      <span>
+                        <span className="block font-display text-[clamp(1.375rem,2.6vw,1.875rem)] leading-[1.12] font-bold tracking-[-0.025em] text-ink transition-transform duration-[320ms] ease-expo group-hover/row:translate-x-1.5">
+                          {service.title}
+                        </span>
+                        <span className="mt-2 block max-w-[36rem] text-[0.94rem] leading-relaxed text-body">
+                          {service.tagline}
+                        </span>
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className="hidden size-11 items-center justify-center rounded-full border border-line-strong text-ink transition-[background-color,color,border-color,transform] duration-[200ms] ease-expo group-hover/row:border-ink group-hover/row:bg-ink group-hover/row:text-page group-active/row:scale-95 md:inline-flex"
+                      >
+                        <ArrowUpRight className="size-4.5" strokeWidth={1.75} />
+                      </span>
+                    </Link>
+                  </Reveal>
                 </li>
               ))}
             </ul>

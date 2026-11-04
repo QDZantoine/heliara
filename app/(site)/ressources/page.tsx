@@ -3,9 +3,9 @@ import Link from "next/link"
 
 import { Container } from "@/components/primitives/container"
 import { JsonLd } from "@/components/seo/json-ld"
-import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Reveal } from "@/components/primitives/reveal"
 import { Section } from "@/components/primitives/section"
+import { PageHero } from "@/components/sections/page-hero"
 import { ArticleCover } from "@/components/ressources/article-cover"
 import { ArticleFeed } from "@/components/ressources/article-feed"
 import { CtaBand } from "@/components/sections/cta-band"
@@ -97,19 +97,11 @@ export default async function RessourcesPage() {
         ])}
       />
 
-      <div className="border-b border-line">
-        <Container className="pt-14 pb-10 md:pt-18">
-          <Reveal>
-            <Eyebrow className="mb-3.5">Ressources</Eyebrow>
-          </Reveal>
-          <Reveal delay={60}>
-            <h1 className="max-w-[45rem] text-[clamp(2rem,6.5vw,3.625rem)] leading-[1.02] font-extrabold tracking-[-0.035em]">
-              Ce que nous apprenons en construisant
-              <span className="text-brand">.</span>
-            </h1>
-          </Reveal>
-        </Container>
-      </div>
+      {/* L'en-tête éditorial commun : index 05, titre qui entre mot à mot. */}
+      <PageHero
+        eyebrow="Ressources"
+        title="Ce que nous apprenons en construisant"
+      />
 
       {/* À la une : un seul article, en pleine largeur. */}
       <Section space="sm" aria-label="À la une">

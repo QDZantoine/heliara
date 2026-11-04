@@ -73,10 +73,36 @@ export default async function AProposPage() {
         lead={manifesto.lead}
       />
 
-      <Section space="sm" className="pt-0 md:pt-0 lg:pt-0">
+      {/*
+        Le premier paragraphe en très grand corps, qui s'allume mot à mot au
+        défilement, comme le manifeste de l'accueil (`hel-manifesto` / `hel-word`) ;
+        les suivants en corps de lecture. C'est la thèse du studio, elle mérite d'être
+        lue comme telle plutôt que noyée dans le texte courant.
+      */}
+      <Section space="md" className="pt-4 md:pt-6 lg:pt-8">
         <Container>
-          <div className="grid max-w-reading gap-5">
-            {manifesto.body.map((paragraph) => (
+          {manifesto.body[0] ? (
+            <p
+              className="hel-manifesto max-w-[58rem] font-display text-[clamp(1.5rem,3.6vw,2.75rem)] leading-[1.18] font-bold tracking-[-0.025em] text-ink"
+              style={
+                {
+                  "--n": manifesto.body[0].split(" ").length,
+                } as React.CSSProperties
+              }
+            >
+              {manifesto.body[0].split(" ").map((word, index) => (
+                <span
+                  key={index}
+                  className="hel-word"
+                  style={{ "--i": index } as React.CSSProperties}
+                >
+                  {word}{" "}
+                </span>
+              ))}
+            </p>
+          ) : null}
+          <div className="mt-12 grid max-w-reading gap-5 md:mt-16 md:ml-auto">
+            {manifesto.body.slice(1).map((paragraph) => (
               <Reveal
                 key={paragraph.slice(0, 24)}
                 className="text-[1.0625rem] leading-[1.75] text-body"
@@ -108,11 +134,15 @@ export default async function AProposPage() {
           <ul className="grid gap-4.5 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((person, index) => (
               <li key={person.name} className="flex">
-                <Reveal delay={index * 60} className="flex w-full">
+                <Reveal
+                  delay={index * 60}
+                  className="hel-rise flex w-full"
+                  style={{ "--i": index } as React.CSSProperties}
+                >
                   {/* `flex-col` pousse les spécialités en bas de carte : les trois
                       bios n'ont pas la même longueur, et sans cela les listes de puces
                       flotteraient à des hauteurs différentes d'une carte à l'autre. */}
-                  <div className="group flex w-full flex-col overflow-hidden rounded-lg border border-line bg-page p-3 pb-6">
+                  <div className="hel-card group flex w-full flex-col overflow-hidden rounded-lg border border-line bg-page p-3 pb-6 transition-[transform,box-shadow] duration-[200ms] ease-expo hover:-translate-y-1 hover:shadow-3">
                     <TeamPortrait person={person} />
 
                     <div className="flex flex-1 flex-col px-3">
@@ -188,9 +218,9 @@ export default async function AProposPage() {
               <li key={conviction.title}>
                 <Reveal
                   delay={index * 60}
-                  className="grid gap-2 border-b border-line py-6 md:grid-cols-[18rem_1fr] md:gap-10"
+                  className="grid gap-3 border-b border-line py-8 md:grid-cols-[minmax(0,22rem)_1fr] md:gap-12 md:py-10"
                 >
-                  <h3 className="font-display text-[1.0625rem] font-bold tracking-[-0.01em] text-ink">
+                  <h3 className="font-display text-[clamp(1.25rem,2.6vw,1.875rem)] leading-[1.15] font-bold tracking-[-0.025em] text-ink">
                     {conviction.title}
                   </h3>
                   <p className="max-w-[40rem] text-[0.94rem] leading-relaxed text-body">

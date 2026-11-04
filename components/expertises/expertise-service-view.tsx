@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ArrowRight, Check } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
+import { DisplayTitle } from "@/components/primitives/display-title"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
@@ -65,6 +66,10 @@ function ExpertiseServiceView({
           de nous (Architecture UX, fiche Expertises). */}
       <section className="relative overflow-hidden">
         <Halo variant="hero" />
+        <div
+          aria-hidden="true"
+          className="hel-dots pointer-events-none absolute inset-0"
+        />
         <Container className="relative pt-8 pb-12 md:pb-16">
           <Reveal className="mb-8">
             <Breadcrumb
@@ -74,15 +79,15 @@ function ExpertiseServiceView({
               ]}
             />
           </Reveal>
-          <div className="max-w-[45rem]">
+          <div className="max-w-[52rem]">
             <Reveal>
               <Eyebrow className="mb-4">{family?.label}</Eyebrow>
             </Reveal>
-            <Reveal delay={60}>
-              <h1 className="mb-6 text-[clamp(2rem,7vw,3.75rem)] leading-[1.02] font-extrabold tracking-[-0.035em]">
-                {service.title}
-                <span className="text-brand">.</span>
-              </h1>
+            <Reveal immediate delay={60}>
+              <DisplayTitle
+                text={service.title}
+                className="mb-6 text-[clamp(2.375rem,6.4vw,5rem)] leading-[0.96] font-extrabold tracking-[-0.045em]"
+              />
             </Reveal>
             <Reveal
               delay={120}

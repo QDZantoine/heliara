@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
+import { DisplayTitle } from "@/components/primitives/display-title"
 import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
@@ -96,11 +97,11 @@ export default function LeGroupePage() {
             <Reveal>
               <Eyebrow className="mb-4">Le groupe</Eyebrow>
             </Reveal>
-            <Reveal delay={60}>
-              <h1 className="mb-5 text-[clamp(2.125rem,7vw,4rem)] leading-[1.0] font-extrabold tracking-[-0.035em]">
-                Trois expertises. Un même groupe
-                <span className="text-brand">.</span>
-              </h1>
+            <Reveal immediate delay={60}>
+              <DisplayTitle
+                text="Trois expertises. Un même groupe"
+                className="mb-6 text-[clamp(2.375rem,6vw,4.75rem)] leading-[0.96] font-extrabold tracking-[-0.045em]"
+              />
             </Reveal>
             <Reveal
               delay={120}

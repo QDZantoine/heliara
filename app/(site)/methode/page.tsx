@@ -64,17 +64,26 @@ export default function MethodePage() {
       {/* Frise en zigzag sur un rail central au-delà de 900 px. En dessous, le
           rail disparaît et chaque temps se lit en colonne (Responsive
           Guidelines 09, ligne « Frise Méthode »). */}
+      {/*
+        Le rail se remplit au défilement : un trait encre descend le long de la
+        frise à mesure qu'on la lit (`hel-rail-v`, timeline `--phases` posée sur le
+        conteneur). Le temps qui traverse le centre de l'écran s'allume, les autres
+        restent en retrait (`hel-step`). Sans timelines ou sous mouvement réduit, la
+        frise est simplement là, rail gris et huit temps à pleine opacité.
+      */}
       <Section space="md" aria-label="Les huit temps de la méthode">
-        <Container className="relative max-w-[68.75rem]">
+        <Container className="hel-phases relative max-w-[68.75rem]">
           <div
             aria-hidden="true"
-            className="absolute top-0 bottom-0 left-1/2 hidden w-px bg-[linear-gradient(180deg,transparent,var(--hel-line-strong)_6%,var(--hel-line-strong)_94%,transparent)] menu:block"
-          />
-          <ol className="grid gap-11">
+            className="absolute top-0 bottom-0 left-1/2 hidden w-0.5 -translate-x-1/2 bg-[linear-gradient(180deg,transparent,var(--hel-line-strong)_6%,var(--hel-line-strong)_94%,transparent)] menu:block"
+          >
+            <span className="hel-rail-phases absolute inset-0 bg-ink" />
+          </div>
+          <ol className="grid gap-11 menu:gap-16">
             {methodPhases.map((phase, index) => {
               const textFirst = index % 2 === 0
               return (
-                <li key={phase.num} id={anchor(phase.num)}>
+                <li key={phase.num} id={anchor(phase.num)} className="hel-step">
                   <Reveal className="relative grid items-center gap-4 menu:grid-cols-2 menu:gap-18">
                     <span
                       aria-hidden="true"
@@ -89,7 +98,7 @@ export default function MethodePage() {
                         textFirst && "menu:text-right"
                       )}
                     >
-                      <h2 className="mb-2.5 text-[clamp(1.375rem,5.5vw,1.75rem)] font-bold">
+                      <h2 className="mb-3 text-[clamp(1.5rem,5.5vw,2.25rem)] leading-[1.1] font-bold tracking-[-0.025em]">
                         {phase.title}
                       </h2>
                       <p className="mb-3 text-[0.9rem] leading-relaxed text-body">
@@ -130,7 +139,11 @@ export default function MethodePage() {
           <ul className="grid gap-4.5 sm:grid-cols-2 lg:grid-cols-4">
             {commitments.map((commitment, index) => (
               <li key={commitment.title} className="flex">
-                <Reveal delay={index * 70} className="flex w-full">
+                <Reveal
+                  delay={index * 70}
+                  className="hel-rise flex w-full"
+                  style={{ "--i": index } as React.CSSProperties}
+                >
                   <div className="w-full rounded-lg border border-line bg-page p-6">
                     <span
                       aria-hidden="true"

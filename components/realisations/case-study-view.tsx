@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 import { Container } from "@/components/primitives/container"
+import { DisplayTitle } from "@/components/primitives/display-title"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
@@ -99,20 +100,29 @@ function CaseStudyView({
                 </span>
               </Reveal>
             ) : null}
-            <Reveal delay={60}>
-              <h1 className="mt-5 mb-11 text-[clamp(2rem,6.5vw,4rem)] leading-[1.02] font-extrabold tracking-[-0.035em]">
-                {study.heroTitle}
-                <span className="text-brand">.</span>
-              </h1>
+            <Reveal immediate delay={60}>
+              <DisplayTitle
+                text={study.heroTitle}
+                className="mt-6 mb-12 text-[clamp(2.25rem,6.4vw,5.25rem)] leading-[0.98] font-extrabold tracking-[-0.045em]"
+              />
             </Reveal>
           </div>
-          <Reveal>
-            <CaseCover
-              media={study.heroMedia}
-              accent={study.accent}
-              place="hero"
-            />
-          </Reveal>
+          {/*
+            La capture arrive inclinée, comme posée sur un plan qui s'enfonce dans
+            l'écran, et se redresse pendant qu'on la fait défiler : le geste du hero
+            d'accueil, appliqué au projet. L'inclinaison n'existe que dans
+            l'animation (`hel-tilt-in`) : sans timelines ou sous mouvement réduit, la
+            capture est simplement à plat.
+          */}
+          <div className="hel-tilt-stage">
+            <div className="hel-tilt-in">
+              <CaseCover
+                media={study.heroMedia}
+                accent={study.accent}
+                place="hero"
+              />
+            </div>
+          </div>
         </Container>
       </section>
 
