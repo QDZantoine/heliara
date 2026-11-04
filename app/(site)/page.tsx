@@ -74,26 +74,32 @@ export default async function HomePage() {
     d'Hexceos en tête d'accueil en serait un. Les slugs de leurs fiches commencent par
     le slug de la marque, que `brands` porte déjà.
 
-    Celles qui ne sont pas mises en avant passent d'abord : les trois mises en avant
-    sont montrées en grand quelques écrans plus bas, autant ne pas répéter la preuve.
+    **Les réalisations mises en avant dans l'administration, et elles seules**, dans
+    leur ordre : la première prend le centre du mur. Le choix se fait donc à un seul
+    endroit, la case « mise en avant ». Le mur ne se complète avec les autres que s'il
+    en manque pour atteindre trois écrans, sans quoi le hero retomberait sur
+    l'illustration.
   */
   const sisterSlugs = brands
     .map((brand) => brand.slug)
     .filter((slug) => slug !== "heliara")
-  const heroScreens = cases
-    .filter(
-      (item) =>
-        item.heroMedia &&
-        !sisterSlugs.some((slug) => item.slug.startsWith(`${slug}-`))
-    )
-    .sort((a, b) => Number(a.featured) - Number(b.featured))
-    .map((item) => ({
-      media: item.heroMedia!,
-      // « Luundi - site RH et boutique » : le nom avant le tiret, pour la barre de
-      // fenêtre. Un titre sans tiret passe entier.
-      name: item.title.split(" - ")[0],
-      sector: item.sector,
-    }))
+  const withCover = cases.filter(
+    (item) =>
+      item.heroMedia &&
+      !sisterSlugs.some((slug) => item.slug.startsWith(`${slug}-`))
+  )
+  const featuredWithCover = withCover.filter((item) => item.featured)
+  const heroScreens = (
+    featuredWithCover.length >= 3
+      ? featuredWithCover
+      : [...featuredWithCover, ...withCover.filter((item) => !item.featured)]
+  ).map((item) => ({
+    media: item.heroMedia!,
+    // « Luundi - site RH et boutique » : le nom avant le tiret, pour la barre de
+    // fenêtre. Un titre sans tiret passe entier.
+    name: item.title.split(" - ")[0],
+    sector: item.sector,
+  }))
 
   return (
     <>

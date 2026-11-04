@@ -115,7 +115,8 @@ fréquente serait un écran sans chemin de retour.
 
 ## Le hero et les effets de défilement
 
-Le hero montre **jusqu'à cinq produits livrés**, hors marques sœurs, en fenêtres qui
+Le hero montre **les réalisations mises en avant** dans l'administration (complétées
+par les autres seulement s'il en manque pour trois écrans), hors marques sœurs, en fenêtres qui
 s'allument, posées en mur incliné qui s'oriente au pointeur et se redresse au
 défilement (voir « L'accueil, section par section »). La barre de navigation se détache en
 pilule au défilement.
