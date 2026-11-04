@@ -56,7 +56,7 @@ function CaseList({ cases }: { cases: ListCase[] }) {
                 <Reveal>
                   <Link
                     href={`/realisations/${study.slug}`}
-                    className="grid overflow-hidden rounded-lg border border-line bg-surface transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0 lg:grid-cols-2"
+                    className="group/case grid overflow-hidden rounded-lg border border-line bg-surface shadow-1 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0 lg:min-h-[26rem] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
                   >
                     <div
                       className={cn(
@@ -64,9 +64,16 @@ function CaseList({ cases }: { cases: ListCase[] }) {
                         visualFirst && "lg:order-2"
                       )}
                     >
-                      <span className="self-start rounded-xs bg-info-subtle px-2.5 py-1.5 text-[0.72rem] font-semibold tracking-[0.08em] text-info-text uppercase">
-                        {study.sector}
-                      </span>
+                      <p className="flex items-center gap-3">
+                        <span className="rounded-xs bg-info-subtle px-2.5 py-1.5 text-[0.72rem] font-semibold tracking-[0.08em] text-info-text uppercase">
+                          {study.sector}
+                        </span>
+                        {study.year ? (
+                          <span className="font-mono text-[0.75rem] text-label">
+                            {study.year}
+                          </span>
+                        ) : null}
+                      </p>
                       <h3 className="font-display text-[clamp(1.25rem,5.5vw,1.625rem)] font-bold tracking-[-0.02em] text-ink">
                         {study.title}
                       </h3>
@@ -87,6 +94,22 @@ function CaseList({ cases }: { cases: ListCase[] }) {
                           </span>
                         </p>
                       ) : null}
+                      {/* L'action, dite : toute la carte est un lien, mais rien ne le
+                          montrait avant le survol - et il n'y a pas de survol au doigt.
+                          Encre et non orange : le geste de cet écran est le lien de tête. */}
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1.5 pt-2 text-[0.9rem] font-semibold text-ink",
+                          !study.figure && "mt-auto"
+                        )}
+                      >
+                        Voir le projet
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="size-4 transition-transform duration-[160ms] ease-expo group-hover/case:translate-x-1"
+                          strokeWidth={1.75}
+                        />
+                      </span>
                     </div>
                     <CaseCover
                       media={study.heroMedia}
