@@ -7,6 +7,7 @@ import { indexNowBase, notifyIndexNow } from "@/lib/indexnow"
  * qu'il ne parte jamais d'ailleurs que du domaine de production, et qu'il ne lève jamais.
  */
 afterEach(() => {
+  vi.restoreAllMocks()
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
 })
@@ -24,6 +25,7 @@ describe("IndexNow", () => {
   })
 
   it("n'envoie rien sans clé ni hors production", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {})
     const appel = vi.fn()
     vi.stubGlobal("fetch", appel)
 
@@ -39,6 +41,7 @@ describe("IndexNow", () => {
   })
 
   it("envoie des adresses absolues dédupliquées, et ne lève pas si le moteur échoue", async () => {
+    const avertir = vi.spyOn(console, "warn").mockImplementation(() => {})
     const appel = vi.fn().mockRejectedValue(new Error("injoignable"))
     vi.stubGlobal("fetch", appel)
     vi.stubEnv("NEXT_PUBLIC_SITE_ORIGIN", "https://heliara.fr")
@@ -55,5 +58,6 @@ describe("IndexNow", () => {
       keyLocation: "https://heliara.fr/cle-de-test-1234.txt",
       urlList: ["https://heliara.fr/", "https://heliara.fr/realisations"],
     })
+    expect(avertir).toHaveBeenCalled()
   })
 })

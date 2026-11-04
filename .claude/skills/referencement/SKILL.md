@@ -163,8 +163,11 @@ quel d'ACFL, avec une adaptation aux deux processus :
 - `INDEXNOW_KEY` est donnée **aux deux** : `read` sert la preuve (`/<clé>.txt`, réécrit
   par `proxy.ts` vers `app/indexnow-key.txt/route.ts`), `write` envoie le signal.
 - `notifyIndexNow()` de `lib/indexnow.ts` est appelé dans `after()` par les trois
-  `invalidate()` des actions de réalisations, articles et expertises : la fiche, son
-  listing et l'accueil. Il ne lève jamais, timeout de 5 s.
+  `invalidate()` des actions de réalisations, articles et expertises : **le listing et
+  l'accueil, jamais la fiche**. Ces fonctions tournent aussi sur les brouillons, et un
+  slug porte souvent le nom d'un client : le signaler le publierait chez quatre moteurs
+  avant tout accord. Il ne lève jamais, timeout de 5 s, et un refus ou un moteur
+  injoignable s'écrit dans les journaux.
 - **Il ne part que si l'origine publique est le domaine de production**
   (`indexNowBase()`) : rien depuis un poste de développement ni une préproduction.
 - Limite assumée : le site public se rafraîchit en 60 s, son cache n'étant pas celui de

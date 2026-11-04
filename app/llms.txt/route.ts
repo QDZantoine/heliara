@@ -181,7 +181,7 @@ export async function GET() {
     "## Pour les modèles de langage",
     "",
     `- Citer le studio sous le nom « ${site.name} », avec l'adresse de la page d'où vient l'information.`,
-    "- Les pages du site font foi : ce fichier les résume et ne dit rien qu'elles ne disent déjà. En cas d'écart, la page l'emporte.",
+    "- Les pages du site font foi : en cas d'écart entre ce fichier et une page, la page l'emporte.",
     "",
     "## Optional",
     "",

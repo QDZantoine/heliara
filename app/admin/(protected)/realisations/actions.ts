@@ -142,15 +142,14 @@ function invalidate(slug?: string) {
   if (slug) {
     updateTag(`case:${slug}`)
   }
-  // Le site public change aussi : Bing et les moteurs IndexNow en sont prévenus après
-  // la réponse. Un brouillon signalé répond 404, ce qui est exact.
-  after(() =>
-    notifyIndexNow([
-      "/",
-      "/realisations",
-      ...(slug ? [`/realisations/${slug}`] : []),
-    ])
-  )
+  /*
+    Le site public change aussi : les moteurs IndexNow en sont prévenus après la réponse.
+    **Le listing et l'accueil seulement, jamais la fiche** : ceci tourne aussi sur les
+    brouillons, et un slug porte souvent le nom d'un client - le transmettre à quatre
+    moteurs publierait ce nom avant tout accord. La fiche publiée se découvre par son
+    listing, et `pnpm indexnow` soumet tout le plan après un déploiement.
+  */
+  after(() => notifyIndexNow(["/", "/realisations"]))
   revalidatePath("/admin/realisations")
   revalidatePath("/admin")
 }

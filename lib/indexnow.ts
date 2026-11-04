@@ -48,13 +48,24 @@ export function indexNowBase(): string | null {
  */
 export async function notifyIndexNow(paths: string[]): Promise<void> {
   const key = indexNowKey()
+  if (!key || paths.length === 0) return
   const base = indexNowBase()
-  if (!key || !base || paths.length === 0) return
+  if (!base) {
+    /*
+      Clé posée mais origine hors production : normal en développement, un défaut en
+      production. `NEXT_PUBLIC_SITE_ORIGIN` est figée au build, et un build lancé avec
+      le `.env` local couperait IndexNow pour de bon - sans cette ligne, en silence.
+    */
+    console.warn(
+      `IndexNow : rien envoyé, ${publicSiteOrigin()} n'est pas ${site.url}.`
+    )
+    return
+  }
 
   const urlList = Array.from(new Set(paths)).map((path) => `${base}${path}`)
 
   try {
-    await fetch("https://api.indexnow.org/indexnow", {
+    const response = await fetch("https://api.indexnow.org/indexnow", {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
@@ -65,7 +76,12 @@ export async function notifyIndexNow(paths: string[]): Promise<void> {
       }),
       signal: AbortSignal.timeout(5000),
     })
-  } catch {
-    // Un moteur injoignable n'est pas une erreur du site.
+    // 200 reçu, 202 clé en cours de vérification. 403 : clé refusée, 422 : hôte.
+    if (response.status !== 200 && response.status !== 202) {
+      console.warn(`IndexNow : soumission refusée, HTTP ${response.status}.`)
+    }
+  } catch (error) {
+    // Un moteur injoignable n'est pas une erreur du site, mais doit se voir.
+    console.warn("IndexNow : moteur injoignable.", error)
   }
 }
