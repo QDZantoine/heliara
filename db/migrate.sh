@@ -67,20 +67,40 @@ fi
 CLIENT=$(command -v mariadb || command -v mysql || true)
 
 run_as() {
-  local user="$1" password="$2" file="$3"
+  # Quatrième argument facultatif, passé tel quel au client (`--force`).
+  local user="$1" password="$2" file="$3" extra="${4:-}"
   if [ "$MODE" = "local" ]; then
     # `MYSQL_PWD` plutôt que `-p<mot de passe>` : un mot de passe en argument est visible
     # de tout le système dans la liste des processus.
-    MYSQL_PWD="$password" "$CLIENT" \
+    MYSQL_PWD="$password" "$CLIENT" $extra \
       --host="${DB_HOST:-127.0.0.1}" --port="${DB_PORT:-3306}" \
       --user="$user" "$DB_NAME" < "$file"
   else
     docker compose exec -T mariadb \
-      mariadb -u "$user" -p"$password" "$DB_NAME" < "$file"
+      mariadb $extra -u "$user" -p"$password" "$DB_NAME" < "$file"
   fi
 }
 
 echo "Accès à la base : $MODE."
+
+# **Les deux connexions sont vérifiées avant de toucher à quoi que ce soit.** Sans cela,
+# un mot de passe `db_migrate` faux faisait échouer chaque fichier de schéma - signalé,
+# ignoré - puis l'étape des privilèges tournait quand même : elle retire tous les droits
+# des comptes applicatifs et les réaccorde un à un, et s'arrêtait sur la première
+# procédure jamais créée. Vécu en production : l'administration a perdu 80 droits.
+probe=$(mktemp)
+echo "SELECT 1;" > "$probe"
+for account in db_migrate root; do
+  password="$DB_MIGRATE_PASSWORD"
+  [ "$account" = "root" ] && password="$DB_ROOT_PASSWORD"
+  if ! run_as "$account" "$password" "$probe" >/dev/null 2>/tmp/heliara-migrate.err; then
+    echo "Connexion refusée pour $account : rien n'a été modifié." >&2
+    sed 's/^/  /' /tmp/heliara-migrate.err | head -3 >&2
+    rm -f "$probe"
+    exit 1
+  fi
+done
+rm -f "$probe"
 
 echo "Schéma et procédures, en db_migrate."
 # Tous les fichiers SQL numérotés, dans l'ordre. Le motif était `0[2-9]` puis
@@ -106,8 +126,16 @@ done
 
 echo "Privilèges, en root - indispensable après tout DROP PROCEDURE."
 printf '  %-28s' "10-grants.sql"
-run_as root "$DB_ROOT_PASSWORD" db/init/10-grants.sql
-echo "ok"
+# `--force` : une ligne en échec - une procédure qui manque - ne doit pas laisser les
+# comptes vidés par le `REVOKE` du début de fichier. Les autres droits passent, et
+# l'échec est montré puis remonté en code de sortie.
+if run_as root "$DB_ROOT_PASSWORD" db/init/10-grants.sql --force 2>/tmp/heliara-migrate.err; then
+  echo "ok"
+else
+  echo "signalé - les autres droits ont été accordés"
+  sed 's/^/      /' /tmp/heliara-migrate.err | head -6
+  grants_failed=1
+fi
 
 echo
 echo "Surface accordée :"
@@ -127,3 +155,5 @@ else
   docker compose exec -T mariadb mariadb -uroot -p"$DB_ROOT_PASSWORD" \
     --table -e "$surface" 2>/dev/null
 fi
+
+exit "${grants_failed:-0}"
