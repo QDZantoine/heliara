@@ -39,7 +39,7 @@ Le `.prettierrc` du projet fait loi, y compris quand il contredit une préféren
 Autres règles :
 
 - Nommage de fichiers en `kebab-case`, composants en `PascalCase`.
-- Server Components par défaut. `"use client"` réservé à : menu mobile, sélecteur de thème, filtres de réalisations, formulaire de contact, apparitions au scroll, lien de prise de rendez-vous, profondeur au pointeur du hero (`PointerField`, deux variables CSS et rien d'autre).
+- Server Components par défaut. `"use client"` réservé à : menu mobile, sélecteur de thème, filtres de réalisations, formulaire de contact, apparitions au scroll, lien de prise de rendez-vous, profondeur au pointeur du hero (`PointerField`, deux variables CSS et rien d'autre), bouton magnétique (`Magnetic`, un `transform` et rien d'autre).
 - Contenu éditorial : données statiques typées dans `lib/content/*.ts`, jamais en dur dans le JSX.
 - **Aucun cadratin ni demi-cadratin, jamais** : ni `—` ni `–`, y compris dans le contenu éditorial, les commentaires de code et les messages de commit. Un tiret simple `-` partout où un séparateur est nécessaire. Les maquettes de référence en sont pleines : les transcrire suppose de les convertir au passage.
 
@@ -74,6 +74,13 @@ est le geste orange, dont la DA n'autorise **qu'une occurrence par écran**.
   `setState` dans un effet : `react-hooks/set-state-in-effect` est active et le refuse.
 - **`Button` a une échelle tactile d'abord** : `md` = 44 px et c'est le défaut, `sm` = 36 px
   est réservé aux zones denses non tactiles.
+- **Tout ce qui se clique est en pilule** (`rounded-full`) : boutons de toutes
+  variantes, boutons icône, interrupteur de thème, filtres, lien d'évitement. **Les
+  surfaces gardent leurs rayons** (cartes, fenêtres de capture, champs de
+  formulaire) : la différence de forme sépare ce qu'on lit de ce sur quoi on clique.
+  Un élément focusable sans rayon dessine un anneau de focus carré - c'était le cas
+  de l'interrupteur de la barre - donc tout nouveau contrôle reçoit son
+  `rounded-full`.
 - **`LottieScene` est le seul lecteur Lottie**, et `MediaDropzone` le seul dépôt de fichier.
 
 ## La page 404
@@ -108,10 +115,10 @@ fréquente serait un écran sans chemin de retour.
 
 ## Le hero et les effets de défilement
 
-Le hero montre **trois produits livrés**, hors marques sœurs, en fenêtres qui
-s'allument puis vivent : flottaison, reflet sur la vitre, relève vers un autre projet,
-profondeur au pointeur. La barre de navigation se détache en pilule au défilement, et la
-capture d'une réalisation recule quand sa carte entre dans le champ.
+Le hero montre **jusqu'à cinq produits livrés**, hors marques sœurs, en fenêtres qui
+s'allument, posées en mur incliné qui s'oriente au pointeur et se redresse au
+défilement (voir « L'accueil, section par section »). La barre de navigation se détache en
+pilule au défilement.
 
 - **Tout porte sur `opacity` et `transform`**, sauf la plaque de la barre, petite, dont
   l'inset et le rayon s'animent. Mesuré sur un build de production : aucune image
@@ -134,6 +141,141 @@ capture d'une réalisation recule quand sa carte entre dans le champ.
 - `prefers-reduced-motion` fige tout sur la composition de départ ; la liste des
   classes coupées est dans la media query de `globals.css`, à compléter avec toute
   nouvelle animation.
+
+## L'accueil, section par section
+
+L'arc : affirmation (hero) → caution (logos) → **conviction (manifeste)** → quoi
+(expertises) → comment (méthode) → preuve (réalisations) → garanties → villes →
+pairs → demande. Trois sections ont été refaites pour que la page lise « studio »
+et non « gabarit SaaS », et chacune porte une règle :
+
+- **Le manifeste** (`components/home/manifesto.tsx`, texte dans
+  `lib/content/manifesto.ts`) : une bande encre, deux phrases en très grand corps
+  qui s'allument mot à mot au défilement, puis les quatre principes de `kpis.ts`.
+  **Deux phrases, pas plus** : l'allumage d'un paragraphe devient une attente. Chaque
+  mot est un `span` avec son rang `--i`, le paragraphe porte `--n` et la timeline
+  nommée `--manifesto` ; la fenêtre d'allumage se calcule en CSS à partir des deux.
+  La bande chiffrée « 100 % / 1 / 0 / ∞ » qui suivait les réalisations a été
+  retirée : ses principes sont ici, sous l'affirmation qu'ils précisent.
+- **Les expertises** (`components/home/expertise-list.tsx`) : une liste pleine
+  largeur à filets - rang, titre en grand, les trois premiers services de la famille
+  en monospace, résumé, pastille fléchée - au lieu de quatre cartes illustrées. Les
+  services sont lus dans `expertiseServices` : du contenu réel, rien d'inventé.
+- **La méthode** (`components/home/method-preview.tsx`) : un récit collant au-delà
+  de 1024 px, titre et lien fixes à gauche, les quatre temps à droite, chacun haut
+  de 44 vh ; le temps qui traverse le centre de l'écran s'allume (`hel-step`), un fil
+  vertical se remplit (`hel-rail-v`) en lisant la timeline de la liste depuis
+  l'autre colonne - `timeline-scope` sur la grille est ce qui permet à deux colonnes
+  sœurs de partager une timeline.
+
+- **Le hero, la plongée dans le produit** (`components/home/hero.tsx`,
+  `components/visuals/hero-wall.tsx`) : le texte tient dans une carte claire
+  flottante, d'où débordent deux symboles du kit en aplat orange (`HeroMark`, coins
+  bas gauche et haut droit) - la composition des publications LinkedIn du studio.
+  **Toujours le symbole entier** : une pièce seule se lit comme une tache, c'est la
+  découpe qui fait reconnaître la marque. Titre centré en très grand corps, et dessous
+  un mur de cinq sites livrés posés sur un plan incliné (`rotateX`, chaque fenêtre
+  reculée en `translateZ` selon son rang). Au-delà de 1024 px le hero est épinglé
+  85 vh : le texte s'efface vers le haut (`hel-copy-away`) pendant que le plan se
+  redresse et vient remplir l'écran (`hel-wall-rise`), tous deux sur
+  `scroll(root)`. Trois enveloppes pour trois `transform` - centrage, pointeur,
+  plan - car une seconde déclaration sur un même nœud remplace la première.
+  **L'épinglage n'existe que sous les trois gardes** (largeur, `@supports`,
+  mouvement accepté) : un hero épinglé sans animation serait un défilement mort.
+  **La scène ne rogne pas** (`.hel-wall-stage`, perspective seule) : c'est le
+  conteneur épinglé qui rogne au bord de l'écran, sinon le plan disparaissait en
+  montant au-dessus de son propre bord. Les captures entrent en fondu depuis une
+  opacité nulle : la capture centrale est plus grande que le titre et lui prendrait
+  le LCP. L'ancienne composition à trois fenêtres flottantes, la plaque dégradée et
+  le mot fantôme ont été retirés.
+- **Les réalisations épinglées** (`components/home/case-list.tsx`) : au-delà de
+  1024 px, un cadre fixe à droite où la capture de chaque projet vient se fondre
+  par-dessus la précédente quand son texte atteint le tiers haut de l'écran. Chaque
+  entrée nomme sa timeline (`--case-n`, inline), la grille les remonte par
+  `timeline-scope`, chaque capture lit la sienne par `--tl`. **Le cadre n'existe
+  que sous les trois gardes** (largeur, `@supports`, mouvement accepté) ; partout
+  ailleurs, la capture est rendue sous le texte de chaque fiche - sans cela, un
+  navigateur sans timelines ne montrerait que la dernière capture pour tous. Le
+  `display: none` par défaut du cadre doit rester **avant** la règle qui le montre.
+- **Boutons magnétiques et sélecteur de thème** : `Magnetic`
+  (`components/ui/magnetic.tsx`) enveloppe le CTA du hero et celui de la bande
+  finale et les fait venir de quelques pixels au-devant du pointeur - `transform`
+  seul, pointeur fin seulement, inerte sous `prefers-reduced-motion`. La barre porte
+  **le même interrupteur Lottie que le pied de page** (`ThemeToggle variant="nav"`,
+  libellé en `sr-only`), dès 640 px ; en dessous il passe dans le menu plein écran.
+  Les entrées de la barre n'ont pas de numéro : essayé, puis retiré à la demande.
+
+Deux finitions transverses : **le titre du hero entre ligne par ligne** (`hel-line`,
+translation seule et **sans masque** : une ligne rognée par `overflow: hidden`
+pendant qu'elle monte n'est pas peinte au sens du LCP, qui tombait sur le paragraphe
+d'introduction - mesuré avec un `PerformanceObserver`), et
+**`hel-link-slide`** pour les liens de tête de section, un soulignement qui s'étire
+depuis la gauche. Les boutons pressent à `scale(0.97)`.
+
+Toutes ces règles vivent sous `@supports (animation-timeline: view())` et
+`prefers-reduced-motion: no-preference`, comme le reste de l'accueil piloté : hors de
+l'un ou l'autre, texte et temps sont simplement là, à pleine opacité.
+
+## Le kit visuel de la marque
+
+Le kit `heliara-kit-visuel` (hors dépôt, chez Antoine) porte la charte : orange
+`#E9591F`, Nuit `#101012`, Blanc cassé `#FAFAF9`, le symbole en deux pièces et **la
+découpe à 12,3°, toujours montante vers la droite**. Ce que le site en reprend, et sous
+quelle règle :
+
+- **Le symbole du hero** (`components/visuals/hero-mark.tsx`) : les tracés de
+  `piece-haute` et `piece-basse`, inchangés, en filigrane à 7 % d'orange (9 % en
+  sombre). Les pièces s'assemblent à l'arrivée et **glissent** le long de la découpe
+  au défilement - jamais de rotation, de déformation ni de couleur hors palette, la
+  charte l'interdit. Des `<path>` et non du texte : ils ne concourent pas au LCP.
+- **Les huit pictos** (`lib/content/pictos.ts`, rendus par `BrandPicto`) : générés
+  depuis `04-pictos/svg/fond-clair`, l'encre passée en `currentColor` et l'orange en
+  `var(--picto-accent, currentColor)`. **L'accent est éteint par défaut** et s'allume
+  au survol de la ligne (expertises) : quatre pictos orange alignés feraient quatre
+  gestes sur un écran qui n'en admet qu'un. Seuls les temps de méthode de l'accueil
+  l'ont allumé en permanence, chacun occupant un écran à lui seul. `familyPictos` fait
+  le lien slug de famille - picto (`sites-e-commerce` → `sites-ecommerce`) ; une
+  famille créée depuis l'administration n'en a pas et s'affiche sans.
+- **Écart typographique connu et assumé** : la charte nomme Inter Display, Inter et
+  JetBrains Mono ; le site est en Schibsted Grotesk, Instrument Sans et Spline Sans
+  Mono. Changer de familles est une décision de marque, pas une retouche : « À
+  valider » avec Antoine avant toute bascule.
+
+## Les pages internes : pièces communes
+
+Trois pièces partagées portent l'immersion de toutes les pages, et c'est là qu'il
+faut agir avant de retoucher une page isolée :
+
+- **`PageHero`** (`components/sections/page-hero.tsx`) : en-tête éditorial aligné à
+  gauche, plus jamais centré sur fond uni. Index monospace tiré du rang de la page
+  dans `mainNav` (le surtitre doit donc porter exactement le libellé de nav pour
+  recevoir son numéro), titre jusqu'à 5,25 rem qui entre mot à mot
+  (`hel-title-word`, translation seule : c'est le LCP), introduction en colonne,
+  filet qui se trace (`hel-draw`), trame de points et lueur au pointeur, et le symbole du kit (`HeroMark`) rogné par le bord droit, au-dessus de l'introduction : c'est le geste orange de l'écran, l'index de page est donc en encre. Le bloc
+  s'efface au défilement (`hel-page-hero-away`). Le prop `align` est conservé mais
+  sans effet.
+- **`FinalCta`** : titre jusqu'à 6,5 rem, et au-dessus les quatre temps de la méthode
+  en lettres contourées géantes qui **glissent au défilement** (`hel-ticker`). Piloté
+  par le défilement et non automatique, c'est ce qui le dispense de commande de pause
+  au titre de WCAG 2.2.2. Ses séparateurs sont gris : le point du titre et le bouton
+  sont déjà les deux gestes orange de l'écran.
+- **`SiteFooter`** : le mot-symbole « heliara » en 24 vw, encre sur encre, coupé par le
+  bas de l'écran, qui monte au défilement (`hel-wordmark`).
+
+`DisplayTitle` (`components/primitives/display-title.tsx`) porte le titre qui entre mot
+à mot pour les en-têtes qui ne passent pas par `PageHero` : Contact, Le groupe, fiches
+expertise et projet. Ressources est passée à `PageHero` (index 05). Sur la page
+Méthode, le rail central se remplit au défilement (`hel-rail-phases`, timeline
+`--phases`) et le temps au centre de l'écran s'allume (`hel-step`) ; sur Expertises,
+chaque famille a sa colonne collante (picto, rang, nom) et ses services en lignes à
+grand titre ; sur À propos, le premier paragraphe du manifeste s'allume mot à mot.
+
+Côté Réalisations : les cartes de la grille portent `hel-card` (capture qui s'avance
+de 4 % dans son cadre, pastille « Voir le projet » au survol, pointeur fin seulement)
+et montent en cascade (`hel-rise`, deux par rangée). Sur la fiche projet, la capture
+de tête arrive inclinée et se redresse au défilement (`hel-tilt-stage` /
+`hel-tilt-in`) ; **l'inclinaison n'existe que dans l'animation**, une capture inclinée
+au repos sans mouvement se lirait comme un défaut.
 
 ## Transition de page
 
@@ -472,22 +614,13 @@ hors du balisage - perd exactement ce pour quoi la FAQ existe.
 
 `public/illustrations/` accueille les illustrations SVG statiques, servies par `next/image` en `unoptimized` : l'optimiseur n'apporte rien sur un SVG. Elles sont décoratives, donc `alt=""` et hors arbre d'accessibilité.
 
-Quatre illustrations portent les cartes de familles d'expertise de l'accueil :
-`sass-illustration.svg`, `website-illustration.svg`, `ia-illustration.svg`,
-`mobile-illustration.svg`. Elles ont remplacé un croquis de barres grises qui se lisait
-comme un wireframe - trois filets et une étiquette monospace suggéraient une interface
-sans en montrer aucune, ce qui donnait à la section l'air d'une maquette inachevée.
-
-**Le croquis reste, en repli.** `familyIllustrations` associe un fichier à un slug de
-famille ; une famille absente de la table retombe sur `ExpertiseSketch`. C'est ce qui
-permet de créer une famille depuis l'administration sans écran de dépôt de fichier, et
-ce qui garde un effet aux trois barres réglables de l'administration - sans ce repli,
-elles seraient devenues des réglages sans conséquence.
-
-**Elles fonctionnent sur les deux thèmes sans recoloration**, pour la même raison que
-`hero-product.json` : leurs panneaux clairs se lisent comme des écrans allumés sur
-l'encre. Leurs traits en `#090814` s'y fondent, mais la composition tient parce que ce
-sont les surfaces claires qui portent les formes. Vérifié à l'écran, pas supposé.
+Les quatre illustrations qui ornaient les cartes de familles d'expertise de
+l'accueil (`sass-`, `website-`, `ia-`, `mobile-illustration.svg`) ont été retirées
+avec les cartes : la section est devenue une liste éditoriale sans visuel, voir
+« L'accueil, section par section ». Les champs `tag`, `halo` et `lines` des familles,
+qui réglaient le croquis de repli, restent en base et dans l'administration **sans
+effet à l'écran** ; ils partiront avec une migration le jour où l'on touche aux
+familles.
 
 `three-process.svg` (hero de `/le-groupe`) vient d'undraw, signée Katerina Limpitsouni - conserver l'attribution portée par le fichier. Son unique couleur hors palette, un carré rose, a été passée au bleu LessonSharing pour que les trois teintes de la page se retrouvent dans le visuel. **Toujours vérifier les couleurs d'une illustration importée avant de l'intégrer**, et la recolorer plutôt que d'accepter une teinte étrangère à la DA.
 
@@ -723,6 +856,14 @@ rendre physiquement absent demanderait deux applications en monorepo.
 - **Un lien relatif écrit dans l'administration reste sur le port d'écriture**, où
   tout ce qui n'est pas `/admin` répond 404. « Voir le site » et « Voir en ligne »
   passent par `publicSiteUrl()`, réglé par `NEXT_PUBLIC_SITE_ORIGIN`.
+- **Une page qui se recharge en boucle en dev, et elle seule, vient d'un cache
+  Turbopack périmé**, pas du code. Mesuré sur `/realisations` : son
+  `page_client-reference-manifest.js` dans `.next/dev` désignait encore une ancienne
+  version du morceau de la 404 ; le navigateur s'y abonne, le serveur lui répond
+  `restart`, la page se recharge et reçoit le même manifeste. La production n'est pas
+  touchée. Correctif : arrêter le serveur, `rm -rf .next/dev`, relancer. Et **ne jamais
+  lancer `pnpm build` dans `.next` pendant qu'un `pnpm dev` y tourne** : construire
+  avec `NEXT_DIST_DIR=.next-prod`.
 - **Le cache d'un processus n'est pas celui de l'autre.** Un `updateTag` écrit côté
   administration ne franchit pas la frontière : la fraîcheur du site public vient
   d'un `revalidate` de 60 s, pas d'une invalidation par tag.
@@ -767,8 +908,8 @@ coexister :
 
 - `lib/content/guarantees.ts` (S3) - des **artefacts** : un dépôt, un document, une
   date, un chiffre au contrat. Ce qu'on remet.
-- `lib/content/kpis.ts` (S7) - des **principes** : sur mesure, interlocuteur unique,
-  aucun verrou, pensé pour évoluer. Ce qu'on tient.
+- `lib/content/kpis.ts` (S7, rendus sous le manifeste) - des **principes** : sur
+  mesure, interlocuteur unique, aucun verrou, pensé pour évoluer. Ce qu'on tient.
 
 Une garantie qui se reformule en principe appartient à `kpis.ts`, et l'inverse. Le
 défaut est arrivé : quatre des sept lignes du bandeau redisaient mot pour mot les
