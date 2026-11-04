@@ -25,7 +25,8 @@ function DisplayTitle({
   className?: string
   id?: string
 }) {
-  const words = text.split(" ")
+  // Un titre saisi avec son point final en aurait deux, le sien et l'orange.
+  const words = (dot ? text.trim().replace(/\.+$/, "") : text.trim()).split(" ")
 
   return (
     <Tag id={id} className={cn(className)}>

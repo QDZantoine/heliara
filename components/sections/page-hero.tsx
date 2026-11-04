@@ -4,7 +4,6 @@ import { Halo } from "@/components/primitives/halo"
 import { Reveal } from "@/components/primitives/reveal"
 import { HeroMark } from "@/components/visuals/hero-mark"
 import { PointerField } from "@/components/visuals/pointer-field"
-import { mainNav } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
 type PageHeroProps = {
@@ -24,9 +23,8 @@ type PageHeroProps = {
 /**
  * Hero des pages internes : affirmation seule, la preuve vient ensuite.
  *
- * **Un en-tête éditorial, le même geste que l'accueil en plus sobre.** L'index de
- * la page en monospace - son rang dans la navigation principale, comme dans la barre -
- * puis le titre en très grand corps, qui entre mot à mot, et l'introduction dans une
+ * **Un en-tête éditorial, le même geste que l'accueil en plus sobre.** Le surtitre
+ * en monospace, sans numéro (retiré à la demande), puis le titre en très grand corps, qui entre mot à mot, et l'introduction dans une
  * colonne à part. Un filet se trace sous le bloc. Derrière, la trame de points et la
  * lueur qui suit le pointeur : la même matière que le hero d'accueil, un seul halo.
  *
@@ -37,8 +35,6 @@ type PageHeroProps = {
  * section). Sous `prefers-reduced-motion` et sans timelines, il reste en place.
  */
 function PageHero({ eyebrow, title, lead, children }: PageHeroProps) {
-  const rank = mainNav.findIndex((item) => item.label === eyebrow)
-
   return (
     <section className="hel-page-hero relative overflow-hidden">
       <PointerField className="relative">
@@ -49,21 +45,13 @@ function PageHero({ eyebrow, title, lead, children }: PageHeroProps) {
         />
         {/* Le symbole du kit, rogné par le bord droit : le même geste que la carte de
             l'accueil, et ce qui occupe le haut de la colonne d'introduction. C'est
-            le geste orange de l'écran, l'index de page passe donc en gris. */}
+            le geste orange de l'écran. */}
         <HeroMark className="pointer-events-none absolute top-6 -right-10 w-28 fill-brand md:top-14 md:-right-16 md:w-52 lg:top-14 lg:-right-12 lg:w-40 xl:-right-20 xl:w-[17rem]" />
         <Container className="hel-page-hero-copy relative z-10 pt-12 pb-12 md:pt-20 md:pb-16 lg:pt-24 lg:pb-20">
           <Reveal
             immediate
             className="mb-8 flex items-center gap-3 font-mono text-[0.75rem] text-label md:mb-10"
           >
-            {rank >= 0 ? (
-              <>
-                <span className="text-ink">
-                  {String(rank + 1).padStart(2, "0")}
-                </span>
-                <span aria-hidden="true" className="h-px w-8 bg-line-strong" />
-              </>
-            ) : null}
             <span className="tracking-[0.08em] uppercase">{eyebrow}</span>
           </Reveal>
 
