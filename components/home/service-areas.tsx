@@ -25,48 +25,42 @@ import { serviceAreas } from "@/lib/site"
 function ServiceAreas() {
   return (
     <Section space="lg" aria-labelledby="zones-titre">
-      <Container>
-        <Reveal className="max-w-[42rem]">
-          <Eyebrow className="mb-4">{areasSection.eyebrow}</Eyebrow>
-          <h2
-            id="zones-titre"
-            className="mb-5 text-[clamp(1.625rem,6.5vw,2.75rem)] leading-[1.1] font-bold"
+      <Container className="grid gap-9 md:gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-end lg:gap-16">
+        <div>
+          <Reveal className="max-w-[42rem]">
+            <Eyebrow className="mb-4">{areasSection.eyebrow}</Eyebrow>
+            <h2
+              id="zones-titre"
+              className="mb-5 text-[clamp(1.625rem,6.5vw,2.75rem)] leading-[1.1] font-bold"
+            >
+              {areasSection.title}
+            </h2>
+            <p className="text-[1.0625rem] leading-relaxed text-pretty text-body">
+              {areasSection.lead}
+            </p>
+          </Reveal>
+
+          <Reveal
+            delay={120}
+            className="mt-5 max-w-[42rem] text-[0.95rem] leading-relaxed text-body"
           >
-            {areasSection.title}
-          </h2>
-          <p className="text-[1.0625rem] leading-relaxed text-pretty text-body">
-            {areasSection.lead}
-          </p>
-        </Reveal>
+            <p>{areasSection.note}</p>
+          </Reveal>
+        </div>
 
         {/*
-          Deux détails que la lecture du JSX ne donne pas :
-
-          - **Les points de séparation sont posés en CSS**, pas dans le texte. Écrits
-            dans le JSX, un lecteur d'écran les énoncerait entre chaque ville.
-          - **Ils n'apparaissent qu'à partir de 1024 px**, seule largeur où les quatre
-            noms tiennent sur une ligne. En dessous, la liste passe à la ligne et le
-            point restait suspendu en fin de ligne - vu à l'écran à 390 px. L'écart
-            horizontal suffit alors à séparer les noms.
+          Les villes à droite et l'une sous l'autre au-delà de 1024 px : c'est la colonne
+          qui restait vide, et une liste verticale se parcourt d'un coup d'œil - on y
+          cherche la sienne. En dessous, elles reviennent sur une ligne qui passe à la
+          ligne, l'écart horizontal suffisant à les séparer. Aucun séparateur écrit dans
+          le texte : un lecteur d'écran l'énoncerait entre chaque ville.
         */}
-        <Reveal delay={60} className="mt-9 md:mt-12">
-          <ul className="flex flex-wrap items-baseline gap-x-6 gap-y-2 font-display text-[clamp(1.375rem,5vw,2rem)] leading-tight font-bold text-ink lg:gap-x-3">
+        <Reveal delay={60}>
+          <ul className="flex flex-wrap items-baseline gap-x-6 gap-y-2 font-display text-[clamp(1.375rem,5vw,2rem)] leading-tight font-bold text-ink lg:flex-col lg:gap-y-1 lg:text-[2.5rem]">
             {serviceAreas.map((city) => (
-              <li
-                key={city}
-                className="lg:after:ml-3 lg:after:text-faint lg:after:content-['·'] lg:last:after:content-none"
-              >
-                {city}
-              </li>
+              <li key={city}>{city}</li>
             ))}
           </ul>
-        </Reveal>
-
-        <Reveal
-          delay={120}
-          className="mt-5 max-w-[42rem] text-[0.95rem] leading-relaxed text-body"
-        >
-          <p>{areasSection.note}</p>
         </Reveal>
       </Container>
     </Section>
