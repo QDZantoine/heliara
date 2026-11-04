@@ -41,7 +41,13 @@ function ClientMarquee({ clients }: { clients: readonly Client[] }) {
       */
       className="border-y border-line bg-surface"
     >
-      <Container className="flex flex-col gap-4 py-6 menu:flex-row menu:items-center menu:gap-9">
+      {/*
+          Une grille sous 900 px, et c'est pour la commande de pause : en colonne, elle
+          tombait seule sur sa ligne sous les logos, où elle se lisait comme un logo
+          cassé. La grille la range à droite du titre, la piste passant dessous ; au-delà,
+          la rangée reprend l'ordre du DOM.
+        */}
+      <Container className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-4 py-6 menu:flex menu:gap-9">
         {/*
           La case à cocher qui pilote la pause, et sa place dans l'arbre n'est pas
           négociable : le CSS l'atteint par `~`, donc elle doit être un frère **précédant**
@@ -58,20 +64,20 @@ function ClientMarquee({ clients }: { clients: readonly Client[] }) {
 
         <h2
           id="confiance-titre"
-          className="flex-none text-[0.72rem] font-semibold tracking-[0.12em] text-label uppercase"
+          className="col-start-1 row-start-1 flex-none text-[0.72rem] font-semibold tracking-[0.12em] text-label uppercase"
         >
           Ils nous font confiance
         </h2>
 
         {defile ? (
-          <div className="hel-logos group min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
+          <div className="hel-logos group col-span-2 row-start-2 min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
             <div className="hel-logos-track flex w-max animate-marquee items-center group-hover:[animation-play-state:paused] max-menu:[animation-duration:52s]">
               <LogoRow clients={clients} />
               <LogoRow clients={clients} hidden />
             </div>
           </div>
         ) : (
-          <ul className="flex flex-1 flex-wrap items-center gap-x-10 gap-y-5">
+          <ul className="col-span-2 row-start-2 flex flex-1 flex-wrap items-center gap-x-10 gap-y-5">
             {clients.map((client) => (
               <li key={client.name}>
                 <ClientLogo client={client} />
@@ -109,7 +115,7 @@ function PauseControl() {
   return (
     <label
       htmlFor="hel-logos-pause"
-      className="grid size-11 flex-none cursor-pointer place-items-center rounded-sm text-faint transition-colors duration-100 hover:text-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-info"
+      className="col-start-2 row-start-1 grid size-11 flex-none cursor-pointer place-items-center rounded-full border border-line bg-page text-label shadow-1 transition-colors duration-100 hover:text-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-info"
     >
       <span
         className="hel-logos-when-running inline-flex items-center"
