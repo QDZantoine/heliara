@@ -6,6 +6,7 @@ import type { AnimationItem } from "lottie-web"
 import { Moon, Sun } from "lucide-react"
 
 import { loadLottie, loadLottieData, whenIdle } from "@/lib/lottie"
+import { cn } from "@/lib/utils"
 
 /**
  * Repères relevés dans `public/animated-illustrations/theme-toggle.json` (60 i/s, 481 images). Le
@@ -35,8 +36,14 @@ const SPEED = 2.2
  * système). Le libellé accessible vient des deux `<span>` permutés par le
  * variant `dark:` : pas d'état React, donc pas de rendu vide à l'hydratation.
  */
-function ThemeToggle() {
+/**
+ * `variant="nav"` : le même interrupteur animé, pour la barre de navigation, sans
+ * libellé visible - il passe en `sr-only`, le bouton garde donc son nom accessible.
+ * Les icônes de repli prennent la couleur du texte courant, la barre étant claire.
+ */
+function ThemeToggle({ variant = "footer" }: { variant?: "footer" | "nav" }) {
   const { resolvedTheme, setTheme } = useTheme()
+  const compact = variant === "nav"
   const boxRef = React.useRef<HTMLSpanElement>(null)
   const buttonRef = React.useRef<HTMLButtonElement>(null)
   const animationRef = React.useRef<AnimationItem | null>(null)
@@ -117,21 +124,35 @@ function ThemeToggle() {
       ref={buttonRef}
       type="button"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="hel-theme-toggle inline-flex min-h-11 cursor-pointer items-center gap-2 text-inverse-fg-faint transition-colors duration-100 hover:text-inverse-fg-muted"
+      className={
+        compact
+          ? "hel-theme-toggle inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full text-body transition-[color,transform] duration-[160ms] ease-expo hover:text-ink active:scale-95"
+          : "hel-theme-toggle inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full text-inverse-fg-faint transition-colors duration-100 hover:text-inverse-fg-muted"
+      }
     >
       <Sun
         aria-hidden="true"
-        className="hel-theme-icon hidden size-3.5 dark:block"
+        className={cn(
+          "hel-theme-icon hidden dark:block",
+          compact ? "size-4" : "size-3.5"
+        )}
         strokeWidth={1.5}
       />
       <Moon
         aria-hidden="true"
-        className="hel-theme-icon size-3.5 dark:hidden"
+        className={cn(
+          "hel-theme-icon dark:hidden",
+          compact ? "size-4" : "size-3.5"
+        )}
         strokeWidth={1.5}
       />
       <span ref={boxRef} aria-hidden="true" className="hel-theme-lottie" />
-      <span className="hidden dark:inline">Thème clair</span>
-      <span className="dark:hidden">Thème sombre</span>
+      <span className={cn("hidden dark:inline", compact && "sr-only")}>
+        Thème clair
+      </span>
+      <span className={cn("dark:hidden", compact && "sr-only")}>
+        Thème sombre
+      </span>
     </button>
   )
 }

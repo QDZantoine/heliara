@@ -133,6 +133,17 @@ function SiteFooter({
           </div>
         </div>
       </Container>
+      {/*
+        Le mot-symbole en très grand, coupé par le bas de l'écran : la signature de fin
+        de page. Encre sur encre, à peine plus clair que le fond - il se voit sans
+        se lire comme un titre. Il monte au défilement là où les timelines existent.
+        Décoratif : le logo, en tête du pied de page, porte déjà le nom.
+      */}
+      <div aria-hidden="true" className="overflow-hidden">
+        <p className="hel-wordmark -mb-[0.24em] px-3 text-center font-display text-[24vw] leading-[0.8] font-extrabold tracking-[-0.06em] text-inverse-line select-none">
+          heliara
+        </p>
+      </div>
     </footer>
   )
 }

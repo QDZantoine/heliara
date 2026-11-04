@@ -8,9 +8,19 @@ import { cn } from "@/lib/utils"
  * Le focus visible vient de la règle globale `:focus-visible` (anneau bleu 2 px) :
  * pas d'anneau propre au bouton, pour ne jamais en cumuler deux.
  * Échelle de tailles pensée tactile d'abord : `md` = 44 px (cible minimale).
+ *
+ * **En pilule, toutes variantes et toutes tailles** : c'est la forme de tout ce qui
+ * est interactif sur le site - barre flottante, filtres, interrupteur de thème,
+ * pastilles - et le rayon de 10 px des anciens boutons était la seule exception. Le
+ * rembourrage horizontal a été élargi d'autant : une pilule paraît serrée à rembourrage
+ * égal. Les surfaces (cartes, fenêtres, champs) gardent leurs rayons : la différence
+ * de forme sépare ce qu'on lit de ce sur quoi on clique.
+ *
+ * `active:scale-[0.97]` sur toutes les variantes : la pression se voit, c'est ce
+ * qui donne l'impression que l'interface écoute. Transformation seule, 160 ms.
  */
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-sm border border-transparent bg-clip-padding font-medium whitespace-nowrap transition-[background-color,border-color,box-shadow,transform,opacity] duration-[160ms] ease-expo select-none disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-clip-padding font-medium whitespace-nowrap transition-[background-color,border-color,box-shadow,transform,opacity] duration-[160ms] ease-expo select-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -34,10 +44,10 @@ const buttonVariants = cva(
       },
       size: {
         /** Hors cible tactile : réservé aux zones denses (filtres inline, tags). */
-        sm: "h-9 px-3.5 text-sm",
-        md: "h-11 px-[1.125rem] text-sm",
-        lg: "h-12 px-[1.625rem] text-[0.97rem]",
-        xl: "h-13 px-[1.875rem] text-base",
+        sm: "h-9 px-4 text-sm",
+        md: "h-11 px-5 text-sm",
+        lg: "h-12 px-7 text-[0.97rem]",
+        xl: "h-13 px-8 text-base",
         /** Pleine largeur empilée sous 640 px (Responsive Guidelines 05). */
         block: "h-13 w-full px-6 text-base",
         icon: "size-11",

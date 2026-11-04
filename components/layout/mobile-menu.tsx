@@ -7,6 +7,7 @@ import { Dialog } from "@base-ui/react/dialog"
 import { Menu, X } from "lucide-react"
 
 import { Logo } from "@/components/layout/logo"
+import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { Halo } from "@/components/primitives/halo"
 import { buttonVariants } from "@/components/ui/button"
 import { cta, group, legalNav, mainNav } from "@/lib/site"
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils"
 import { CtaIcon } from "@/components/ui/cta-icon"
 
 const iconButton =
-  "inline-flex size-11 items-center justify-center rounded-sm border border-line-strong bg-surface text-ink transition-colors duration-100 hover:bg-inset"
+  "inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-surface text-ink transition-colors duration-100 hover:bg-inset"
 
 /**
  * Menu plein écran sous 900 px.
@@ -53,9 +54,16 @@ function MobileMenu({
 
           <div className="relative flex h-17 flex-none items-center justify-between border-b border-line pr-5 pl-5 md:pl-6">
             <Logo />
-            <Dialog.Close aria-label="Fermer le menu" className={iconButton}>
-              <X className="size-4" strokeWidth={1.5} />
-            </Dialog.Close>
+            <div className="flex items-center gap-2.5">
+              {/* Le sélecteur de thème est masqué dans la barre sous 640 px : il
+                  reprend sa place ici. */}
+              <div className="sm:hidden">
+                <ThemeToggle variant="nav" />
+              </div>
+              <Dialog.Close aria-label="Fermer le menu" className={iconButton}>
+                <X className="size-4" strokeWidth={1.5} />
+              </Dialog.Close>
+            </div>
           </div>
 
           <nav

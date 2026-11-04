@@ -3,13 +3,15 @@ import Link from "next/link"
 import { Logo } from "@/components/layout/logo"
 import { MobileMenu } from "@/components/layout/mobile-menu"
 import { NavLink } from "@/components/layout/nav-link"
+import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
 import { cta, mainNav } from "@/lib/site"
 
 /**
  * Sticky translucide : le CTA primaire vit dans la nav dès la première seconde
- * (Architecture UX, S1). Six entrées, un seul élément accentué.
+ * (Architecture UX, S1). Six entrées, un seul élément accentué, plus le sélecteur
+ * de thème.
  *
  * Les entrées d'expertise ne sont transmises qu'au menu mobile : la nav horizontale
  * n'a pas de sous-menu, elle mène au hub. Elles arrivent du layout, qui les lit en
@@ -33,11 +35,11 @@ function SiteHeader({
         aria-hidden="true"
         className="hel-header-plate absolute inset-0 border border-transparent border-b-line bg-[color-mix(in_srgb,var(--hel-page)_82%,transparent)] backdrop-blur-[14px]"
       />
-      <div className="hel-header-inner relative mx-auto flex h-17 max-w-page items-center justify-between gap-4 pr-5 pl-5 md:pl-6">
+      <div className="hel-header-inner relative mx-auto flex h-17 max-w-page items-center justify-between gap-4 pr-5 pl-5 menu:grid menu:grid-cols-[1fr_auto_1fr] md:pl-6">
         <Link
           href="/"
           aria-label="Heliara, retour à l’accueil"
-          className="flex items-center"
+          className="flex items-center justify-self-start"
         >
           <Logo alt="" />
         </Link>
@@ -58,7 +60,13 @@ function SiteHeader({
           ))}
         </nav>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 justify-self-end">
+          {/* Le sélecteur de thème, le même interrupteur animé que dans le pied de
+              page, sans libellé visible. Masqué sous 640 px, où la barre n'a plus
+              la place : il passe dans le menu plein écran. */}
+          <div className="flex items-center max-sm:hidden">
+            <ThemeToggle variant="nav" />
+          </div>
           <ButtonLink href={cta.primary.href} variant="brand" size="md">
             <CtaIcon />
             <span className="hidden menu:inline">{cta.primary.label}</span>
