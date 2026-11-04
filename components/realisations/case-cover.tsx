@@ -76,12 +76,12 @@ function CaseCover({
 
     `hero` : case-hero-sketch, `h-56 md:h-80` et un cadre qui déborde de 10 sous la
     boîte - c'est ce débord qui donne l'impression que la fenêtre continue sous le pli.
-    `card` : case-card-sketch, `h-45` ou `h-60`.
+    `card` : case-card-sketch, `h-52 md:h-72` ou `h-60 md:h-96`.
     `home` : case-sketch, `min-h-70` et un cadre décalé à droite, hors du cadre.
   */
   const boite = {
     hero: "relative h-56 md:h-80",
-    card: cn("relative overflow-hidden bg-inset", tall ? "h-60" : "h-45"),
+    card: cn("relative overflow-hidden bg-inset", tall ? "h-60 md:h-96" : "h-52 md:h-72"),
     home: "relative min-h-70 overflow-hidden bg-inset",
   }[place]
 

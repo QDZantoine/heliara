@@ -15,7 +15,7 @@ function CaseCardSketch({ halo, accent, tall = false }: CaseCardSketchProps) {
       aria-hidden="true"
       className={cn(
         "relative overflow-hidden bg-inset",
-        tall ? "h-60" : "h-45"
+        tall ? "h-60 md:h-96" : "h-52 md:h-72"
       )}
     >
       <Halo variant={halo} />

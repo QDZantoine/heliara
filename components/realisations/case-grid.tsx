@@ -94,18 +94,34 @@ function CaseGrid({ cases, sectors }: CaseGridProps) {
       </p>
 
       <ul className="grid gap-5 md:grid-cols-2">
-        {visible.map((study) => {
+        {visible.map((study, index) => {
           const wide = showAll && study.wide
           return (
             <li
               key={study.slug}
               className={cn("flex", wide && "md:col-span-2")}
             >
-              <Reveal className="flex w-full">
+              {/* Cascade au défilement, deux par rangée : `--i` vaut 0 ou 1. */}
+              <Reveal
+                className="hel-rise flex w-full"
+                style={{ "--i": wide ? 0 : index % 2 } as React.CSSProperties}
+              >
+                {/*
+                  `hel-card` : au survol, la capture s'avance de 4 % à l'intérieur
+                  de son cadre et la pastille « Voir le projet » monte sur l'image.
+                  Transformation et opacité seules, sur le pointeur fin uniquement.
+                */}
                 <Link
                   href={caseHref(study.slug)}
-                  className="flex w-full flex-col overflow-hidden rounded-lg border border-line bg-surface transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-1 hover:shadow-3 active:translate-y-0"
+                  className="hel-card group/card relative flex w-full flex-col overflow-hidden rounded-lg border border-line bg-surface transition-[transform,box-shadow] duration-[200ms] ease-expo hover:-translate-y-1 hover:shadow-4 active:translate-y-0 active:scale-[0.99]"
                 >
+                  <span
+                    aria-hidden="true"
+                    className="hel-card-pill absolute top-5 right-5 z-10 inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-2 text-[0.78rem] font-semibold text-page shadow-3"
+                  >
+                    Voir le projet
+                    <span aria-hidden="true">↗</span>
+                  </span>
                   <CaseCover
                     media={study.heroMedia}
                     halo={study.halo}
@@ -122,7 +138,7 @@ function CaseGrid({ cases, sectors }: CaseGridProps) {
                         {study.year}
                       </span>
                     </div>
-                    <h3 className="font-display text-[1.25rem] font-bold tracking-[-0.015em] text-ink">
+                    <h3 className="font-display text-[clamp(1.25rem,2.2vw,1.625rem)] leading-[1.15] font-bold tracking-[-0.025em] text-ink">
                       {study.title}
                     </h3>
                     <p className="flex-1 text-[0.845rem] leading-relaxed text-body">

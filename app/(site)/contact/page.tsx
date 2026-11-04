@@ -4,6 +4,8 @@ import { BookingLink } from "@/components/contact/booking-link"
 import { ContactForm } from "@/components/contact/contact-form"
 import { Faq } from "@/components/sections/faq"
 import { Container } from "@/components/primitives/container"
+import { DisplayTitle } from "@/components/primitives/display-title"
+import { HeroMark } from "@/components/visuals/hero-mark"
 import { JsonLd } from "@/components/seo/json-ld"
 import { Eyebrow } from "@/components/primitives/eyebrow"
 import { Halo } from "@/components/primitives/halo"
@@ -61,28 +63,50 @@ export default async function ContactPage() {
         ])}
       />
       <Halo variant="warm" />
-      <Container className="relative grid items-start gap-12 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-18">
-        {/* Réassurance à gauche. Sur mobile, le formulaire passe en premier
-            (Responsive Guidelines 09, ligne « Formulaire Contact »). */}
-        <div className="max-lg:order-2">
+      <div
+        aria-hidden="true"
+        className="hel-dots pointer-events-none absolute inset-x-0 top-0 h-[40rem]"
+      />
+      <Container className="relative grid items-start gap-12 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1fr_1.05fr] lg:gap-x-18 lg:gap-y-10">
+        {/*
+          Trois blocs, deux colonnes : le titre et la réassurance à gauche, le
+          formulaire à droite sur toute la hauteur. Sous 1024 px, l'ordre du DOM fait
+          foi - titre, formulaire, réassurance : le formulaire reste au plus tôt
+          (Responsive Guidelines 09), mais plus avant le `h1`, ce qui ouvrait la page
+          sur des champs sans dire où l'on était.
+        */}
+        <div className="lg:col-start-1 lg:row-start-1">
           <Reveal>
             <Eyebrow className="mb-4">Contact</Eyebrow>
           </Reveal>
-          <Reveal delay={60}>
-            <h1 className="mb-5 text-[clamp(2rem,6.5vw,3.75rem)] leading-[1.02] font-extrabold tracking-[-0.035em]">
-              Parlons de votre projet
-              <span className="text-brand">.</span>
-            </h1>
+          <Reveal immediate delay={60}>
+            <DisplayTitle
+              text="Parlons de votre projet"
+              className="mb-6 text-[clamp(2.5rem,6.8vw,5.25rem)] leading-[0.95] font-extrabold tracking-[-0.045em]"
+            />
           </Reveal>
           <Reveal
+            immediate
             delay={120}
-            className="mb-9 max-w-[26.25rem] text-[1.0625rem] leading-relaxed text-body"
+            className="max-w-[26.25rem] text-[1.0625rem] leading-relaxed text-body"
           >
             Décrivez votre besoin avec vos mots, pas besoin de cahier des
             charges. Un associé vous répond personnellement sous 48 heures
             ouvrées.
           </Reveal>
+        </div>
 
+        {/* La carte flottante et le symbole qui déborde de son coin : la
+            composition de l'accueil. Le symbole est le geste orange de l'écran avec
+            le bouton d'envoi, les numéros d'étape restent donc neutres. */}
+        <Reveal className="relative lg:sticky lg:top-25 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <HeroMark className="pointer-events-none absolute -top-8 -right-6 w-20 fill-brand sm:-top-10 sm:-right-10 sm:w-28 lg:-top-12 lg:-right-14 lg:w-32" />
+          <div className="relative">
+            <ContactForm />
+          </div>
+        </Reveal>
+
+        <div className="lg:col-start-1 lg:row-start-2">
           {/*
             La seconde porte, et le mot compte : elle est visible et de plein droit, mais
             elle reste seconde. Le bouton est `secondary` et non `brand` - le geste orange
@@ -121,7 +145,7 @@ export default async function ContactPage() {
                 >
                   <span
                     aria-hidden="true"
-                    className="inline-flex size-7 items-center justify-center rounded-full border-[1.5px] border-brand font-mono text-[0.66rem] text-brand-text"
+                    className="inline-flex size-7 items-center justify-center rounded-full border-[1.5px] border-line-strong font-mono text-[0.66rem] text-ink"
                   >
                     {step.num}
                   </span>
@@ -215,10 +239,6 @@ export default async function ContactPage() {
             <p>{serviceAreaLine}.</p>
           </Reveal>
         </div>
-
-        <Reveal className="max-lg:order-1 lg:sticky lg:top-25">
-          <ContactForm />
-        </Reveal>
       </Container>
 
       {/*
