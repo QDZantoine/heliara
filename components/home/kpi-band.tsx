@@ -33,7 +33,8 @@ function KpiBand() {
             <Reveal
               key={kpi.label}
               delay={index * 70}
-              className="hel-principle-card border-l-2 border-brand pl-4 md:pl-5"
+              className="hel-principle-card hel-rise border-l-2 border-brand pl-4 md:pl-5"
+              style={{ "--i": index } as React.CSSProperties}
             >
               <dt className="text-[1rem] font-semibold text-ink">
                 {kpi.label}

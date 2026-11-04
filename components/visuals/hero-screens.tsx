@@ -44,11 +44,18 @@ function HeroScreens({ screens }: { screens: HeroScreen[] }) {
     },
   ]
   const shadows = ["shadow-2", "shadow-3", "shadow-4"]
+  // L'écart au défilement (`hel-spread`) : les deux du fond s'éloignent vers leur
+  // coin, celle de devant vient vers soi.
+  const spreads = [
+    { "--sx": "-56px", "--sy": "-40px", "--ss": "0.94" },
+    { "--sx": "64px", "--sy": "-24px", "--ss": "0.94" },
+    { "--sx": "0px", "--sy": "40px", "--ss": "1.14" },
+  ]
 
   return (
     <div
       aria-hidden="true"
-      className="relative mx-auto aspect-[6/5] w-full max-w-[36rem]"
+      className="relative mx-auto aspect-[6/5] w-full max-w-[36rem] lg:max-w-[44rem]"
     >
       {places.map((place, k) => (
         <div
@@ -56,13 +63,15 @@ function HeroScreens({ screens }: { screens: HeroScreen[] }) {
           className={cn("hel-depth absolute", place.box)}
           style={{ "--depth": `${place.depth}px` } as React.CSSProperties}
         >
-          <div className={place.float}>
-            <Screen
-              first={screens[k]}
-              second={relief(k)}
-              order={k}
-              shadow={shadows[k]}
-            />
+          <div className="hel-spread" style={spreads[k] as React.CSSProperties}>
+            <div className={place.float}>
+              <Screen
+                first={screens[k]}
+                second={relief(k)}
+                order={k}
+                shadow={shadows[k]}
+              />
+            </div>
           </div>
         </div>
       ))}

@@ -37,7 +37,7 @@ function FinalCta({
     >
       <Halo variant="inverse" className="hel-halo-drift" />
       <Container className="relative py-20 text-center md:py-28 lg:py-32">
-        <Reveal>
+        <Reveal className="hel-grow">
           <h2
             id="cta-final-titre"
             className="mb-5 text-[clamp(2rem,8vw,4.5rem)] font-extrabold tracking-[-0.035em] text-inverse-fg"

@@ -121,6 +121,16 @@ capture d'une réalisation recule quand sa carte entre dans le champ.
   d'origine. Aucun écouteur de défilement en JavaScript.
 - **Deux libellés ne se fondent jamais l'un dans l'autre** : à mi-opacité ils se lisent
   comme un texte brouillé. L'image se fond, le nom sort puis entre.
+- **L'accueil est piloté par le défilement** : plongée du hero (timeline nommée
+  `--hero` sur la section, sans quoi texte et écrans démarreraient à deux moments),
+  cascade des cartes, fil de la méthode, pile collante des réalisations au-delà de
+  1024 px, coches des garanties, villes qui glissent. Ces règles vivent sous
+  `@supports (animation-timeline: view())` **et** `prefers-reduced-motion:
+  no-preference` : hors de l'un ou l'autre elles n'existent pas, et `Reveal` reprend
+  la main.
+- **La barre n'est transparente que sur l'accueil** (`html:has([data-hero-fused])`) :
+  ailleurs, une première section blanche se retrouverait sans bord sous une barre
+  transparente.
 - `prefers-reduced-motion` fige tout sur la composition de départ ; la liste des
   classes coupées est dans la media query de `globals.css`, à compléter avec toute
   nouvelle animation.

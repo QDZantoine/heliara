@@ -64,7 +64,7 @@ function GuaranteesSection() {
                 <li key={guarantee} className="flex items-start gap-3.5 py-3.5">
                   <CircleCheckBig
                     aria-hidden="true"
-                    className="mt-0.5 size-4.5 shrink-0 text-brand"
+                    className="hel-tick mt-0.5 size-4.5 shrink-0 text-brand"
                     strokeWidth={2}
                   />
                   <span className="text-[1rem] leading-snug font-medium text-ink">

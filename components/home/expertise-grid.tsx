@@ -44,7 +44,11 @@ function ExpertiseGrid() {
             const illustration = familyIllustrations[family.slug]
             return (
               <li key={family.slug} className="flex">
-                <Reveal delay={index * 80} className="flex w-full">
+                <Reveal
+                  delay={index * 80}
+                  className="hel-rise flex w-full"
+                  style={{ "--i": index } as React.CSSProperties}
+                >
                   <Link
                     href={expertiseHref(family.slug)}
                     className="flex w-full flex-col rounded-lg border border-line bg-surface p-6 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0"

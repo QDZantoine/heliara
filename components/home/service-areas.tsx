@@ -24,7 +24,13 @@ import { serviceAreas } from "@/lib/site"
  */
 function ServiceAreas() {
   return (
-    <Section space="lg" aria-labelledby="zones-titre">
+    <Section
+      space="lg"
+      // Les villes entrent depuis la droite (`hel-slide-in`) : sans ce rognage, leur
+      // point de départ élargissait la page de 25 px sur mobile.
+      className="overflow-x-clip"
+      aria-labelledby="zones-titre"
+    >
       <Container className="grid gap-9 md:gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-end lg:gap-16">
         <div>
           <Reveal className="max-w-[42rem]">
@@ -58,7 +64,9 @@ function ServiceAreas() {
         <Reveal delay={60}>
           <ul className="flex flex-wrap items-baseline gap-x-6 gap-y-2 font-display text-[clamp(1.375rem,5vw,2rem)] leading-tight font-bold text-ink lg:flex-col lg:gap-y-1 lg:text-[2.5rem]">
             {serviceAreas.map((city) => (
-              <li key={city}>{city}</li>
+              <li key={city} className="hel-slide-in">
+                {city}
+              </li>
             ))}
           </ul>
         </Reveal>

@@ -52,11 +52,23 @@ function CaseList({ cases }: { cases: ListCase[] }) {
           {cases.map((study, index) => {
             const visualFirst = index % 2 === 1
             return (
-              <li key={study.slug}>
+              /*
+                Au-delà de 1024 px, les cartes s'empilent : chacune colle sous la barre
+                de navigation, la suivante vient la recouvrir, et les précédentes
+                dépassent d'une bande de 16 px. Position collante seulement, sans
+                JavaScript. `focus-within:z-10` remonte la carte qui a le focus au
+                clavier : sans lui, une carte atteinte en revenant en arrière resterait
+                peinte sous les suivantes.
+              */
+              <li
+                key={study.slug}
+                className="focus-within:z-10 lg:sticky lg:top-[calc(6rem+var(--i)*1rem)]"
+                style={{ "--i": index } as React.CSSProperties}
+              >
                 <Reveal>
                   <Link
                     href={`/realisations/${study.slug}`}
-                    className="hel-case group/case grid overflow-hidden rounded-lg border border-line bg-surface shadow-1 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0 lg:min-h-[26rem] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
+                    className="hel-case group/case grid overflow-hidden rounded-lg border border-line bg-surface shadow-1 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-3 active:translate-y-0 lg:min-h-[26rem] lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:shadow-3"
                   >
                     <div
                       className={cn(

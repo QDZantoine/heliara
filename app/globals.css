@@ -758,6 +758,161 @@
   }
 }
 
+/* ==========================================================================
+   L'accueil piloté par le défilement
+
+   La page ne fait plus apparaître ses blocs une fois pour toutes : c'est la position
+   de défilement qui les fait monter, s'écarter, se cocher ou s'empiler, et revenir en
+   arrière quand on remonte. Tout est du CSS piloté (`animation-timeline`), sans
+   écouteur de défilement, sur `opacity` et `transform`.
+
+   **Deux conditions, et c'est ce qui rend le reste sûr** : le navigateur sait piloter
+   une animation au défilement, et la personne n'a pas demandé de réduire le
+   mouvement. Hors de l'une ou l'autre, aucune de ces règles n'existe, et `Reveal`
+   fait ce qu'il a toujours fait.
+
+   **Une source de mouvement par nœud.** Une seconde déclaration `animation` remplace
+   la première au lieu de s'y ajouter : chaque effet vit donc sur son propre élément.
+   Quand il est posé sur un bloc `Reveal`, il doit gagner contre la règle
+   `[data-reveal-ready] [data-reveal="entering"]` - d'où le sélecteur doublé
+   `.x.x`, qui ne sert qu'à cela.
+   ========================================================================== */
+
+/* Barre fondue au hero, sur l'accueil seulement : transparente au repos, la pilule
+   apparaît en fondu en même temps qu'elle se forme. Ailleurs, la première section
+   peut être une surface blanche, et une barre transparente au-dessus d'elle n'aurait
+   plus de bord - la barre garde donc son fond dès le haut de page. */
+@keyframes hel-header-float-fused {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+    top: 0.5rem;
+    bottom: -0.5rem;
+    left: max(0.5rem, calc((100% - 78.5rem) / 2));
+    right: max(0.5rem, calc((100% - 78.5rem) / 2));
+    border-color: var(--hel-line);
+    border-radius: 9999px;
+    box-shadow: var(--hel-shadow-3);
+  }
+}
+
+/* Plongée dans l'écran : en quittant le hero, le texte remonte et s'efface, l'écran
+   de devant vient vers soi et les deux autres s'écartent. 2D, amplitudes courtes. */
+@keyframes hel-hero-copy-out {
+  to {
+    opacity: 0.15;
+    transform: translateY(-64px);
+  }
+}
+
+@keyframes hel-spread {
+  to {
+    transform: translate(var(--sx, 0), var(--sy, 0)) scale(var(--ss, 1));
+  }
+}
+
+@keyframes hel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(64px) scale(0.96);
+  }
+}
+
+@keyframes hel-rail {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes hel-tick {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes hel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(72px);
+  }
+}
+
+@keyframes hel-grow {
+  from {
+    opacity: 0.2;
+    transform: scale(0.86);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html:has([data-hero-fused]) .hel-header-plate {
+      animation-name: hel-header-float-fused;
+      animation-range: 0 220px;
+    }
+
+    /* La timeline est celle du hero tout entier, pas celle de chaque enfant : sans
+       cela le texte et les écrans commenceraient à bouger à deux moments différents,
+       chacun quand son propre bord atteint le haut de l'écran. */
+    .hel-hero {
+      view-timeline-name: --hero;
+    }
+
+    .hel-hero-copy,
+    .hel-spread {
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 100%;
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+    }
+
+    .hel-hero-copy {
+      animation-name: hel-hero-copy-out;
+    }
+
+    .hel-spread {
+      animation-name: hel-spread;
+    }
+
+    /* Une cascade : chaque carte d'une même rangée part un peu plus tard que la
+       précédente, `--i` étant son rang. */
+    .hel-rise.hel-rise {
+      animation: hel-rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 7%) cover
+        calc(30% + var(--i, 0) * 7%);
+    }
+
+    .hel-rail {
+      transform-origin: left center;
+      animation: hel-rail linear both;
+      animation-timeline: view();
+      animation-range: cover 20% cover 55%;
+    }
+
+    .hel-tick {
+      animation: hel-tick linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 35%;
+    }
+
+    .hel-slide-in {
+      animation: hel-slide-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+
+    .hel-grow.hel-grow {
+      animation: hel-grow linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+  }
+}
+
 .hel-principle-card[data-reveal] {
   transition:
     opacity 500ms var(--hel-ease-expo),

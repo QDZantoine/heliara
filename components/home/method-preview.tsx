@@ -39,10 +39,27 @@ function MethodPreview() {
             </Link>
           </Reveal>
 
+          {/*
+            Le fil du déroulé, au-delà de 1024 px seulement : il se remplit de gauche à
+            droite pendant qu'on fait défiler la section, et les étapes montent l'une
+            après l'autre. Ici l'ordre est l'information, et c'est pourquoi le fil n'existe
+            qu'avec les quatre étapes sur une rangée. Encre et non orange : les numéros
+            et le lien de la section portent déjà le geste de cet écran.
+          */}
+          <div
+            aria-hidden="true"
+            className="relative mb-6 hidden h-px bg-line lg:block"
+          >
+            <span className="hel-rail absolute inset-0 bg-ink" />
+          </div>
           <ol className="relative grid gap-4.5 sm:grid-cols-2 lg:grid-cols-4">
             {methodPreview.map((step, index) => (
               <li key={step.num} className="flex">
-                <Reveal delay={index * 70} className="flex w-full">
+                <Reveal
+                  delay={index * 70}
+                  className="hel-rise flex w-full"
+                  style={{ "--i": index } as React.CSSProperties}
+                >
                   <div className="w-full rounded-md border border-line bg-raised p-5.5 transition-[transform,box-shadow] duration-[160ms] ease-expo hover:-translate-y-[3px] hover:shadow-2">
                     <p className="mb-3 font-mono text-xs text-brand-text">
                       {step.num}

@@ -25,13 +25,24 @@ import { cta, serviceAreaLine } from "@/lib/site"
  */
 function Hero({ screens = [] }: { screens?: HeroScreen[] }) {
   return (
-    <section className="relative overflow-hidden">
+    /*
+      `data-hero-fused` : la barre de navigation est transparente tant qu'on est en haut
+      de cette page, et le hero passe dessous (`-mt-17`, la hauteur de la barre, rendue
+      en `pt-17` sur la zone du pointeur). `hel-hero` porte la timeline de défilement que suivent le texte et
+      les écrans.
+    */
+    <section
+      data-hero-fused=""
+      className="hel-hero relative -mt-17 overflow-hidden"
+    >
       {/* La zone suit le pointeur : la lueur du hero et la profondeur des écrans s'en
           servent. C'est toujours un seul halo, il se déplace. */}
-      <PointerField className="relative">
+      {/* La marge de la barre est ici et non sur la section : la lueur, posée dans
+          cette zone, doit monter jusqu'en haut de l'écran, sous la barre transparente. */}
+      <PointerField className="relative pt-17">
         <Halo variant="hero" className="hel-halo-follow" />
         <Container className="relative grid items-center gap-8 pt-14 pb-16 md:gap-12 md:pt-24 md:pb-15 lg:min-h-[82svh] lg:grid-cols-[1.05fr_1fr]">
-          <div>
+          <div className="hel-hero-copy">
             <Reveal
               immediate
               className="mb-7 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.78rem] font-medium text-body shadow-1"
@@ -113,7 +124,11 @@ function Hero({ screens = [] }: { screens?: HeroScreen[] }) {
           {/* Trois produits livrés quand la base en a, l'illustration sinon : le repli
             statique n'a aucune couverture, et deux écrans ne font pas une composition. */}
           {screens.length >= 3 ? (
-            <HeroScreens screens={screens} />
+            // Au-delà de 1024 px, la composition déborde dans la marge droite : elle
+            // est plus grande que la colonne, et le hero la rogne au bord de l'écran.
+            <div className="2xl:-mr-44 lg:-mr-16 xl:-mr-32">
+              <HeroScreens screens={screens} />
+            </div>
           ) : (
             <HeroLottie />
           )}
