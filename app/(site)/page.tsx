@@ -13,6 +13,7 @@ import { listPublicCases } from "@/lib/db/public-cases"
 import { listPublicClients } from "@/lib/db/public-clients"
 import { listPublicTestimonials } from "@/lib/db/public-testimonials"
 import { expertiseFamilies } from "@/lib/content/expertises"
+import { brands } from "@/lib/content/group"
 import { graph, studioServiceNode } from "@/lib/schema"
 import { pageMetadata } from "@/lib/seo"
 import { homeTitle, site } from "@/lib/site"
@@ -67,6 +68,33 @@ export default async function HomePage() {
   ])
   const featured = cases.filter((item) => item.featured)
 
+  /*
+    Les écrans du hero : les réalisations qui ont une couverture, **hors marques
+    sœurs**. L'endossement de groupe ne va jamais dans le hero, et une capture du site
+    d'Hexceos en tête d'accueil en serait un. Les slugs de leurs fiches commencent par
+    le slug de la marque, que `brands` porte déjà.
+
+    Celles qui ne sont pas mises en avant passent d'abord : les trois mises en avant
+    sont montrées en grand quelques écrans plus bas, autant ne pas répéter la preuve.
+  */
+  const sisterSlugs = brands
+    .map((brand) => brand.slug)
+    .filter((slug) => slug !== "heliara")
+  const heroScreens = cases
+    .filter(
+      (item) =>
+        item.heroMedia &&
+        !sisterSlugs.some((slug) => item.slug.startsWith(`${slug}-`))
+    )
+    .sort((a, b) => Number(a.featured) - Number(b.featured))
+    .map((item) => ({
+      media: item.heroMedia!,
+      // « Luundi - site RH et boutique » : le nom avant le tiret, pour la barre de
+      // fenêtre. Un titre sans tiret passe entier.
+      name: item.title.split(" - ")[0],
+      sector: item.sector,
+    }))
+
   return (
     <>
       {/*
@@ -82,7 +110,7 @@ export default async function HomePage() {
           studioServiceNode(expertiseFamilies.map((family) => family.label)),
         ])}
       />
-      <Hero />
+      <Hero screens={heroScreens} />
       <ClientMarquee clients={clients} />
       <ExpertiseGrid />
       <MethodPreview />

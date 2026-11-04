@@ -7,6 +7,7 @@ import { ButtonLink } from "@/components/ui/button"
 import { CtaIcon } from "@/components/ui/cta-icon"
 import { LinkedInLink } from "@/components/ui/linkedin-link"
 import { HeroLottie } from "@/components/visuals/hero-lottie"
+import { HeroScreens, type HeroScreen } from "@/components/visuals/hero-screens"
 import { cta, serviceAreaLine } from "@/lib/site"
 
 /**
@@ -21,7 +22,7 @@ import { cta, serviceAreaLine } from "@/lib/site"
  * clients, 34 fois plus petit. Ils sont dans le champ au chargement, il n'y a rien à
  * observer.
  */
-function Hero() {
+function Hero({ screens = [] }: { screens?: HeroScreen[] }) {
   return (
     <section className="relative overflow-hidden">
       <Halo variant="hero" />
@@ -105,7 +106,13 @@ function Hero() {
           </Reveal>
         </div>
 
-        <HeroLottie />
+        {/* Trois produits livrés quand la base en a, l'illustration sinon : le repli
+            statique n'a aucune couverture, et deux écrans ne font pas une composition. */}
+        {screens.length >= 3 ? (
+          <HeroScreens screens={screens.slice(0, 3)} />
+        ) : (
+          <HeroLottie />
+        )}
       </Container>
     </section>
   )

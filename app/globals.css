@@ -552,6 +552,38 @@
   animation: hel-reveal-in 600ms var(--hel-ease-expo) both;
 }
 
+/* Les écrans du hero s'allument : chaque fenêtre monte de quelques pixels pendant
+   qu'un voile encre se retire de sa surface. 360 ms, le haut de la plage de la DA,
+   en décalé. Opacité et transformation seulement.
+
+   **Le fondu de la fenêtre garde le titre au LCP** : Chrome n'élit pas un élément
+   peint à opacité nulle, et une capture de 26 rem de large pourrait sinon dépasser
+   le titre. C'est l'inverse de la règle du hero, et pour la même raison. */
+@keyframes hel-screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes hel-screen-light {
+  from {
+    opacity: 0.92;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.hel-screen {
+  animation: hel-screen-in 360ms var(--hel-ease-expo) both;
+}
+
+.hel-screen-veil {
+  opacity: 0;
+  animation: hel-screen-light 360ms var(--hel-ease-io) both;
+}
+
 .hel-principle-card[data-reveal] {
   transition:
     opacity 500ms var(--hel-ease-expo),
@@ -592,6 +624,13 @@
      180 ms avant d'apparaître d'un coup. C'est exactement le mouvement qu'on a promis
      de ne pas produire. */
   [data-reveal-ready] [data-reveal="entering"] {
+    animation: none;
+  }
+
+  /* Même raison : sans cela, les écrans du hero resteraient éteints le temps de leur
+     décalage, puis s'allumeraient d'un coup. */
+  .hel-screen,
+  .hel-screen-veil {
     animation: none;
   }
 
